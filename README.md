@@ -62,7 +62,7 @@ Every week you shoud the below.
 + week17: []()
 + week18: [Machine Learning Notebooks](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-10-26-WEEK18.md#2review)
 + week19: [Understanding Design Patterns in JavaScript](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#2review)
-+ week20: []()
++ week20: [What every computer science major should know](http://matt.might.net/articles/what-cs-majors-should-know/)
 + week21: []()
 
 ## Tip
@@ -86,7 +86,7 @@ Every week you shoud the below.
 + week17: []()
 + week18: [关于IMMUTABLE和MUTABLE类型的比较](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-10-26-WEEK18.md#3tip)
 + week19: [vim 命令行](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#3tip)
-+ week20: [](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#3tip)
++ week20: [堆栈(stack heap)的区别](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#3tip)
 + week21: []()
 
 
@@ -110,5 +110,5 @@ Every week you shoud the below.
 + week17: []()
 + week18: [《程序员的自我修养》读书笔记](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-10-26-WEEK18.md#4share)
 + week19: [int vs Integer](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#4share)
-+ week20: [堆栈(stack heap)的区别](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#4share)
++ week20: [关于心态问题](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#4share)
 + week21: []()
