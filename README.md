@@ -5,17 +5,20 @@ Review  - Learning English
 Tip - Learning Techniques
 Share - Learning Influence
 
-# What's ARTS
+# What's ARTS 
 
 Every week you shoud the below.
 
 ## 1.solve a leetcode's algorithm problem.
+
 ## 2.Read and and comment on English techinacal article at least one.
+
 ## 3.Learn at least one technical tip.
+
 ## 4.Share a technical and thinking article that has opinions.
 
-
 ## Algorithm
+
 + week01: [461. Hamming Distance](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-01-WEEK01.md#1algorithm)
 + week02: [771. Jewels and Stones](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-08-WEEK02.md#1algorithm)
 + week03: [709. To Lower Case](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-15-WEEK03.md#1algorithm)
@@ -24,7 +27,7 @@ Every week you shoud the below.
 + week06: [290. Word Pattern](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-08-04-WEEK06.md#1algorithm)
 + week07: [617. Merge Two Binary Trees](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-08-10-WEEK07.md#1algorithm)
 + week08: [872. Leaf-Similar Trees](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-08-17-WEEK08.md#1algorithm)
-+ week09: [728. Reverse String ](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-08-24-WEEK09.md#1algorithm)
++ week09: [728. Reverse String](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-08-24-WEEK09.md#1algorithm)
 + week10: [561. Array Partition](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-08-31-WEEK10.md#1algorithm)
 + week11: [832. Flipping an Image](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-09-07-WEEK11.md#1algorithm)
 + week12: [151. Reverse Words in a String](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-09-14-WEEK12.md#1algorithm)
@@ -39,6 +42,7 @@ Every week you shoud the below.
 + week21: [852. Peak Index in a Mountain Array](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#1algorithm)
 
 ## Review
+
 + week01: [Something about 山本聪](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-01-WEEK01.md#2review)
 + week02: [Create your experimental design with a simple Python command](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-08-WEEK02.md#2review)
 + week03: [I Can’t Wait for You to See What We Do Next](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-15-WEEK03.md#2review)
@@ -62,6 +66,7 @@ Every week you shoud the below.
 + week21: []()
 
 ## Tip
+
 + week01: [crontab](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-01-WEEK01.md#3tip)
 + week02: [如何免费的让网站启用HTTPS](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-08-WEEK02.md#3tip)
 + week03: [If you are a newbie at git,there is some material on the blow.](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-15-WEEK03.md#3tip)
@@ -81,7 +86,7 @@ Every week you shoud the below.
 + week17: []()
 + week18: [关于IMMUTABLE和MUTABLE类型的比较](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-10-26-WEEK18.md#3tip)
 + week19: [vim 命令行](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#3tip)
-+ week20: []()
++ week20: [](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#3tip)
 + week21: []()
 
 
