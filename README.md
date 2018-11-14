@@ -39,7 +39,7 @@ Every week you shoud the below.
 + week18: [728. Self Dividing Numbers](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-10-26-WEEK18.md#1algorithm)
 + week19: [557. Reverse Words in a String III](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#1algorithm)
 + week20: [929. Unique Email Addresses 226. Invert Binary Tree](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#1algorithm)
-+ week21: [852. Peak Index in a Mountain Array](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#1algorithm)
++ week21: [852. Peak Index in a Mountain Array 938. Range Sum of BST](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#1algorithm)
 
 ## Review
 
@@ -111,4 +111,4 @@ Every week you shoud the below.
 + week18: [《程序员的自我修养》读书笔记](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-10-26-WEEK18.md#4share)
 + week19: [int vs Integer](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#4share)
 + week20: [关于心态问题](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#4share)
-+ week21: []()
++ week21: [](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#4share)
