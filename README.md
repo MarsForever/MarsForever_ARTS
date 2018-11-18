@@ -62,8 +62,8 @@ Every week you shoud the below.
 + week17: []()
 + week18: [Machine Learning Notebooks](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-10-26-WEEK18.md#2review)
 + week19: [Understanding Design Patterns in JavaScript](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#2review)
-+ week20: [What every computer science major should know](http://matt.might.net/articles/what-cs-majors-should-know/)
-+ week21: []()
++ week20: [What every computer science major should know](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#review)
++ week21: [The C++ Build Process Explained](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#3review)
 
 ## Tip
 
