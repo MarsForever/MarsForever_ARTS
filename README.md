@@ -40,6 +40,7 @@ Every week you shoud the below.
 + week19: [557. Reverse Words in a String III](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#1algorithm)
 + week20: [929. Unique Email Addresses 226. Invert Binary Tree](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#1algorithm)
 + week21: [852. Peak Index in a Mountain Array 938. Range Sum of BST](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#1algorithm)
++ week21: [744. Find Smallest Letter Greater Than Target](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-23-WEEK22.md#1algorithm)
 
 ## Review
 
@@ -64,6 +65,7 @@ Every week you shoud the below.
 + week19: [Understanding Design Patterns in JavaScript](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#2review)
 + week20: [What every computer science major should know](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#review)
 + week21: [The C++ Build Process Explained](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#3review)
++ week22: [言語処理100本ノック](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-23-WEEK22.md#3review)
 
 ## Tip
 
@@ -88,6 +90,7 @@ Every week you shoud the below.
 + week19: [vim 命令行](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#3tip)
 + week20: [堆栈(stack heap)的区别](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#3tip)
 + week21: []()
++ week22: [Understanding Python's slice notation](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-23-WEEK22.md#3tip)
 
 
 ## Share
@@ -112,4 +115,5 @@ Every week you shoud the below.
 + week19: [int vs Integer](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#4share)
 + week20: [关于心态问题](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#4share)
 + week21: [【关于日志的那些事儿】](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#4share)
++ week22: []()
 
