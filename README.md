@@ -40,7 +40,10 @@ Every week you shoud the below.
 + week19: [557. Reverse Words in a String III](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#1algorithm)
 + week20: [929. Unique Email Addresses 226. Invert Binary Tree](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#1algorithm)
 + week21: [852. Peak Index in a Mountain Array 938. Range Sum of BST](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#1algorithm)
-+ week21: [744. Find Smallest Letter Greater Than Target](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-23-WEEK22.md#1algorithm)
++ week22: [744. Find Smallest Letter Greater Than Target](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-23-WEEK22.md#1algorithm)
++ week23:empty
++ week24:[867. Transpose Matrix](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-12-07-WEEK24.md#1algorithm)
++ week25:[1. Two Sum](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-12-15-WEEK25.md)
 
 ## Review
 
@@ -66,6 +69,9 @@ Every week you shoud the below.
 + week20: [What every computer science major should know](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#review)
 + week21: [The C++ Build Process Explained](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#3review)
 + week22: [言語処理100本ノック](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-23-WEEK22.md#3review)
++ week23:empty
++ week24:empty
++ week25:empty
 
 ## Tip
 
@@ -91,6 +97,9 @@ Every week you shoud the below.
 + week20: [堆栈(stack heap)的区别](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#3tip)
 + week21: []()
 + week22: [Understanding Python's slice notation](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-23-WEEK22.md#3tip)
++ week23:empty
++ week24:empty
++ week25:empty
 
 
 ## Share
@@ -116,4 +125,7 @@ Every week you shoud the below.
 + week20: [关于心态问题](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#4share)
 + week21: [【关于日志的那些事儿】](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#4share)
 + week22: []()
++ week23:
++ week24:empty
++ week25:[《未来的幸存者》职业篇-你的命运不是一头骡子](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-12-15-WEEK25_AS.md#4share)
 
