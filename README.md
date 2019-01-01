@@ -20,30 +20,111 @@ Every week you shoud the below.
 ## Algorithm
 
 + week01: [461. Hamming Distance](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-01-WEEK01.md#1algorithm)
+
 + week02: [771. Jewels and Stones](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-08-WEEK02.md#1algorithm)
+
 + week03: [709. To Lower Case](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-15-WEEK03.md#1algorithm)
+
 + week04: [807. Max Increase to Keep City Skyline](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-22-WEEK04.md#1algorithm)
+
 + week05: [654. Maximum Binary Tree](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-07-28-WEEK05.md#1algorithm)
+
 + week06: [290. Word Pattern](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-08-04-WEEK06.md#1algorithm)
+
 + week07: [617. Merge Two Binary Trees](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-08-10-WEEK07.md#1algorithm)
+
 + week08: [872. Leaf-Similar Trees](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-08-17-WEEK08.md#1algorithm)
+
 + week09: [728. Reverse String](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-08-24-WEEK09.md#1algorithm)
+
 + week10: [561. Array Partition](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-08-31-WEEK10.md#1algorithm)
+
 + week11: [832. Flipping an Image](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-09-07-WEEK11.md#1algorithm)
+
 + week12: [151. Reverse Words in a String](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-09-14-WEEK12.md#1algorithm)
+
 + week13: [807. Max Increase to Keep City Skyline](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-09-21-WEEK13.md)
+
 + week14: [922. Sort Array By Parity II](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-09-28-WEEK14.md#1algorithm)
+
 + week15: [412. Fizz Buzz](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-10-05-WEEK15.md#1algorithm)
+
 + week16: [905. Sort Array By Parity](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-10-12-WEEK16.md#1algorithm)
+
 + week17: [804. Unique Morse Code Words](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-10-19-WEEK17.md#1algorithm)
+
 + week18: [728. Self Dividing Numbers](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-10-26-WEEK18.md#1algorithm)
+
 + week19: [557. Reverse Words in a String III](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-02-WEEK19.md#1algorithm)
+
 + week20: [929. Unique Email Addresses 226. Invert Binary Tree](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-09-WEEK20.md#1algorithm)
+
 + week21: [852. Peak Index in a Mountain Array 938. Range Sum of BST](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-16-WEEK21.md#1algorithm)
+
 + week22: [744. Find Smallest Letter Greater Than Target](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-23-WEEK22.md#1algorithm)
-+ week23:empty
+
++ week23: [35. Search Insert Position](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-11-26-WEEK23.md#1algorithm)
+
 + week24:[867. Transpose Matrix](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-12-07-WEEK24.md#1algorithm)
+
 + week25:[1. Two Sum](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-12-15-WEEK25.md)
+
++ week26:[59. Spiral Matrix II](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-12-22-WEEK26.md)
+
++ week27:[54. Spiral Matrix II](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-12-29-WEEK27.md)
+
++ week28:empty 20190105
+
++ week29:empty 20190112
+
++ week30:empty 20190119
+
++ week31:empty 20190126
+
++ week32:empty 20190202
+
++ week33:2019/2/9
+
++ week34:2019/2/16
+
++ week35:2019/2/23
+
++ week36:2019/3/2
+
++ week37:2019/3/9
+
++ week38:2019/3/16
+
++ week39:2019/3/23
+
++ week40:2019/3/30
+
++ week41:2019/4/6
+
++ week42:2019/4/13
+
++ week43:2019/4/20
+
++ week44:2019/4/27
+
++ week45:2019/5/4
+
++ week46:2019/5/11
+
++ week47:2019/5/18
+
++ week48:2019/5/25
+
++ week49:2019/6/1
+
++ week50:2019/6/8
+
++ week51:2019/6/15
+
++ week52:2019/6/22
+
++ week53:2019/6/29
+
 
 ## Review
 
@@ -72,6 +153,60 @@ Every week you shoud the below.
 + week23:empty
 + week24:empty
 + week25:empty
++ week26:empty
++ week27:empty 20181229
++ week28:empty 20190105
+
++ week29:empty 20190112
+
++ week30:empty 20190119
+
++ week31:empty 20190126
+
++ week32:empty 20190202
+
++ week33:2019/2/9
+
++ week34:2019/2/16
+
++ week35:2019/2/23
+
++ week36:2019/3/2
+
++ week37:2019/3/9
+
++ week38:2019/3/16
+
++ week39:2019/3/23
+
++ week40:2019/3/30
+
++ week41:2019/4/6
+
++ week42:2019/4/13
+
++ week43:2019/4/20
+
++ week44:2019/4/27
+
++ week45:2019/5/4
+
++ week46:2019/5/11
+
++ week47:2019/5/18
+
++ week48:2019/5/25
+
++ week49:2019/6/1
+
++ week50:2019/6/8
+
++ week51:2019/6/15
+
++ week52:2019/6/22
+
++ week53:2019/6/29
+
 
 ## Tip
 
@@ -100,6 +235,59 @@ Every week you shoud the below.
 + week23:empty
 + week24:empty
 + week25:empty
++ week26:empty 
++ week27:empty 20181229
++ week28:empty 20190105
+
++ week29:empty 20190112
+
++ week30:empty 20190119
+
++ week31:empty 20190126
+
++ week32:empty 20190202
+
++ week33:2019/2/9
+
++ week34:2019/2/16
+
++ week35:2019/2/23
+
++ week36:2019/3/2
+
++ week37:2019/3/9
+
++ week38:2019/3/16
+
++ week39:2019/3/23
+
++ week40:2019/3/30
+
++ week41:2019/4/6
+
++ week42:2019/4/13
+
++ week43:2019/4/20
+
++ week44:2019/4/27
+
++ week45:2019/5/4
+
++ week46:2019/5/11
+
++ week47:2019/5/18
+
++ week48:2019/5/25
+
++ week49:2019/6/1
+
++ week50:2019/6/8
+
++ week51:2019/6/15
+
++ week52:2019/6/22
+
++ week53:2019/6/29
 
 
 ## Share
@@ -128,4 +316,58 @@ Every week you shoud the below.
 + week23:
 + week24:empty
 + week25:[《未来的幸存者》职业篇-你的命运不是一头骡子](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-12-15-WEEK25_AS.md#4share)
++ week26:empty 20181222
++ week27:empty 20181229
++ week28:empty 20190105
+
++ week29:empty 20190112
+
++ week30:empty 20190119
+
++ week31:empty 20190126
+
++ week32:empty 20190202
+
++ week33:2019/2/9
+
++ week34:2019/2/16
+
++ week35:2019/2/23
+
++ week36:2019/3/2
+
++ week37:2019/3/9
+
++ week38:2019/3/16
+
++ week39:2019/3/23
+
++ week40:2019/3/30
+
++ week41:2019/4/6
+
++ week42:2019/4/13
+
++ week43:2019/4/20
+
++ week44:2019/4/27
+
++ week45:2019/5/4
+
++ week46:2019/5/11
+
++ week47:2019/5/18
+
++ week48:2019/5/25
+
++ week49:2019/6/1
+
++ week50:2019/6/8
+
++ week51:2019/6/15
+
++ week52:2019/6/22
+
++ week53:2019/6/29
+
 
