@@ -153,7 +153,7 @@ Every week you shoud the below.
 + week23:empty
 + week24:empty
 + week25:empty
-+ week26:empty
++ week26:[How to Hire a Product Manager](https://github.com/MarsForever/MarsForever_ARTS/blob/master/2018-12-22-WEEK26.md#3review)
 + week27:empty 20181229
 + week28:empty 20190105
 
