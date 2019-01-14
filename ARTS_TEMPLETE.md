@@ -5,8 +5,6 @@ Problems xxx. [xxx](url)
 
 # 2.Review
 
-[Teach Yourself Computer Science](https://teachyourselfcs.com)
-
 
 # 3.Tip
 
