@@ -204,4 +204,6 @@ udemyAWS 認定ソリューションアーキテクト アソシエイト模擬�
 q4
 データ処理停止時のイベントトリガーにより、モバイルにメールが通知される。
 
+udemy 模擬試験まとめ
+https://1drv.ms/u/s!AjwoDgUZg1zixl-hlj25U7IYSLKz
 
