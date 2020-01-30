@@ -2209,4 +2209,7 @@ kubectl get ing
 2. Access minikube(From brower)
 $IP
 
+### Those stuff from MOOC
+
+
 
