@@ -2176,12 +2176,37 @@ kubectl exec -it debug sh
 
 3. Check can access web server's service
 curl http://web-svc
+
 ### 18.Publish Web Server(Ingress)
 ROOT
   weblog-ingress.yml
-```
-
+```yml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: entrypoint
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  labels:
+    app: weblog
+    type: entrypoint
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: web-svc
+          servicePort: 80
 ```
 #### Senario
 1. Create Ingress
-2. Access minikube
+kubectl apply -f weblog-ingress.yml
+kubectl get ing
+
+2. Access minikube(From brower)
+$IP
+
+
