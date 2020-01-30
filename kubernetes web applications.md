@@ -1,17 +1,24 @@
-CPU 2core
-memory 3GB
-hardice 16GB
-OS CentOS 7
-password: matsu007
+Tool:
+VMware Workstation
+https://my.vmware.com/en/web/vmware/info/slug/desktop_end_user_computing/vmware_workstation_pro/15_0
 
-ip -f inet a
-192.168.207.129/24
+CentOS-7-x86_64-DVD-1810.iso
+http://isoredirect.centos.org/centos/7/isos/x86_64/
 
-#minikube command
+Spec:
+1. CPU 2core
+2. memory 3GB
+3. hardice 16GB
+4. OS CentOS 7
+
+
+#### minikube command
+
 minikube start --vm-driver=none
 minikube stop
 minikube status
 # Create docker and kubernetes Environment
+
 minikube-installer.sh
 
 ```sh
@@ -56,7 +63,9 @@ minikube addons enable ingress
 ```
 # contorl addons 
 minikube addons enable $AADON_NAME
+
 minikube addons disable $ADDON_NAME
+
 minikube 
 
 # check addons 
@@ -69,14 +78,14 @@ exit
 or
 ctrl + p => ctrl + Q
 
-# Kubernetes basic operation
+#### Kubernetes basic operation
 
 | Kubernetes | Docker     |
 | ---------- | ---------- |
 | command    | ENTRYPOINT |
 | args       | CMD        |
 
-##create secrets
+#### create secrets
 kubectl create secret generic $name $options
 name: secret resource name
 options: 
@@ -1321,19 +1330,215 @@ docker container prune
 kubectl delete -f weblog-db-service.yml
 kubectl get svc,ep
 ### 10.Build AP Server(Pod + Secret)
+ROOT
+ weblog-app-pod.yml
+
+
+weblog-app-pod.yml
+```yml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-secret
+  namespace: default
+  labels:
+    app: weblog
+    type: database
+type: Opaque
+data:
+  root_username: YWRtaW4=
+  root_password: UGFzc3cwcmQ=
+  weblog_username: dXNlcg==     # user
+  weblog_password: d2VsY29tZQ== # welcome
+  keyfile: REZDeXROTzBtd2F3eUJzMjVFT3dwdHZDMVRpY1B6STM5S2tvampoZkU3SGVSL1Z2cnllTndxZE92T3dpWjlqUC9wSVdJZVlVWWlrdFpYZlhoT09seU1CRXdVQ0dyK3VtYm1FZXVkdWROeTRoUUNzVmUwWU9TbFgwN1hxYS8vbyttejRaOHBFY2hOMHdVYWhxcEhENWllRnlvTU5JVmFFY0ZQRjQzKzN2Wm92dzdNNHhhWSt4aGhuVzVldGdtL2MyZzlHYUdsSjRhWFBYSmJIUVR5bHNjbml2QnJtV2lJWStKQVBjK29GR0pMNUkzT0NpU1IxZDY2Z0c5OXlzb2Y3NlJ0eDBNdllnV2RYOXJTZTE2b2RhSTNJV3RtaEkyQ0xiV3BTOTk0blljV1RDYnRvcjNmTUMxY3M4bk5SV3kxdW4rSmJiUG9vTXFpUk9ieFJuY0hhcDJYK3BPS3RqWVBnK1lLWDFIdGYrWHlhSDdEckZkWk1uc1ZiQXRBZ1Y2Q2Y2N0laeW02NXA4TGpqRmtoWlRibjVaTWdqUWlud2Vya0IrUUM1aG1hUVFoQXU2ejV0ZStrUHJzUWc0UFEvSkNSTDd2d2VaRXpkZHdsQ284TllHVUpYYVNHMExnMms3d0R4OW9ITFR1QS9UZWxpdDJWcmZnUmJVNlk2ZjZGRU9jempLbkhLZ0hUMDlSSmE1NndkaWhnSHJleVdiVkNDN0JmZEZKMnpSajFmRzVZRWdwa0EzcGdNc3V2VURpNkFpNnROVmUzTzNqQXFDbVhnaHBGYnJ5aTlYWWd0RHNRa3BHUFJVWnlMdk5CajVrOHFCb2lZa2lIUFd2eUlieUI5U1gwcGN5UDEwUjh6UjBUQjhwWFVaYjNYaDFwNFZETVR0ZzV1OFd3ZjU2cElyV2UzS1lqMjBQMndXeVEzZ2xEbzVHTUp4VWRvdWJUeE91bjIrVjBKNk9jMGRLbG13ZXFFakFiYWtKaURkeXZ0eTJPZ2duYmdSU05ZWkluTktWUjluYm5QVUUva0NTTWJOZUU1aFZWRkMweng2RktIa2R4aVpGRXY4YlAvTFI0aFk0OU9FWmE5dnVQUkJuMkxxZmx1Y083d201T25EOG1OM1BZOExscE42U1dDVVRHSjJxZndtMzZ2alJLcEh4bkZINkljeURWd21iUHVsQ01FbmZuTDVyS0ovNGJaR2lFMVNRb2JRR1lEL0dicTFVRldvazBGTWZURlYxd2V0UWZWdjMyU0lTSjZQVUpNMmlUaEJKV0RQTlZUbUtmMjhEbHEyTmFMRk1kMXVnS3hBV1AyZk45WU9ndzZadWlpUkIvNlViSU03TXMyRldmeXRHcDJvWWN5OTRYUAo=
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nodeapp
+  namespace: default
+  labels:
+    app: weblog
+    type: application
+spec:
+  containers:
+  - name: node
+    image: weblog-app:v1.0.0
+    imagePullPolicy: Never
+    ports:
+    - containerPort: 3000
+    env:
+    - name: "MONGODB_USERNAME"
+      valueFrom:
+        secretKeyRef:
+          name: mongo-secret
+          key: weblog_username
+    - name: "MONGODB_PASSWORD"
+      valueFrom:
+        secretKeyRef:
+          name: mongo-secret
+          key: weblog_password
+    - name: "MONGODB_HOSTS"
+      value: "mongo-0.db-svc:27017,mongo-1.db-svc:27017,mongo-2.db-svc:27017,"
+    - name: "MONGODB_DATABASE"
+      value: "weblog"
+    - name: "MONGODB_REPLICASET"
+      value: "rs0"
+```
+echo -n "<String>" | base64
+#### Senario
+1. Create Secret(Reuse which created in db server),Pod(kubectl apply)
+kubectl apply -f weblog-app-pod.yml
+2. Access debug Pod(kubectl exec)
+kubectl exec -it debug sh
+3. Certificate it can access AP Server Pod(curl)
+kubectl get pod -o wide (check nodeapp's ip)
+curl $IP:3000
+4. Delete nodeapp node
+kubectl delete pod nodeapp
 
 ### 11.Build AP Server(Deployment)
+ROOT
+ weblog-app-deployment.yml
+```yml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-secret
+  namespace: default
+  labels:
+    app: weblog
+    type: database
+type: Opaque
+data:
+  root_username: YWRtaW4=
+  root_password: UGFzc3cwcmQ=
+  weblog_username: dXNlcg==     # user
+  weblog_password: d2VsY29tZQ== # welcome
+  keyfile: REZDeXROTzBtd2F3eUJzMjVFT3dwdHZDMVRpY1B6STM5S2tvampoZkU3SGVSL1Z2cnllTndxZE92T3dpWjlqUC9wSVdJZVlVWWlrdFpYZlhoT09seU1CRXdVQ0dyK3VtYm1FZXVkdWROeTRoUUNzVmUwWU9TbFgwN1hxYS8vbyttejRaOHBFY2hOMHdVYWhxcEhENWllRnlvTU5JVmFFY0ZQRjQzKzN2Wm92dzdNNHhhWSt4aGhuVzVldGdtL2MyZzlHYUdsSjRhWFBYSmJIUVR5bHNjbml2QnJtV2lJWStKQVBjK29GR0pMNUkzT0NpU1IxZDY2Z0c5OXlzb2Y3NlJ0eDBNdllnV2RYOXJTZTE2b2RhSTNJV3RtaEkyQ0xiV3BTOTk0blljV1RDYnRvcjNmTUMxY3M4bk5SV3kxdW4rSmJiUG9vTXFpUk9ieFJuY0hhcDJYK3BPS3RqWVBnK1lLWDFIdGYrWHlhSDdEckZkWk1uc1ZiQXRBZ1Y2Q2Y2N0laeW02NXA4TGpqRmtoWlRibjVaTWdqUWlud2Vya0IrUUM1aG1hUVFoQXU2ejV0ZStrUHJzUWc0UFEvSkNSTDd2d2VaRXpkZHdsQ284TllHVUpYYVNHMExnMms3d0R4OW9ITFR1QS9UZWxpdDJWcmZnUmJVNlk2ZjZGRU9jempLbkhLZ0hUMDlSSmE1NndkaWhnSHJleVdiVkNDN0JmZEZKMnpSajFmRzVZRWdwa0EzcGdNc3V2VURpNkFpNnROVmUzTzNqQXFDbVhnaHBGYnJ5aTlYWWd0RHNRa3BHUFJVWnlMdk5CajVrOHFCb2lZa2lIUFd2eUlieUI5U1gwcGN5UDEwUjh6UjBUQjhwWFVaYjNYaDFwNFZETVR0ZzV1OFd3ZjU2cElyV2UzS1lqMjBQMndXeVEzZ2xEbzVHTUp4VWRvdWJUeE91bjIrVjBKNk9jMGRLbG13ZXFFakFiYWtKaURkeXZ0eTJPZ2duYmdSU05ZWkluTktWUjluYm5QVUUva0NTTWJOZUU1aFZWRkMweng2RktIa2R4aVpGRXY4YlAvTFI0aFk0OU9FWmE5dnVQUkJuMkxxZmx1Y083d201T25EOG1OM1BZOExscE42U1dDVVRHSjJxZndtMzZ2alJLcEh4bkZINkljeURWd21iUHVsQ01FbmZuTDVyS0ovNGJaR2lFMVNRb2JRR1lEL0dicTFVRldvazBGTWZURlYxd2V0UWZWdjMyU0lTSjZQVUpNMmlUaEJKV0RQTlZUbUtmMjhEbHEyTmFMRk1kMXVnS3hBV1AyZk45WU9ndzZadWlpUkIvNlViSU03TXMyRldmeXRHcDJvWWN5OTRYUAo=
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodeapp
+  namespace: default
+  labels:
+    app: weblog
+    type: application
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: weblog
+      type: application
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  revisionHistoryLimit: 14
+  template:
+    metadata:
+      name: nodeapp
+      namespace: default
+      labels:
+        app: weblog
+        type: application
+    spec:
+      containers:
+      - name: node
+        image: weblog-app:v1.0.0
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+        env:
+        - name: "MONGODB_USERNAME"
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: weblog_username
+        - name: "MONGODB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: weblog_password
+        - name: "MONGODB_HOSTS"
+          value: "mongo-0.db-svc:27017,mongo-1.db-svc:27017,mongo-2.db-svc:27017,"
+        - name: "MONGODB_DATABASE"
+          value: "weblog"
+        - name: "MONGODB_REPLICASET"
+          value: "rs0"
+```
+#### Senario
+1. Create Secret,Deployment(kubectl apply)
+kubectl apply -f weblog-app-deployment.yml
+2. Access debug pod(kubectl exec)
+
+3. Access ap server and check pod's connection(curl)
 
 ### 12.Build AP Server(Service)
+ROOT
+  weblog-app-fullset.yml
+```yml
+
+```
+#### Senario
+1. Create Secret,Deployment,Service
+2. Access Debug Pod
+3. Access service
+4. Check Ap Server log
 
 ### 13.Create Web Server image
-
+ROOT
+  docker-entrypoint.sh
+  Dockerfile
+#### Senario
+1. Create service which accesses AP Server
+2. Launch Web Conainer
+3. Access from external brower
 ### 14.Build Web Server(Pod)
+ROOT
+  weblog-web-pod.yml
+#### Senario
+1. Create ConfigMap,Deployment,Service
+2. Check web pod's ip
+3. Access debug pod
+4. Access Web Server
+5. Check accessed Web Server's log
 
 ### 15.Build Web Server(Pod + ConfigMap)
+ROOT
+  weblog-web-pod+configmap.yml
+
+#### Senario
+1. Create ConfigMap,Pod
+2. Access Web Server's Pod, and check it used ConfigMap
+3. Check Web Server's Pod ip
+4. Access debug pod
+5. Check can access Web Server's pod
 
 ### 16.Build Web Server(Deployment)
-
+ROOT
+  weblog-web-deployment.yml
+#### Senario
+1. Create ConfigMap,Deployment
+2. Check Web Server's Pod ip 
+3. Access debug pod
+4. Check Web Server's either pod
 ### 17.Build Web Server(Service)
+ROOT
+  weblog-web-fullset.yml
+#### Senario
+1. Create Config,Deployment
+2. Access debug pod
+3. Check can access web server's service
 
 ### 18.Publish Web Server(Ingress)
+ROOT
+  weblog-ingress.yml
+
+#### Senario
+1. Create Ingress
+2. Access minikube
