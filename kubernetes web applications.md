@@ -1065,14 +1065,16 @@ ping mongo-1.db-svc
 mongo
 use admin
 db.auth("admin", "Passw0rd")
+```sh
 rs.initiate({
-...id:"rs0",
+..._id:"rs0",
 ...members: [
 ...{_id: 0, host:"mongo-0.db-svc:27017"},
 ...{_id: 1, host:"mongo-1.db-svc:27017"},
 ...{_id: 2, host:"mongo-1.db-svc:27017"},
 ...]
-...}]
+...})
+```
 ##### show ok
 { "ok" : 1 }
 ##### check status
@@ -1475,70 +1477,711 @@ spec:
 1. Create Secret,Deployment(kubectl apply)
 kubectl apply -f weblog-app-deployment.yml
 2. Access debug pod(kubectl exec)
+##### Check ip 
+kubectl get pod -o wide | grep nodeapp
+kubectl exec -it debug sh
 
 3. Access ap server and check pod's connection(curl)
-
+curl $ip0:3000
+curl $ip1:3000
+curl $ip2:3000
+exit
+4. Delete Deployment
+kubectl delete deploy nodeapp
+kubectl get deploy nodeapp
 ### 12.Build AP Server(Service)
 ROOT
   weblog-app-fullset.yml
 ```yml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-secret
+  namespace: default
+  labels:
+    app: weblog
+    type: database
+type: Opaque
+data:
+  root_username: YWRtaW4=
+  root_password: UGFzc3cwcmQ=
+  weblog_username: dXNlcg==     # user
+  weblog_password: d2VsY29tZQ== # welcome
+  keyfile: REZDeXROTzBtd2F3eUJzMjVFT3dwdHZDMVRpY1B6STM5S2tvampoZkU3SGVSL1Z2cnllTndxZE92T3dpWjlqUC9wSVdJZVlVWWlrdFpYZlhoT09seU1CRXdVQ0dyK3VtYm1FZXVkdWROeTRoUUNzVmUwWU9TbFgwN1hxYS8vbyttejRaOHBFY2hOMHdVYWhxcEhENWllRnlvTU5JVmFFY0ZQRjQzKzN2Wm92dzdNNHhhWSt4aGhuVzVldGdtL2MyZzlHYUdsSjRhWFBYSmJIUVR5bHNjbml2QnJtV2lJWStKQVBjK29GR0pMNUkzT0NpU1IxZDY2Z0c5OXlzb2Y3NlJ0eDBNdllnV2RYOXJTZTE2b2RhSTNJV3RtaEkyQ0xiV3BTOTk0blljV1RDYnRvcjNmTUMxY3M4bk5SV3kxdW4rSmJiUG9vTXFpUk9ieFJuY0hhcDJYK3BPS3RqWVBnK1lLWDFIdGYrWHlhSDdEckZkWk1uc1ZiQXRBZ1Y2Q2Y2N0laeW02NXA4TGpqRmtoWlRibjVaTWdqUWlud2Vya0IrUUM1aG1hUVFoQXU2ejV0ZStrUHJzUWc0UFEvSkNSTDd2d2VaRXpkZHdsQ284TllHVUpYYVNHMExnMms3d0R4OW9ITFR1QS9UZWxpdDJWcmZnUmJVNlk2ZjZGRU9jempLbkhLZ0hUMDlSSmE1NndkaWhnSHJleVdiVkNDN0JmZEZKMnpSajFmRzVZRWdwa0EzcGdNc3V2VURpNkFpNnROVmUzTzNqQXFDbVhnaHBGYnJ5aTlYWWd0RHNRa3BHUFJVWnlMdk5CajVrOHFCb2lZa2lIUFd2eUlieUI5U1gwcGN5UDEwUjh6UjBUQjhwWFVaYjNYaDFwNFZETVR0ZzV1OFd3ZjU2cElyV2UzS1lqMjBQMndXeVEzZ2xEbzVHTUp4VWRvdWJUeE91bjIrVjBKNk9jMGRLbG13ZXFFakFiYWtKaURkeXZ0eTJPZ2duYmdSU05ZWkluTktWUjluYm5QVUUva0NTTWJOZUU1aFZWRkMweng2RktIa2R4aVpGRXY4YlAvTFI0aFk0OU9FWmE5dnVQUkJuMkxxZmx1Y083d201T25EOG1OM1BZOExscE42U1dDVVRHSjJxZndtMzZ2alJLcEh4bkZINkljeURWd21iUHVsQ01FbmZuTDVyS0ovNGJaR2lFMVNRb2JRR1lEL0dicTFVRldvazBGTWZURlYxd2V0UWZWdjMyU0lTSjZQVUpNMmlUaEJKV0RQTlZUbUtmMjhEbHEyTmFMRk1kMXVnS3hBV1AyZk45WU9ndzZadWlpUkIvNlViSU03TXMyRldmeXRHcDJvWWN5OTRYUAo=
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-svc
+  namespace: default
+  labels:
+    app: weblog
+    type: application
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+  selector:
+    app: weblog
+    type: application
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodeapp
+  namespace: default
+  labels:
+    app: weblog
+    type: application
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: weblog
+      type: application
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  revisionHistoryLimit: 14
+  template:
+    metadata:
+      name: nodeapp
+      namespace: default
+      labels:
+        app: weblog
+        type: application
+    spec:
+      containers:
+      - name: node
+        image: weblog-app:v1.0.0
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+        env:
+        - name: "MONGODB_USERNAME"
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: weblog_username
+        - name: "MONGODB_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: weblog_password
+        - name: "MONGODB_HOSTS"
+          value: "mongo-0.db-svc:27017,mongo-1.db-svc:27017,mongo-2.db-svc:27017,"
+        - name: "MONGODB_DATABASE"
+          value: "weblog"
+        - name: "MONGODB_REPLICASET"
+          value: "rs0"
 
 ```
 #### Senario
 1. Create Secret,Deployment,Service
-2. Access Debug Pod
-3. Access service
-4. Check Ap Server log
+kubectl apply -f weblog-app-fullset.yml
 
+2. Access Debug Pod
+kubectl exec -it debug sh
+
+3. Access service
+#####  kubectl get svc (get service name)
+curl http://app-svc:3000
+4. Check Ap Server log(Check every nodeapp pod,so you can find which pod you accessed)
+kubectl logs $(nodeapp)
+##### you can get log just like below log
+```log
+[2020-01-30T14:23:59.235] [INFO] access - ::ffff:172.17.0.8 - - "GET / HTTP/1.1" 200 1404 "" "curl/7.29.0"
+```
 ### 13.Create Web Server image
 ROOT
+  nginx.conf
+```conf
+user  nginx;
+worker_processes  auto;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+
+    keepalive_timeout  65;
+
+    server_tokens   off;
+
+    proxy_cache_path /var/cache/nginx keys_zone=STATIC:10m max_size=1g inactive=10d;
+    proxy_temp_path  /var/cache/nginx/tmp;
+
+    server {
+        listen        80;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        location / {
+            proxy_pass http://${APPLICATION_HOST}/;
+        }
+
+        location /public/ {
+            proxy_pass http://${APPLICATION_HOST}/public/;
+            proxy_ignore_headers Cache-Control Expires;
+            proxy_buffering on;
+            proxy_cache STATIC;
+            proxy_cache_valid any 10d;
+            add_header X-Nginx-Cache $upstream_cache_status;
+        }
+    }
+
+    # include /etc/nginx/conf.d/*.conf;
+}
+
+```
   docker-entrypoint.sh
+```sh
+#! /bin/sh
+
+envsubst '$$APPLICATION_HOST' \
+  < /home/nginx/nginx.conf \
+  > /etc/nginx/nginx.conf
+
+exec "$@"
+```
   Dockerfile
+```Dockerfile
+FROM nginx:1.17.2-alpine
+
+COPY . /home/nginx
+
+RUN cd /home/nginx; \
+    mv docker-entrypoint.sh /usr/local/bin; \
+    chmod +x /usr/local/bin/docker-entrypoint.sh;
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
+```
+weblog-app-service.yml
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodeapp
+  namespace: default
+  labels:
+    env: study
+spec:
+  type: NodePort
+  selector:
+    app: weblog
+    type: application
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30000
+```
+envsubst "$$Env Variate" < "Input" > "Output"
+
+#### Design
+|          |                            |
+|----------|----------------------------|
+|base image| Nginx v1.17 on Alpine Linux|
+|  Procedures  |1. copy nginx.conf and boot shell | 
+|              |2. move boot shell and change permissions |
+|command       |ENTRYPOINT boot shell                     |
+|              |CMD  nginx -g daemon off;|
 #### Senario
+0. Create image
+docker build -t weblog-web:v1.0.0 .
 1. Create service which accesses AP Server
+kubectl apply -f weblog-app-service.yml
 2. Launch Web Conainer
+```sh
+docker run \
+> -e APPLICATION_HOST=192.168.207.129:30000 \
+> -p 8080:80 \
+> -d \
+> weblog-web:v1.0.0
+```
+8080:nginx
+80:docker container 
 3. Access from external brower
+##### Check 
+docker container ls
+http://$HOSTIP:8080/
+
+4. Stop container
+docker stop $containerID
+docker container prune
+
+5. Delete Service
+kubectl delete -f  weblog-app-service.yml
+
 ### 14.Build Web Server(Pod)
 ROOT
   weblog-web-pod.yml
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  namespace: default
+  labels:
+    app: weblog
+    type: frontend
+spec:
+  containers:
+  - name: nginx
+    image: weblog-web:v1.0.0
+    imagePullPolicy: Never
+    ports:
+    - containerPort: 80
+    env:
+    - name: "APPLICATION_HOST"
+      value: "app-svc:3000"
+```
+
 #### Senario
-1. Create ConfigMap,Deployment,Service
+1. Create Pod
+kubectl apply -f weblog-web-pod.yml
+
 2. Check web pod's ip
+kubectl get pod -o wide(get pod nginx's ip )
+
 3. Access debug pod
+kubectl exec -it debug sh
+
 4. Access Web Server
-5. Check accessed Web Server's log
+curl $IP
+
+5. Check accessed Web Server's log(check every nodeapp pod)
+kubectl log pod/$nodeapp
 
 ### 15.Build Web Server(Pod + ConfigMap)
 ROOT
   weblog-web-pod+configmap.yml
+```yml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: default
+  labels:
+    app: weblog
+    type: frontend
+data:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  auto;
 
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+
+    events {
+        worker_connections  1024;
+    }
+
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /var/log/nginx/access.log  main;
+
+        sendfile        on;
+
+        keepalive_timeout  65;
+
+        server_tokens   off;
+
+        proxy_cache_path /var/cache/nginx keys_zone=STATIC:10m max_size=1g inactive=10d;
+        proxy_temp_path  /var/cache/nginx/tmp;
+
+        server {
+            listen        80;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Forwarded-Server $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+            location / {
+                proxy_pass http://${APPLICATION_HOST}/;
+            }
+
+            location /public/ {
+                proxy_pass http://${APPLICATION_HOST}/public/;
+                proxy_ignore_headers Cache-Control Expires;
+                proxy_buffering on;
+                proxy_cache STATIC;
+                proxy_cache_valid any 10d;
+                add_header X-Nginx-Cache $upstream_cache_status;
+            }
+        }
+
+        # include /etc/nginx/conf.d/*.conf;
+        # ConfigMap
+    }
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  namespace: default
+  labels:
+    app: weblog
+    type: frontend
+spec:
+  containers:
+  - name: nginx
+    image: weblog-web:v1.0.0
+    imagePullPolicy: Never
+    ports:
+    - containerPort: 80
+    env:
+    - name: "APPLICATION_HOST"
+      value: "app-svc:3000"
+    volumeMounts:
+    - name: config-volume
+      mountPath: /home/nginx
+  volumes:
+  - name: config-volume
+    configMap:
+      name: nginx-config
+
+```
 #### Senario
 1. Create ConfigMap,Pod
-2. Access Web Server's Pod, and check it used ConfigMap
-3. Check Web Server's Pod ip
-4. Access debug pod
-5. Check can access Web Server's pod
+kubectl apply -f weblog-web-pod+configmap.yml
 
+2. Access Web Server's Pod, and check it used ConfigMap
+kubectl exec -it nginx sh
+cat /etc/nginx/nginx.conf
+
+3. Check Web Server's Pod ip
+kubectl get pod -o wide
+
+4. Access debug pod
+kubectl exec -it debug sh
+
+5. Check can access Web Server's pod
+cat $IP
+
+6. Delete Pod,ConfigMap
 ### 16.Build Web Server(Deployment)
 ROOT
   weblog-web-deployment.yml
+```yml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: default
+  labels:
+    app: weblog
+    type: frontend
+data:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  auto;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+
+    events {
+        worker_connections  1024;
+    }
+
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /var/log/nginx/access.log  main;
+
+        sendfile        on;
+
+        keepalive_timeout  65;
+
+        server_tokens   off;
+
+        proxy_cache_path /var/cache/nginx keys_zone=STATIC:10m max_size=1g inactive=10d;
+        proxy_temp_path  /var/cache/nginx/tmp;
+
+        server {
+            listen        80;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Forwarded-Server $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+            location / {
+                proxy_pass http://${APPLICATION_HOST}/;
+            }
+
+            location /public/ {
+                proxy_pass http://${APPLICATION_HOST}/public/;
+                proxy_ignore_headers Cache-Control Expires;
+                proxy_buffering on;
+                proxy_cache STATIC;
+                proxy_cache_valid any 10d;
+                add_header X-Nginx-Cache $upstream_cache_status;
+            }
+        }
+
+        # include /etc/nginx/conf.d/*.conf;
+        # ConfigMap
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: default
+  labels:
+    app: weblog
+    type: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: weblog
+      type: frontend
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  revisionHistoryLimit: 14
+  template:
+    metadata:
+      name: nginx
+      namespace: default
+      labels:
+        app: weblog
+        type: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: weblog-web:v1.0.0
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        env:
+        - name: "APPLICATION_HOST"
+          value: "app-svc:3000"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /home/nginx
+      volumes:
+      - name: config-volume
+        configMap:
+          name: nginx-config
+
+```
 #### Senario
 1. Create ConfigMap,Deployment
-2. Check Web Server's Pod ip 
+kubectl apply -f weblog-web-deployment.yml
+
+2. Check Web Server's Pod ip (check pod $nginx ip )
+kubectl get pod -o wide
+
 3. Access debug pod
+kubectl exec -it debug sh
+
 4. Check Web Server's either pod
+curl $NginxPod IP
+
+5. Delete ConfigMap,Deployment
+kubectl delete -f weblog-web-deployment.yml
+
 ### 17.Build Web Server(Service)
 ROOT
   weblog-web-fullset.yml
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc
+  namespace: default
+  labels:
+    app: weblog
+    type: frontend
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: weblog
+    type: frontend
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: default
+  labels:
+    app: weblog
+    type: frontend
+data:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  auto;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+
+    events {
+        worker_connections  1024;
+    }
+
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /var/log/nginx/access.log  main;
+
+        sendfile        on;
+
+        keepalive_timeout  65;
+
+        server_tokens   off;
+
+        proxy_cache_path /var/cache/nginx keys_zone=STATIC:10m max_size=1g inactive=10d;
+        proxy_temp_path  /var/cache/nginx/tmp;
+
+        server {
+            listen        80;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Forwarded-Server $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+            location / {
+                proxy_pass http://${APPLICATION_HOST}/;
+            }
+
+            location /public/ {
+                proxy_pass http://${APPLICATION_HOST}/public/;
+                proxy_ignore_headers Cache-Control Expires;
+                proxy_buffering on;
+                proxy_cache STATIC;
+                proxy_cache_valid any 10d;
+                add_header X-Nginx-Cache $upstream_cache_status;
+            }
+        }
+
+        # include /etc/nginx/conf.d/*.conf;
+        # ConfigMap
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: default
+  labels:
+    app: weblog
+    type: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: weblog
+      type: frontend
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  revisionHistoryLimit: 14
+  template:
+    metadata:
+      name: nginx
+      namespace: default
+      labels:
+        app: weblog
+        type: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: weblog-web:v1.0.0
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        env:
+        - name: "APPLICATION_HOST"
+          value: "app-svc:3000"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /home/nginx
+      volumes:
+      - name: config-volume
+        configMap:
+          name: nginx-config
+
+```
 #### Senario
 1. Create Config,Deployment
-2. Access debug pod
-3. Check can access web server's service
+kubectl apply -f weblog-web-fullset.yml
+kubectl get pod,svc
 
+2. Access debug pod
+kubectl exec -it debug sh
+
+3. Check can access web server's service
+curl http://web-svc
 ### 18.Publish Web Server(Ingress)
 ROOT
   weblog-ingress.yml
+```
 
+```
 #### Senario
 1. Create Ingress
 2. Access minikube
