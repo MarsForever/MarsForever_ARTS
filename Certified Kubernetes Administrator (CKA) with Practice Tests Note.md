@@ -225,3 +225,6 @@
 #### Curriculum
 
 https://github.com/cncf/curriculum/blob/master/certified_kubernetes_administrator_exam_v1.15.pdf
+
+
+#### Other Info
