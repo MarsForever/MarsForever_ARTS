@@ -14,6 +14,11 @@
 * 没有文字的房间 =》 把书架盖起来
 * 桌子前没有物品 
 
+
+#### login web
+https://www.examslocal.com/Candidate
+
+
 #### Experience
 ##### 真题
 CKA考试经验总结
@@ -47,6 +52,21 @@ https://kubernetes.io/docs/
 https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands
 https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/
 
+
+CKA + CKAD Exam Tips
+https://training.linuxfoundation.org/wp-content/uploads/2020/01/Important-Tips-CKA-CKAD-01.28.2020.pdf
+CKA + CKAD Candidate Handbook
+https://training.linuxfoundation.org/wp-content/uploads/2020/01/CKA-CKAD-Candidate-Handbook-v1.8.pdf
+CKA + CKAD FAQ
+https://training.linuxfoundation.org/wp-content/uploads/2020/01/CKA-CKAD-FAQ-01.28.2020.pdf
+考试小贴士
+https://training.linuxfoundation.cn/ueditor/php/upload/file/20200131/1580432116220882.pdf
+cka以及ckad常见问题
+https://training.linuxfoundation.cn/ueditor/php/upload/file/20200131/1580432142740915.pdf
+cka以及ckad考生手册
+https://training.linuxfoundation.cn/ueditor/php/upload/file/20200131/1580432168844194.pdf
+保密协议
+https://training.linuxfoundation.org/wp-content/uploads/2019/05/Certification-and-Confidentiality-Agreement-CNCF-v1.2.pdf
 
 
 #### coupon 使用
