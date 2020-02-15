@@ -226,15 +226,43 @@
       
          ETCD can have its own CA. So this may be a different CA certificate than the one used by kube-api server.
          
-         1. cat /etc/kubernetes/manifests/etcd.yaml | grep --trusted-ca-file
+         1. cat /etc/kubernetes/manifests/etcd.yaml | grep trusted-ca-file
          
-      6. ????
+      6. What is the Common Name (CN) configured on the Kube API Server Certificate?
       
-         1. openssl x509 -in /etc/kubernetes/pki/apiserver.crt  -text | grep CN
+         OpenSSL Syntax: `openssl x509 -in file-path.crt -text -noout`
+      
+          1. openssl x509 -in /etc/kubernetes/pki/apiserver.crt  -text | grep CN
       
       7. What is the name of the CA who issued the Kube API Server Certificate?
       
          1. openssl x509 -in /etc/kubernetes/pki/apiserver.crt  -text | grep -i issuer
+         
+      8. Which of the below alternate names is not configured on the Kube API Server Certificate?
+      
+         1. openssl x509 -in /etc/kubernetes/pki/apiserver.crt  -text | grep $name
+      
+      9. What is the Common Name (CN) configured on the ETCD Server certificate?
+      
+         1. openssl x509 -in /etc/kubernetes/pki/etcd/server.crt -text | grep CN
+      
+      10. How long, from the issued date, is the Kube-API Server Certificate valid for?
+      
+          File: `/etc/kubernetes/pki/apiserver.crt`
+          
+          	1.  `openssl x509 -in /etc/kubernetes/pki/apiserver.crt -text`
+          
+      11. How long, from the issued date, is the Root CA Certificate valid for?
+      
+          File: `/etc/kubernetes/pki/ca.crt`
+      
+          	1.	openssl x509 -in /etc/kubernetes/pki/ca.crt -text 
+      
+      12. Kubectl suddenly stops responding to your commands. Check it out! Someone recently modified the `/etc/kubernetes/manifests/etcd.yaml` file
+      
+          You are asked to investigate and fix the issue. Once you fix the issue wait for sometime for kubectl to respond. Check the logs of the ETCD container.
+      
+          ​	1. 
 
 13. ### Storage(7%)
 

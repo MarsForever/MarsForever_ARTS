@@ -39,6 +39,18 @@ awk ‘{print $num}’ specific nth keyword \
 
 #### kubectl completion
 source < (kubectl completion bash)
+
+
+#### 创建Pod
+kubectl run <podname> --image=<imagename> --restart=Never -n <namespace>
+#### 创建Deployment
+kubectl run <deploymentname> --image=<imagename> -n <namespace>
+#### 暴露Service
+kubectl expose <deploymentname> --port=<portNo.> --name=<svcname>
+#### 初次生成
+kubectl run <podname> --image=<imagename> --restart=Never --dry-run -o yaml > <题目名称>.yaml
+
+
 #### Experience
 ##### 真题
 CKA考试经验总结 2019/1/19\
@@ -101,8 +113,10 @@ minikubeやGKE（Google Kubernetes Engine）で実際に操作することで理
 ##### bookmark
 https://kubernetes.io/docs/
 https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands
-https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/
+https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/
 
+https://kubernetes.io/docs/home/
+https://kubernetes.io/blog/
 
 CKA + CKAD Exam Tips \
 https://training.linuxfoundation.org/wp-content/uploads/2020/01/Important-Tips-CKA-CKAD-01.28.2020.pdf \
