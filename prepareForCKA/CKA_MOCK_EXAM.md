@@ -604,7 +604,7 @@ Create NetworkPolicy, by the name ingress-to-nptest that allows incoming connect
 
 ```sh
 Answer:
-kubectl run --generator=run-pod/v1 test-np --image=busybox:1.28 --rm -it -- sh
+kubectl run --generator=run-pod/v1 np-test-1 --image=busybox:1.28 --rm -it -- sh
 nc -z -v -w 2 np-test-service 80
 
 #Check network policy
