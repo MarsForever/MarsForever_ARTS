@@ -207,14 +207,34 @@
 
    1. View Certificate Details
       1. Identify the certificate file used for the `kube-api server`
+         
          1. kubectl describe pod  kube-apiserver-master -n kube-system| grep tls-cert-file
+         
       2. Identify the Certificate file used to authenticate `kube-apiserver` as a client to `ETCD` Server
+         
          1. kubectl describe pod kube-apiserver-master -n kube-system | grep  etcd-certfile
+         
       3. Identify the key used to authenticate `kubeapi-server` to the `kubelet` server
+         
          1. kubectl describe pod kube-apiserver-master -n kube-system | grep  kubelet | grep key
+         
       4. Identify the ETCD Server Certificate used to host ETCD server
+         
          1. cat /etc/kubernetes/manifests/etcd.yaml | grep server.crt
-      5. 
+         
+      5. Identify the ETCD Server CA Root Certificate used to serve ETCD Server
+      
+         ETCD can have its own CA. So this may be a different CA certificate than the one used by kube-api server.
+         
+         1. cat /etc/kubernetes/manifests/etcd.yaml | grep --trusted-ca-file
+         
+      6. ????
+      
+         1. openssl x509 -in /etc/kubernetes/pki/apiserver.crt  -text | grep CN
+      
+      7. What is the name of the CA who issued the Kube API Server Certificate?
+      
+         1. openssl x509 -in /etc/kubernetes/pki/apiserver.crt  -text | grep -i issuer
 
 13. ### Storage(7%)
 
