@@ -82,7 +82,24 @@ https://lupeier.com/post/cka-preparation-experience/
 6. Create a pod names test includes four images nginx,reds,memcached, busybox
 
    1. kubectl run test --image=nginx --image=redis --image=memcached --image=busybox --restart=Never -n $namespace
+   
 7. Create a pod the image is nginx ,volume name is cache-volume under /data folder,and volume is non-Persistent
+
+8. kubectl get svc $name -o wide
+
+   kubectl top pod -l ‘labels=label’
+
+9. kubectl run nginx-app --image=nginx --restart=Never --port=80
+
+   kubectl create svc nodeport nginx-app --tcp=80:80 --dry-run -o yaml > 9.yaml
+
+   add selector same to pod‘sl labels
+
+10. kubectl run nginx --image=nginx --dry-run -o yaml > 10.yaml
+
+    change apiVersion and kind,delete replicas
+
+11. kubectl scale --replicas=$num deployment nginx-app
 
 
 ​    
