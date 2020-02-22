@@ -178,6 +178,8 @@ ETCDCTL_API=3 etcdctl --version
 
 cd /etc/kubernetes/manifests/
 
+#### mark problem has been changed
+cat etcd.yaml
 ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernets/pki/etcd/healthcheck-client.key member list
 
 #save
@@ -374,7 +376,6 @@ https://kubernetes.io/docs/tasks/tls/managing-tls-in-a-cluster/
 ```
 
 
-
 ```yaml
 No.7
 Create an nginx pod called nginx-resolver using image nginx, expose it internally with a service called nginx-resolver-service. Test that you are able to look up the service and pod names from within the cluster. Use the image: busybox:1.28 for dns lookup. Record results in /root/nginx.svc and /root/nginx.pod
@@ -395,13 +396,10 @@ kubectl expose pod nginx-resolver --name=nginx-resolver-service  --port=80 --tar
 kubectl describe svc nginx-resolver-service
 kubectl get pod nginx-resolver -o wide
 
-#nslookup 
-#It doesn't work,I think the image is not good.
-kubectl run --generator=run-pod/v1 test-nslookup --image=busybox:1.28 --rm -it -- nslookup nginx-resolver-service
-#method1 :copy the result for the logs,without server
-kubectl logs test-nslookup
-#method2 : didn't work
-kubectl run --generator=run-pod/v1 test-nslookup --image=busybox:1.28 --rm -it -- nslookup nginx-resolver-service > /root/nginx.svc
+
+kubectl create -f https://k8s.io/examples/admin/dns/busybox.yaml
+kubectl exec -it busybox -- nslookup nginx-resolver-service > /root/nginx.svc
+kubectl exec -it busybox -- nslookup > /root/nginx.pod
 
 ```
 
@@ -435,34 +433,19 @@ mkdir manifests
 #Back to master
 logout
 
-kubectl run --generator=run-pod/v1 nginx-critical --image=nginx --dry-run -o yaml > nginx-critical.yaml
-cat nginx-critical.yaml
+kubectl run --generator=run-pod/v1 nginx-critical --image=nginx --dry-run -o yaml > 8.yaml
+scp 8.yaml root@node01:/root/
 #Login to node01
 ssh node01
 docker ps | grep -i nginx
 
 #create static in /etc/kubernetes/manifests
-cd /etc/kubernetes
-vim nginx-critical.yaml
+mv 8.yaml /etc/kubernetes/manifests
+docker ps | grep -i nginx
 
-apiVersion: v1
-kind: Pod
-metadata:
-  creationTimestamp: null
-  labels:
-    run: nginx-critical
-  name: nginx-critical
-spec:
-  containers:
-  - image: nginx
-    name: nginx-critical
-    resources: {}
-  dnsPolicy: ClusterFirst
-  restartPolicy: Always
-status: {}
-```
-
-
+# back to master
+logout
+kubectl get pod | grep -i nginx-critical
 
 ### Mock Exam - 3
 
