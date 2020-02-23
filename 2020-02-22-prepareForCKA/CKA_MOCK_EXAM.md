@@ -174,18 +174,18 @@ Take a backup of the etcd cluster and save it to /tmp/etcd-backup.db
 
 ```sh
 Answer:
-ETCDCTL_API=3 etcdctl --version
+ETCDCTL_API=3 etcdctl version
 
 cd /etc/kubernetes/manifests/
 
-#### mark problem has been changed
+#### find cacert,cert,key file
 cat etcd.yaml
-ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernets/pki/etcd/healthcheck-client.key member list
+ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernets/pki/etcd/server.key member list
 
 #save
-ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key snapshot save /tmp/etcd-backup.db
+ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernets/pki/etcd/server.key snapshot save /tmp/etcd-backup.db
 #verify the status
-ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernets/pki/etcd/healthcheck-client.key snapshot status /tmp/etcd-backup.db -w table
+ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernets/pki/etcd/server.key snapshot status /tmp/etcd-backup.db -w table
 
 https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#backing-up-an-etcd-cluster
 ```
