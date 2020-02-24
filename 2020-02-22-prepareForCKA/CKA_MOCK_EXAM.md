@@ -123,10 +123,13 @@ The web application listens on port 8080
 kubectl expose deploy hr-web-app --name=hr-web-app-service --port=33082
 
 ```
-正解
+正解 = I dont know
 kubectl expose deployment hr-web-app --type=NodePort --port=8080 --name=hr-web-app-service --dry-run -o yaml > hr-web-app-service.yaml
 ```
-
+hint
+```
+Run the command kubectl expose deployment hr-web-app --type=NodePort --port=8080 --name=hr-web-app-service --dry-run -o yaml > hr-web-app-service.yaml to generate a service definition file. Then edit the nodeport in it and create a service.
+```
 ```yaml
 No.11
 
@@ -578,13 +581,14 @@ metadata:
     run: non-root-pod
   name: non-root-pod
 spec:
+  securityContext:
+    runAsUser: 1000
+    fsGroup: 2000
   containers:
   - image: redis:alpine
     imagePullPolicy: IfNotPresent
     name: non-root-pod
-  securityContext:
-    runAsUser: 1000
-    fsGroup: 2000
+
 ```
 
 ```html
@@ -627,6 +631,8 @@ spec:
 #Check again
 kubectl run --generator=run-pod/v1 test-np --image=busybox:1.28 --rm -it -- sh
 nc -z -v -w 2 np-test-service 80
+
+# nc something
 ```
 
 ```html
@@ -646,6 +652,7 @@ Answer:
 #Get nodes
 kubectl get nodes
 
+# add something
 kubectl taint node node01 env_type=production:NoSchedule
 kubectl describe nodes node01 | grep -i taint
 
@@ -667,6 +674,7 @@ spec:
     operator: Equal
     value: production
 ```
+https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 
 ```html
 No.7
@@ -699,6 +707,7 @@ Fix /root/super.kubeconfig
 
 ```sh
 Answer:
+# how do you know
 cd .kube/
 ls -ltr
 #Check server ip and port
@@ -737,8 +746,4 @@ grep contro1ler kube-controller-manager.yaml | wc -l
 sed -i 's/contro1ler/conroller/g' kube-controller-manager.yaml
 grep controller kube-contro1ler-manager.yaml | wc -l
 grep controller kube-controller-manager.yaml | wc -l
-
-
-
-
 ```

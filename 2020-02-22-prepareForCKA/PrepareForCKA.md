@@ -102,11 +102,22 @@ https://lupeier.com/post/cka-preparation-experience/
 11. kubectl scale --replicas=$num deployment nginx-app
 
 
-​    
-
 
 CKA 习题和真题汇总 \
-https://blog.csdn.net/fly910905/article/details/103553839 
+part 1 \
+https://blog.csdn.net/fly910905/article/details/103138549 \
+part 2 \
+https://blog.csdn.net/fly910905/article/details/103232694 \
+part 3 \
+https://blog.csdn.net/fly910905/article/details/103232733 \
+part 4 \
+https://blog.csdn.net/fly910905/article/details/103175716 \
+part 5 \
+https://blog.csdn.net/fly910905/article/details/103232443 \
+part 6 \
+https://blog.csdn.net/fly910905/article/details/103232471 \
+CKA真题：手动配置TLS BootStrap \
+https://blog.csdn.net/fly910905/article/details/103524438 \
 
 CKA考试总结分享 \
 https://blog.51cto.com/9406836/2418780 
