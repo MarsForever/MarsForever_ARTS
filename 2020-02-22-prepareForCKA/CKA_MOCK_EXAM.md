@@ -482,6 +482,24 @@ kubectl create sa pvviewer
 kubectl create clusterrole  pvviewer-role --resource=persistentvolumes  --verb=list
 #Create cluster role binding
 kubectl create clusterrolebinding pvviewer-role-binding --clusterrole=pvviewer-role --serviceaccount=default:pvviewer
+kubectl run pvviewer --image=redis --generator=run-pod/v1 --dry-run -o yaml > 1.yaml
+#Verify
+kubectl describe pod pvviewer 
+```html
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pvviewer
+  name: pvviewer
+spec:
+  containers:
+  - image: redis
+    imagePullPolicy: IfNotPresent
+    name: pvviewer
+  serviceAccountName: pvviewer
+  ```
 
 #https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection
 ```
@@ -600,7 +618,7 @@ Create NetworkPolicy, by the name ingress-to-nptest that allows incoming connect
 
 ```sh
 Answer:
-kubectl run --generator=run-pod/v1 np-test-1 --image=busybox:1.28 --rm -it -- sh
+kubectl run --generator=run-pod/v1 busybox --image=busybox:1.28 --command -- sleep 3600 --rm -it -- sh
 nc -z -v -w 2 np-test-service 80
 
 #Check network policy
