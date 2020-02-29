@@ -103,7 +103,7 @@ https://lupeier.com/post/cka-preparation-experience/
 
 
 
-CKA 习题和真题汇总 \
+CKA 习题和真题汇总 2019/11/19\
 part 1 \
 https://blog.csdn.net/fly910905/article/details/103138549 \
 part 2 \
@@ -119,13 +119,18 @@ https://blog.csdn.net/fly910905/article/details/103232471 \
 CKA真题：手动配置TLS BootStrap \
 https://blog.csdn.net/fly910905/article/details/103524438 \
 
-CKA考试总结分享 \
+2019/12 \
+https://blog.csdn.net/fly910905/article/details/103652034
+
+CKA考试总结分享 2019/07/10  \
 https://blog.51cto.com/9406836/2418780 
 
-kubernetes学习：CKA考试题 \
-https://www.cnblogs.com/haoprogrammer/p/11149661.html 
+kubernetes学习：CKA考试题 2019/07/13\
+https://www.cnblogs.com/haoprogrammer/p/11149661.html \
+cka注意点  \
+https://www.cnblogs.com/haoprogrammer/p/11181861.html
 
-CKA题库 \
+CKA题库 2019/11/17\
 https://www.jxhs.me/2019/11/17/CKA%E9%A2%98%E5%BA%93/ \
 ##### 提示
 https://qiita.com/oke-py/items/46ecb3f530a92273b130

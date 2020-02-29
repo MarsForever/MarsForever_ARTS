@@ -123,8 +123,9 @@ The web application listens on port 8080
 kubectl expose deploy hr-web-app --name=hr-web-app-service --port=33082
 
 ```
-正解 = I dont know
 kubectl expose deployment hr-web-app --type=NodePort --port=8080 --name=hr-web-app-service --dry-run -o yaml > hr-web-app-service.yaml
+kubectl edit svc hr-web-app-service.yaml
+change nodeport to 33082
 ```
 hint
 ```
