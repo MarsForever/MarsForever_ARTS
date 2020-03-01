@@ -1,3 +1,4 @@
+#### download
 Apache + MariaDB + PHP + Perl
 https://www.apachefriends.org/index.html
 
@@ -11,10 +12,10 @@ The $port must be not be used by other applications
 config=> Service and Port Settings
 the port must same to apache settings
 
-IDE phpstorm
+#### IDE phpstorm
 https://www.jetbrains.com/phpstorm/
 
-composer
+#### composer
 https://getcomposer.org/
 download
 https://getcomposer.org/Composer-Setup.exe
@@ -22,6 +23,8 @@ https://getcomposer.org/Composer-Setup.exe
 Search package for composer
 https://packagist.org/
 
+
+#### Create new composer
 new start cmd
 type composer
 
@@ -32,6 +35,33 @@ version 5.2.29
 composer create-project --prefer-dist laravel/laravel cms 5.2.29
 latest
 composer create-project --prefer-dist laravel/laravel cms
+
+Create new project on git command prompt
+cd xampp/htdocs/
+composer create-project --prefer-dist laravel/laravel todoapp 5.2.29
+edit host file
+C:\Windows\System32\drivers\etc\host
+```
+127.0.0.1       localhost
+127.0.0.1       cms.dev
+127.0.0.1       todoapp.dev
+```
+C:\xampp\apache\conf\extra\httpd-vhosts.conf
+```
+<VirtualHost *:80>
+    DocumentRoot "C:/xampp/htdocs/"
+    ServerName localhost
+</VirtualHost>
+<VirtualHost *:80>
+    DocumentRoot "C:/xampp/htdocs/cms/public"
+    ServerName cms.dev
+</VirtualHost>
+<VirtualHost *:80>
+    DocumentRoot "C:/xampp/htdocs/apptodo/public"
+    ServerName apptodo.dev
+</VirtualHost>
+```
+and restart xampp apache
 
 
 
