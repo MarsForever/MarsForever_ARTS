@@ -15,6 +15,11 @@ the port must same to apache settings
 #### IDE phpstorm
 https://www.jetbrains.com/phpstorm/
 
+##### windows
+setting > appearance & Behavior \
+Theme:darcula \
+Editor > Color Scheme \
+Monokai \
 #### composer
 https://getcomposer.org/
 download
@@ -43,25 +48,94 @@ edit host file
 C:\Windows\System32\drivers\etc\host
 ```
 127.0.0.1       localhost
-127.0.0.1       cms.dev
-127.0.0.1       todoapp.dev
+127.0.0.1       cms.test
+127.0.0.1       todoapp.test
 ```
 C:\xampp\apache\conf\extra\httpd-vhosts.conf
 ```
-<VirtualHost *:80>
+<VirtualHost *:3000>
     DocumentRoot "C:/xampp/htdocs/"
     ServerName localhost
 </VirtualHost>
-<VirtualHost *:80>
+<VirtualHost *:3000>
     DocumentRoot "C:/xampp/htdocs/cms/public"
-    ServerName cms.dev
+    ServerName cms.test
 </VirtualHost>
-<VirtualHost *:80>
+<VirtualHost *:3000>
     DocumentRoot "C:/xampp/htdocs/apptodo/public"
-    ServerName apptodo.dev
+    ServerName apptodo.test
 </VirtualHost>
 ```
 and restart xampp apache
+
+#### Use PhpStorm
+open project
+C:\xampp\htdocs\cms
+
+#### Lravel Fundamentals Routes
+https://laravel.com/docs/5.2/routing
+app/config/app.php \
+class provider \
+
+app/config/database.php \
+database setting \
+env => .env file \
+
+app/config/mail.php \
+mail configrations \
+
+app/database/factories/ModelFactory.php \
+create contents,post information \
+app/database/factories/migrations \
+create tables \
+
+storage \
+package you will use \
+
+##### Routes part
+C:\xampp\htdocs\cms
+app/Http/routes.php \
+
+```php
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Application Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register all of the routes for an application.
+| It's a breeze. Simply tell Laravel the URIs it should respond to
+| and give it the controller to call when that URI is requested.
+|
+*/
+
+Route::get('', function () {
+    return view('welcome');
+});
+
+Route::get('/about', function () {
+    return "Hi about page";
+});
+
+Route::get('/contact', function () {
+    return "welcome to contact me";
+});
+
+Route::get('/post/{id}/{name}',function($id, $name){
+    return "This is post number ". $id . " ". $name;
+});
+
+Route::get('admin/posts/example', array('as'=>'admin.home' ,function(){
+    $url = route('admin.home');
+
+    return "This url is " . $url;
+}));
+```
+
+
+
+
 
 
 
