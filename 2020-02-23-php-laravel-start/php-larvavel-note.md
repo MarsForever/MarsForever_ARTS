@@ -72,7 +72,7 @@ and restart xampp apache
 open project
 C:\xampp\htdocs\cms
 
-#### Lravel Fundamentals Routes
+#### Lravel Fundamentals - Routes
 https://laravel.com/docs/5.2/routing
 app/config/app.php \
 class provider \
@@ -132,6 +132,65 @@ Route::get('admin/posts/example', array('as'=>'admin.home' ,function(){
     return "This url is " . $url;
 }));
 ```
+###### show url and route
+git command prompt
+/c/xampp/htdocs/cms
+php artisan route:list
+
+###### create controller
+php artisan make:controller $name
+###### create controller and with some methods
+php artisan make:controller --resource $name
+
+####### Example1
+routes.php
+```php
+Route::get('/post','PostsController@index');
+```
+PostsController.php
+```php
+   public function index()
+    {
+        //
+        return "its working the number is ";
+    }
+```
+####### Example2
+routes.php
+```php
+Route::get('/post/{id}','PostsController@index');
+```
+PostsController.php
+```php
+   public function index($id)
+    {
+        //
+        return "its working the number is " . $id;
+    }
+```
+https://laravel.com/docs/5.2/controllers
+
+####### Example3
+routes.php
+```php
+Route::resource('posts', 'PostsController');
+```
+PostsController.php
+```php
+    public function show($id)
+    {
+        //
+        return "this is the show method mars " . $id;
+    }
+```
+
+
+
+
+
+
+
+
 
 
 
