@@ -132,6 +132,10 @@ https://www.cnblogs.com/haoprogrammer/p/11181861.html
 
 CKA题库 2019/11/17\
 https://www.jxhs.me/2019/11/17/CKA%E9%A2%98%E5%BA%93/ \
+
+CKA 2019/07/25 \
+https://www.einsier.com/posts/for-cka/ \
+
 ##### 提示
 https://qiita.com/oke-py/items/46ecb3f530a92273b130
 
