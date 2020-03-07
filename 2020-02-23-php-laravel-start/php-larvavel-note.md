@@ -184,17 +184,54 @@ PostsController.php
     }
 ```
 
+#### Lravel Fundamentals - Database
+
+config file \
+
+config/database.php
 
 
 
+https://github.com/vlucas/phpdotenv
 
 
 
+##### Create database
+
+cms.test:3000/phpmyadmin
+
+create table which name laravel_cms
 
 
 
+.env
 
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel_cms
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
+C:\xampp\htdocs\cms> php artisan migrate
 
+You can check there is 3 tables in the following url
 
+cms.test:3000/phpmyadmin
+
+##### Create table
+
+php artisan make:migration create_posts_table --create="posts" \
+
+it will create a file under database/migrations/xxx_create_posts_table.php \
+
+php artisan migrate \
+
+it will create the table on the database \
+
+php artisan migrate:rollback \
+
+It will rollback the operation
 
