@@ -317,21 +317,61 @@ php artisan migrate:status --no-ansi
 
 #### Section9: Laravel Fundamentals - Raw SQL Queries
 
+add stuff at $/app/Http/routes.php
+
 1. Inserting data
 
-   
+   ```php
+   Route::get('/insert',function(){
+       DB::insert('insert into posts(title,content) value(?,?)',['PHP with Laravel','Laravel is the best thing that has happened to PHP']);
+       DB::insert('insert into posts(title,content) value(?,?)',['php 2 ','php content']);
+   });
+   ```
+
+   access cms.test:3000/insert
+
+   check database laravel_cms's table posts has been added two data
 
 2. Reading data
 
-   
+   ```php
+   //Reading data
+   Route::get('/read',function(){
+       $results = DB::select('select * from posts where id = ?', [1]);
+   //output array in details
+       return var_dump($results);
+   //get first data of posts
+       return $results;
+   //get first data of posts's title
+       foreach($results as $post){
+           return $post->title;
+       }
+   });
+   ```
 
 3. Updating data
+
+   ```php
+   //Updating data
+   Route::get('/update',function(){
+      $updated = DB::update('update posts set title = "update title" where id= ?', [1]);
+      return $updated;
+   });
+   ```
 
    
 
 4. Deleting data
 
+```php
+//Deleting data
+Route::get('/delete',function(){
+    $delete = DB::delete('delete from posts where id = ?',[1]);
+    return $delete;
+});
+```
 
+[Database Raw SQL Queries 5.2](https://laravel.com/docs/5.2/database)
 
 
 
