@@ -1,3 +1,4 @@
+### Section2 Windows - Local Environment Setup
 #### download
 Apache + MariaDB + PHP + Perl
 https://www.apachefriends.org/index.html
@@ -72,7 +73,7 @@ and restart xampp apache
 open project
 C:\xampp\htdocs\cms
 
-#### Section 4:Lravel Fundamentals - Routes
+### Section 4:Lravel Fundamentals - Routes
 https://laravel.com/docs/5.2/routing
 app/config/app.php \
 class provider \
@@ -92,7 +93,7 @@ create tables \
 storage \
 package you will use \
 
-##### Routes part
+#### Routes part
 C:\xampp\htdocs\cms
 app/Http/routes.php \
 
@@ -137,15 +138,15 @@ git command prompt
 /c/xampp/htdocs/cms
 php artisan route:list
 
-#### Section 5: Laravel Fundamentals - Controllers
+### Section 5: Laravel Fundamentals - Controllers
 
-###### create controller
+##### create controller
 
 php artisan make:controller $name
 ###### create controller and with some methods
 php artisan make:controller --resource $name
 
-####### Example1
+###### Example1
 routes.php
 ```php
 Route::get('/post','PostsController@index');
@@ -158,7 +159,7 @@ PostsController.php
         return "its working the number is ";
     }
 ```
-####### Example2
+###### Example2
 routes.php
 ```php
 Route::get('/post/{id}','PostsController@index');
@@ -173,7 +174,7 @@ PostsController.php
 ```
 https://laravel.com/docs/5.2/controllers
 
-####### Example3
+###### Example3
 routes.php
 ```php
 Route::resource('posts', 'PostsController');
@@ -187,28 +188,17 @@ PostsController.php
     }
 ```
 
-#### Section 8:Lravel Fundamentals - Database
-
+### Section 8:Lravel Fundamentals - Database
 config file \
-
-config/database.php
-
-
+config/database.php \
 
 https://github.com/vlucas/phpdotenv
 
 
-
-##### Create database
-
-cms.test:3000/phpmyadmin
-
-click database
-
-create table which name laravel_cms(Collation)
-
-
-
+#### Create database
+cms.test:3000/phpmyadmin \
+click database \
+create table which name laravel_cms(Collation) \
 .env (default setting)
 
 ```env
@@ -219,35 +209,22 @@ DB_DATABASE=laravel_cms
 DB_USERNAME=root
 DB_PASSWORD=
 ```
-
 C:\xampp\htdocs\cms> php artisan migrate --no-ansi
-
 ```
 Migrated: 2014_10_12_000000_create_users_table
 Migrated: 2014_10_12_100000_create_password_resets_table
 ```
-
-You can check there is 3 tables in the following url
-
+You can check there is 3 tables in the following url \
 cms.test:3000/phpmyadmin
-
-##### Create table and drop it
-
+#### Create table and drop it
 php artisan make:migration create_posts_table --create="posts" \
-
 it will create a file under database/migrations/xxx_create_posts_table.php \
-
 php artisan migrate \
-
 it will create the table on the database \
-
 php artisan migrate:rollback \
-
-It will rollback the operation
-
-##### Adding columns to existing tables (don't recommend in prodcution environment)
-php artisan make:migration add_is_admin_column_to_posts_tables --table="posts" --no-ansi
-
+It will rollback the operation \
+#### Adding columns to existing tables (don't recommend in prodcution environment)
+php artisan make:migration add_is_admin_column_to_posts_tables --table="posts" --no-ansi \
 edit 2020_03_14_150640_add_is_admin_column_to_posts_tables.php
 ```php
 <?php
@@ -291,32 +268,22 @@ php artisan migrate
 ```
 Migrated: 2020_03_14_150640_add_is_admin_column_to_posts_tables
 ```
-Check cms.test:3000/phpmyadmin database laravel_cms's post table
-
+Check cms.test:3000/phpmyadmin database laravel_cms's post table \
 [migrate 5.2  documentation](https://laravel.com/docs/5.2/migrations)
 
-
-
 ###### all rollback
-
 php artisan migrate:reset
 
 ###### all migrate
-
 php artisan migrate
 
 ###### Reset and re-run all migrations
-
 php artisan migrate:refresh
 
 ######  Show the status of each migration
-
 php artisan migrate:status --no-ansi
 
-
-
 #### Section9: Laravel Fundamentals - Raw SQL Queries
-
 add stuff at $/app/Http/routes.php
 
 1. Inserting data
@@ -328,12 +295,10 @@ add stuff at $/app/Http/routes.php
    });
    ```
 
-   access cms.test:3000/insert
-
+   access cms.test:3000/insert \
    check database laravel_cms's table posts has been added two data
 
 2. Reading data
-
    ```php
    //Reading data
    Route::get('/read',function(){
@@ -350,7 +315,6 @@ add stuff at $/app/Http/routes.php
    ```
 
 3. Updating data
-
    ```php
    //Updating data
    Route::get('/update',function(){
@@ -359,10 +323,7 @@ add stuff at $/app/Http/routes.php
    });
    ```
 
-   
-
 4. Deleting data
-
 ```php
 //Deleting data
 Route::get('/delete',function(){
@@ -370,8 +331,20 @@ Route::get('/delete',function(){
     return $delete;
 });
 ```
-
 [Database Raw SQL Queries 5.2](https://laravel.com/docs/5.2/database)
 
+Section10: Laravel Fundamentals - Database - Eloquent/ ORM
 
+1. Reading Data
+2. Reading / Finding with Constraints
+3. More way to retrieve data
+4. Inserting /Saving Data
+5. Creating data and configuring mass assignment
+6. Updating with Eloquent
+7. Deleting Data
+8. Soft Deleting / Trashing
+9. Retrieving deleted / trashed records
+10. Restoring deleted / trashed records
+11. Deleting a record permanently
 
+Section11:Laravel Fundamentals - Database - Eloquent Relationships
