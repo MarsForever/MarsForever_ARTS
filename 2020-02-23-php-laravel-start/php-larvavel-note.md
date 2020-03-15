@@ -72,7 +72,7 @@ and restart xampp apache
 open project
 C:\xampp\htdocs\cms
 
-#### Lravel Fundamentals - Routes
+#### Section 4:Lravel Fundamentals - Routes
 https://laravel.com/docs/5.2/routing
 app/config/app.php \
 class provider \
@@ -137,7 +137,10 @@ git command prompt
 /c/xampp/htdocs/cms
 php artisan route:list
 
+#### Section 5: Laravel Fundamentals - Controllers
+
 ###### create controller
+
 php artisan make:controller $name
 ###### create controller and with some methods
 php artisan make:controller --resource $name
@@ -184,7 +187,7 @@ PostsController.php
     }
 ```
 
-#### Lravel Fundamentals - Database
+#### Section 8:Lravel Fundamentals - Database
 
 config file \
 
@@ -200,11 +203,13 @@ https://github.com/vlucas/phpdotenv
 
 cms.test:3000/phpmyadmin
 
-create table which name laravel_cms
+click database
+
+create table which name laravel_cms(Collation)
 
 
 
-.env
+.env (default setting)
 
 ```env
 DB_CONNECTION=mysql
@@ -215,13 +220,18 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-C:\xampp\htdocs\cms> php artisan migrate
+C:\xampp\htdocs\cms> php artisan migrate --no-ansi
+
+```
+Migrated: 2014_10_12_000000_create_users_table
+Migrated: 2014_10_12_100000_create_password_resets_table
+```
 
 You can check there is 3 tables in the following url
 
 cms.test:3000/phpmyadmin
 
-##### Create table
+##### Create table and drop it
 
 php artisan make:migration create_posts_table --create="posts" \
 
@@ -234,4 +244,94 @@ it will create the table on the database \
 php artisan migrate:rollback \
 
 It will rollback the operation
+
+##### Adding columns to existing tables (don't recommend in prodcution environment)
+php artisan make:migration add_is_admin_column_to_posts_tables --table="posts" --no-ansi
+
+edit 2020_03_14_150640_add_is_admin_column_to_posts_tables.php
+```php
+<?php
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class AddIsAdminColumnToPostsTables extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table('posts', function (Blueprint $table) {
+            //
+
+            $table->string('is_admin')->unsinged();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('posts', function (Blueprint $table) {
+            //
+
+            $table->dropColumn('is_admin');
+        });
+    }
+}
+
+```
+php artisan migrate
+```
+Migrated: 2020_03_14_150640_add_is_admin_column_to_posts_tables
+```
+Check cms.test:3000/phpmyadmin database laravel_cms's post table
+
+[migrate 5.2  documentation](https://laravel.com/docs/5.2/migrations)
+
+
+
+###### all rollback
+
+php artisan migrate:reset
+
+###### all migrate
+
+php artisan migrate
+
+###### Reset and re-run all migrations
+
+php artisan migrate:refresh
+
+######  Show the status of each migration
+
+php artisan migrate:status --no-ansi
+
+
+
+#### Section9: Laravel Fundamentals - Raw SQL Queries
+
+1. Inserting data
+
+   
+
+2. Reading data
+
+   
+
+3. Updating data
+
+   
+
+4. Deleting data
+
+
+
+
 
