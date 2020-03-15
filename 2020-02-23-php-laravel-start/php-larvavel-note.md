@@ -283,7 +283,7 @@ php artisan migrate:refresh
 ######  Show the status of each migration
 php artisan migrate:status --no-ansi
 
-#### Section9: Laravel Fundamentals - Raw SQL Queries
+### Section9: Laravel Fundamentals - Raw SQL Queries
 add stuff at $/app/Http/routes.php
 
 1. Inserting data
@@ -333,18 +333,69 @@ Route::get('/delete',function(){
 ```
 [Database Raw SQL Queries 5.2](https://laravel.com/docs/5.2/database)
 
-Section10: Laravel Fundamentals - Database - Eloquent/ ORM
+### Section10: Laravel Fundamentals - Database - Eloquent/ ORM
 
 1. Reading Data
+
+   - Create a model,it will crate Post.php under app folder.
+
+   php artisan make:model Post
+
+   add following code in routes.php
+
+   ```
+   use App\Post;
+   /*
+   |-------------------------------------------------------------------
+   | ELOQUENT
+   |-------------------------------------------------------------------
+    */
+   
+   Route::get('/read',function(){
+   //    get the first record's title
+       $posts = Post::all();
+       foreach( $posts as $post){
+           echo $post->title . " <br>";
+       }
+   });
+   
+   
+   Route::get('/find',function(){
+      $post = Post::find(1);
+      echo $post->title;
+   });
+   ```
+
+   
+
 2. Reading / Finding with Constraints
+
+   ```
+   // Reading / Finding with Constraints
+   Route::get('/findwhere',function(){
+       $posts = Post::where('id',2)->orderBy('id','desc')->take(2)->get();
+       return $posts;
+   });
+   ```
+
+   
+
 3. More way to retrieve data
+
 4. Inserting /Saving Data
+
 5. Creating data and configuring mass assignment
+
 6. Updating with Eloquent
+
 7. Deleting Data
+
 8. Soft Deleting / Trashing
+
 9. Retrieving deleted / trashed records
+
 10. Restoring deleted / trashed records
+
 11. Deleting a record permanently
 
 Section11:Laravel Fundamentals - Database - Eloquent Relationships
