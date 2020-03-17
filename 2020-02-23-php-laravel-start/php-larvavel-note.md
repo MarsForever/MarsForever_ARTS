@@ -382,13 +382,97 @@ Route::get('/delete',function(){
 
 3. More way to retrieve data
 
+   ```php
+   // More ways to retrieve data
+   Route::get('/findmore',function(){
+      // example 1
+       $posts = Post::findOrFail(1);
+      // example 2
+      // $posts = Post::where('users_count','<',50)->firstOrFail();
+      return $posts;
+   });
+   ```
+
+   
+
 4. Inserting /Saving Data
+
+   ```php
+   // Inserting / Saving Data
+   // example 1
+   Route::get('/basicinsert',function(){
+       $post = new Post;
+       $post->title = 'New Eloquent title insert';
+       $post->content = 'Wow eloquent is very cool, look a t this content';
+       $post->save();
+   });
+   // example 2
+   Route::get('/basicinsert2',function(){
+       $post = Post::find(2);
+       $post->title = 'title 2';
+       $post->content = 'content2';
+       $post->save();
+   });
+   ```
+
+   
 
 5. Creating data and configuring mass assignment
 
+   routes.php
+
+   ```php
+   Route::get('/create',function(){
+       Post::create(['title'=>'the create method', 'content'=>'I am learning about php']);
+   });
+   ```
+
+   Post.php
+
+   ```php
+   class Post extends Model
+   {
+   //    protected $table = 'posts';
+   //    protected $primaryKey = 'post_id';
+       protected $fillable = [
+           'title',
+           'content'
+       ];
+   }
+   ```
+
+   
+
 6. Updating with Eloquent
 
+   ```php
+   Route::get('/update',function(){
+       Post::where('id',2)->where('is_admin',0)->update(['title'=>'New php title','content'=>'I love you']);
+   });
+   ```
+
+   
+
 7. Deleting Data
+
+   ```php
+   //example 1
+   Route::get('delete',function(){
+       $post = Post::find(8);
+       $post->delete();
+   });
+   //example 2
+   Route::get('delete2',function(){
+   // delete id 2   
+       Post::destroy(2);
+   // delete id from 1 to 2    
+       Post::destroy(1,2);
+   // delete data which is_admin is 0    
+       Post::where('is_admin', 0)->delete();
+   });
+   ```
+
+   
 
 8. Soft Deleting / Trashing
 
