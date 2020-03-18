@@ -596,4 +596,111 @@ Route::get('/delete',function(){
 
 [Docs - Eloquent 5.2](https://laravel.com/docs/5.2/eloquent)
 
-Section11:Laravel Fundamentals - Database - Eloquent Relationships
+### Section12:Laravel Fundamentals - Database - Tinker
+
+1. One to One relationship
+
+   add new field user_id to posts table
+
+   ```php
+       public function up()
+       {
+           Schema::create('posts', function (Blueprint $table) {
+               $table->increments('id');
+               $table->integer('user_id')->ungsigned();
+               $table->string('title');
+               $table->string('content');
+               $table->timestamps();
+           });
+       }
+   
+   ```
+
+   refresh database
+
+```cmd
+php artisan migrate:refresh
+```
+
+add some data to table user and table post
+
+users table
+
+```sql
+name,email,password,created_at,updated_at
+```
+
+post table
+
+```sql
+title,content,user_id=1created_at,updated_at,is_admin,
+```
+
+
+
+routes.php
+
+```php
+//  only show the first record
+Route::get('/user/{id}/post',function($id){
+    return User::find($id)->post;
+    return User::find($id)->post->content;
+});
+```
+
+add function post to User.php
+
+```
+<?php
+
+namespace App;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
+class User extends Authenticatable
+{
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name', 'email', 'password',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
+    public function post(){
+        return $this->hasOne('App\Post');
+    }
+}
+```
+
+
+
+1. The inverse relation
+2. One to many relationship
+3. Some random tips
+4. Many to many relations part 1
+5. Many to many relations part 2
+6. Querying intermediate table
+7. Has many through relation part 1
+8. Has many through relation part 2
+9. Polymorphic relation the inverse
+10. Polymorphic relation many to many part 1
+11. Polymorphic relation many to many part 2
+12. Polymorphic relation many to many - retrieving
+13. Polymorphic relation may to many - retrieving owner
+
+### Section13:Laravel Fundamentals - Database - One to One Relationship CRUD
+
+### Section14:Laravel Fundamentals - Database - Eloquent One to Many Relationship CRUD
+
+### Section15:Laravel Fundamentals - Database - Eloquent Many to Many Relationship CRUD
+
