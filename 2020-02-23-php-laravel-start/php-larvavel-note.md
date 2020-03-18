@@ -474,12 +474,126 @@ Route::get('/delete',function(){
 
    
 
-8. Soft Deleting / Trashing
+8. Soft Deleting / Trashing(Logical delete)
+
+   command operation
+
+   ```cmd
+   php artisan make:migration add_deleted_at_colum_to_pots_tables --table=posts --no-ansi
+   php artisan migrate
+   ```
+
+   Post.php
+
+   ```php
+   <?php
+   
+   namespace App;
+   
+   use Illuminate\Database\Eloquent\Model;
+   use Illuminate\Database\Eloquent\SoftDeletes;
+   
+   class Post extends Model
+   {
+       use SoftDeletes;
+   //    protected $table = 'posts';
+   //    protected $primaryKey = 'post_id';
+   
+       protected $data = ['deleted_at'];
+       protected $fillable = [
+           'title',
+           'content'
+       ];
+   }
+   ```
+
+   yyyy_mm_dd_xxxxxx_add_deleted_at_colum_to_pots_tables.php
+
+   ```php
+   <?php
+   
+   use Illuminate\Database\Schema\Blueprint;
+   use Illuminate\Database\Migrations\Migration;
+   
+   class AddDeletedAtColumnToPostsTables extends Migration
+   {
+       /**
+        * Run the migrations.
+        *
+        * @return void
+        */
+       public function up()
+       {
+           Schema::table('posts', function (Blueprint $table) {
+               //
+               $table->softDeletes();
+           });
+       }
+   
+       /**
+        * Reverse the migrations.
+        *
+        * @return void
+        */
+       public function down()
+       {
+           Schema::table('posts', function (Blueprint $table) {
+               $table->dropColumn('deleted_at');
+               //
+           });
+       }
+   }
+   ```
+
+   routes.php
+
+   ```php
+   Route::get('/softdelete',function(){
+       Post::find(11)->delete();
+   
+   });
+   ```
 
 9. Retrieving deleted / trashed records
 
+   routes.php
+
+   ```php
+   Route::get('/readsoftdelete',function(){
+   //    $post = Post::find(9);
+   //    return $post;
+       // example 1
+       // show all data include logically  deleted data
+       $post = Post::Trashed()->where('is_admin', 0)->get();
+       return $post;
+       // example 2
+       // only show data which is logically deleted data
+       $post = Post::onlyTrashed()->where('is_admin', 0)->get();
+       return $post;
+   });
+   ```
+
 10. Restoring deleted / trashed records
 
+    ```php
+    Route::get('/restore',function(){
+        Post::withTrashed()->where('is_admin', 0)->restore();
+    });
+    ```
+
 11. Deleting a record permanently
+
+    ```php
+    // example 1 delete with trashed
+    Route::get('forcedelete',function(){
+        Post::withTrashed()->where('is_admin', 0)->forceDelete();
+    });
+    // example 2 delete only trashed
+    Route::get('forcedelete2',function(){
+        Post::onlyTrashed()->where('is_admin', 0)->forceDelete();
+    });
+    ```
+
+[Docs - Eloquent 5.2](https://laravel.com/docs/5.2/eloquent)
 
 Section11:Laravel Fundamentals - Database - Eloquent Relationships
