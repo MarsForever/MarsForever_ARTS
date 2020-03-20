@@ -804,6 +804,43 @@ Route::get('/delete',function(){
 
 6. Querying intermediate table
 
+   add new public function to Role.php
+
+   ```php
+       public function users(){
+           return $this->belongsToMany('App\user');
+       }
+   ```
+
+   User.php
+
+   ```php
+   public function roles(){
+       // querying intermediate table
+           return $this->belongsToMany('App\Role')->withPivot('created_at');
+       //  use for many to many relations
+       // return $this->belongsToMany('App\Role');
+       //  use for customing table's name and columns follow the format below
+       // return $this->belongsToMany('App\Role', 'user_roles', 'user_id', 'role_id');
+       }
+   ```
+
+   routes.php
+
+   ```php
+   Route::get('user/pivot', function(){
+       $user = User::find(1);
+       foreach($user->roles as $role){
+           
+            return $role->pivot->created_at;
+           // return $role->pivot;
+   
+       }
+   });
+   ```
+
+   
+
 7. Has many through relation part 1
 
 8. Has many through relation part 2
