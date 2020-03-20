@@ -618,84 +618,204 @@ Route::get('/delete',function(){
 
    refresh database
 
-```cmd
-php artisan migrate:refresh
-```
+    ```cmd
+ php artisan migrate:refresh
+    ```
+   
+    add some data to table user and table post
 
-add some data to table user and table post
+    users table
 
-users table
+    ```sql
+ name,email,password,created_at,updated_at
+    ```
+   
+    post table
 
-```sql
-name,email,password,created_at,updated_at
-```
+    ```sql
+ title,content,user_id=1created_at,updated_at,is_admin,
+    ```
+   
+    routes.php
 
-post table
+    ```php
+ Route::get('/user/{id}/post',function($id){
+        // show one record
+        return User::find($id)->post;
+        // show one field
+        return User::find($id)->post->content;
+    });
+    ```
+   
+    add function post to User.php
 
-```sql
-title,content,user_id=1created_at,updated_at,is_admin,
-```
+    ```php
+ <?php
+   
+    namespace App;
 
+    use Illuminate\Foundation\Auth\User as Authenticatable;
 
-
-routes.php
-
-```php
-//  only show the first record
-Route::get('/user/{id}/post',function($id){
-    return User::find($id)->post;
-    return User::find($id)->post->content;
-});
-```
-
-add function post to User.php
-
-```
-<?php
-
-namespace App;
-
-use Illuminate\Foundation\Auth\User as Authenticatable;
-
-class User extends Authenticatable
-{
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'name', 'email', 'password',
-    ];
-
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password', 'remember_token',
-    ];
-    public function post(){
-        return $this->hasOne('App\Post');
+    class User extends Authenticatable
+ {
+        /**
+         * The attributes that are mass assignable.
+         *
+         * @var array
+         */
+        protected $fillable = [
+            'name', 'email', 'password',
+        ];
+   
+        /**
+      * The attributes that should be hidden for arrays.
+         *
+         * @var array
+         */
+        protected $hidden = [
+            'password', 'remember_token',
+        ];
+        public function post(){
+            return $this->hasOne('App\Post');
+        }
     }
-}
-```
+    ```
 
+2. The inverse relation
 
+   routes.php
 
-1. The inverse relation
-2. One to many relationship
-3. Some random tips
+   ```php
+   Route::get('/post/{id}/user',function($id){
+       return Post::find($id)->user->name;
+   });
+   ```
+
+   add the following to Post.php
+
+   ```
+       public function user(){
+           return $this->belongsTo('App\User');
+       }
+   ```
+
+   http://cms.test:3000/post/$id/user
+
+   $id equals to posts table which user_id equals to table user which user_id is same
+
+3. One to many relationship
+
+   ```
+   Route::get('/posts',function(){
+       $user = User::find(1);
+       foreach($user->posts as $post){
+           echo $post->title . "<br>";
+       }
+   });
+   ```
+
+   
+
+   
+
 4. Many to many relations part 1
+
+   Create new model Role and new table role_user
+
+   ```cmd
+   php artisan make:model Role -m
+   php artisan make:migration create_users_roles_table --create=role_user
+   php artisan migrate
+   ```
+
+   add one field name to role table on file 
+
+   2020_03_19_235659_create_roles_table.php
+
+   ```
+       public function up()
+       {
+           Schema::create('roles', function (Blueprint $table) {
+               $table->increments('id');
+               $talbe->string('name');
+               $table->timestamps();
+           });
+       }
+   ```
+
+   
+
+   add two field(user_id,role_id) to role_user table on file 2020_03_20_000015_create_users_roles_table.php
+
+   ```php
+   Schema::create('role_user', function (Blueprint $table) {
+               $table->increments('id');
+               $table->integer('user_id');
+               $table->integer('role_id');
+               $table->timestamps();
+           });
+   ```
+
 5. Many to many relations part 2
+
+   add new record to users,roles,users_roles table (setting name and email field)
+
+   ```sql
+   users
+   two records
+   required field name email 
+   id:1,2
+   
+   roles
+   two records
+   name:adminstrator,subscriber
+   id:1,2
+   
+   users_roles
+   two records
+   user_id,role_id:1,1;2,2
+   id:1,2
+   ```
+
+   add new public function to User.php
+
+   ```php
+       public function roles(){
+           return $this->belongsToMany('App\Role');
+       }
+   ```
+
+   add new url to routes.php
+
+   ```php
+   Route::get('/user/{id}/role',function($id){
+       // example 1
+       $user = User::find($id);
+       foreach( $user->roles as $role ){
+           echo $role->name;
+       }
+       // example 2
+       $user = User::find($id)->roles()->orderBy('id','desc')->get();
+       return $user;
+   });
+   ```
+
+   
+
 6. Querying intermediate table
+
 7. Has many through relation part 1
+
 8. Has many through relation part 2
+
 9. Polymorphic relation the inverse
+
 10. Polymorphic relation many to many part 1
+
 11. Polymorphic relation many to many part 2
+
 12. Polymorphic relation many to many - retrieving
+
 13. Polymorphic relation may to many - retrieving owner
 
 ### Section13:Laravel Fundamentals - Database - One to One Relationship CRUD
