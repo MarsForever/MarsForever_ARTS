@@ -88,8 +88,6 @@ Phases of the Water Model
    1. Fix defects(缺陷)
    2. Small enhancements(增强)
 
-Sprints(短跑) and Reviews
-
 *Perfect Candidates for Waterfall*
 
 - Life-control systems
@@ -103,6 +101,32 @@ Situation: Use the Waterfall if the requirements are clear and won't change freq
 *Agile Software Development*
 
 Agile Manifesto(声明)(2001)
+
+Aimed to end the proliferation(增殖) of software development methodologies(方法学).
+
+1. Agile values: 
+
+   1. Individuals(个别的) and interactions(相互作用) over **processes and tools**
+      * Agile projects implement(执行) adaptive(适应的) processes
+   2. Working software over **comprehensive(全面的) documentation**
+      * Don't use agility(敏捷) as an excuse for a lack of documentations
+      * Document when it provides value
+   3. Customer collaboration over **contract negotiation**
+      * Contracts can't be avoided
+      * Focus on partnership
+   4.  Responding to change over **following a plan**
+      * Don't create a detailed plan in advance!
+      * Do only as much planning as needed
+
+   Sprints(短跑) and Reviews
+
+   Sprint #1: 2-4 weeks
+
+   Sprint #2 ~ Sprint #5
+
+   Agile is a way of thinking
+
+   Agile Methodologies: Scrum,Kanban
 
 ##### 7. Waterfall or Agile?
 
