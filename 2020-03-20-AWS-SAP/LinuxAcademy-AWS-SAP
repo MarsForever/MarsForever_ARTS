@@ -236,3 +236,100 @@ before June
 ##### Service
 
 If an instance reboots, the data in the instance store persists. If an instance stops, terminates, or the underlying disk(基本磁盘) fails, the data in the instance is lost.
+
+## Identity & Access Management(IAM)
+
+### IAM Essentials:
+
+- **IAM** (Identity & Access Management) allows you to control access to AWS services and resources. 
+
+Create a policy can access full s3 resources
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+execute command on your pc using access key
+
+```shell
+aws configure
+#enter your accesskey and your secret key 
+#the key will show when you create a new user
+aws s3 ls
+```
+
+Create testuser-first-bukcet and testuser-first-bucket2 under s3
+
+s3_specific_bucket(you should change the testuser-first-bucket to your bucket's name)
+
+arn: amazon resource names
+
+```json
+{
+    "Version":"2012-10-17",
+    "Statement":[
+        {
+            "Effect":"Allow",
+            "Action":[
+                "s3:ListAllMyBuckets"
+            ],
+            "Resource":"arn:aws:s3:::*"
+        },
+        {
+            "Effect":"Allow",
+            "Action":[
+                "s3:ListBucket",
+                "s3:GetBucketLocation"
+            ],
+            "Resource":"arn:aws:s3:::testuser-first-bucket"
+        },
+        {
+            "Effect":"Allow",
+            "Action":[
+                "s3:PutObject",
+                "s3:PutObjectAcl",
+                "s3:GetObject",
+                "s3:GetObjectAcl",
+                "s3:DeleteObject"
+            ],
+            "Resource":"arn:aws:s3:::testuser-first-bucket/*"
+        }
+    ]
+}
+```
+
+```shell
+#show all bucket
+aws s3 ls
+#show all files under testuser-first-bucket
+aws s3 ls s3://testuser-first-bucket
+:'
+2020-03-22 15:43:06      55868 game-picture.jpg
+2020-03-22 15:43:24       1547 tags.sql
+'
+#get the error
+aws s3 ls s3://testuser-first-bucket2
+#An error occurred (AccessDenied) when calling the ListObjectsV2 operation: Access Denied
+```
+
+upload file  to s3
+
+```shell
+aws s3 cp $filename s3://testuser-first-bucket
+aws s3 ls s3://testuser-first-bucket
+:'
+2020-03-22 15:43:06      55868 game-picture.jpg
+2020-03-22 15:43:24       1547 tags.sql
+2020-03-22 15:54:29       1568 videos.sql
+'
+```
+
