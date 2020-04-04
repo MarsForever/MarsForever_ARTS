@@ -489,26 +489,6 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
   5."users"からユーザ"佐藤"が消えていることを確認
   db.users.find({email: "sachiko.sato@sample.co.jp"})
   ```
-
-- ドキュメント件数取得
-
-  ```shell
-  db.<TARGET>.count(<QUERY>)
-  db.<TARGET>.find(<QUERY>).count()
-  ```
-
-- ドキュメント取得結果のソート
-
-  ```shell
-  db.<TARGET>.find(<QUERY>).sort(<ORDER>)
-  ```
-
-- ドキュメント取得制限
-
-  ```shell
-  db.<TARGET>.find(<QUERY>).sort(<ORDER>).skip(<OFFSET>).limit(<LIMIT>)
-  ```
-
   
 
 ### 16. データ型
@@ -543,18 +523,140 @@ ObjectIdはMongoDB独自で一意な値。
 特別な指定が必要: ObjectId( <ID>)
 
 ### 17. ドキュメント件数の取得
+- ドキュメント件数取得
+
+  ```shell
+  db.<TARGET>.count(<QUERY>)
+  条件に一致するドキュメント件数を返す
+  QUERY
+  検索条件
+  
+  db.<TARGET>.find(<QUERY>).count()
+  
+  ```
+
+- Practice
+
+  ```shell
+  #1."books"コレクションの件数を取得
+  db.books.count()
+  #2.出版社が「新朝社」のドキュメント取得
+  db.books.count({publisher: "新朝社"})
+  ```
+
+  
+
 
 ### 18.　検索結果のソート
+- カーソル
+
+  検索結果セットに対するポインタ
+  
+  ```shell
+  db.collection.find()の戻り値がカーソル
+  db.collection.find( <QUERY> )
+  ```
+  
+- 検索結果のソート
+
+  ```shell
+  cursor.sort( <ORDER> )
+  結果セットに対して条件に従ったソートを行う
+  
+  ORDER
+  結果セットに対するソート条件オブジェクト
+  昇順・降順 {<FIELD>: <1 | -1>}
+  昇順：1
+  降順：-1
+  ```
+  
+  
+  
+- ドキュメント取得結果のソート
+
+  ```shell
+  db.<TARGET>.find(<QUERY>).sort(<ORDER>)
+  ```
+- Practice
+
+  ```shell
+  #1. 書籍の価格が安い順(低い⇒高い)
+  db.books.find().sort({price:1})
+  
+  #2. 書籍の価格が高い順(高い⇒低い)
+  db.books.find().sort({price:-1})
+  
+  #3. 「新朝社」が出版した書籍の新しい順
+  db.books.find({publisher: "新朝社"}).sort({launch:-1})
+  
+  日付とは「基準日からの経過時間を保存したデータ」
+  MongoDBの場合、基準は 1970/01/01 00:00:00 (=UNIX時間)
+  新しい順=新しい日付⇒古い日付
+         =　大きな値⇒小さな値
+         =  降順
+  ```
 
 ### 19. 検索結果の件数制限
 
+- 先頭から指定件数までを除去
+
+  ```shell
+  cursor.skip(<OFFSET>)
+  結果セットの先頭から指定した件数除外する
+  
+  OFFSET
+  結果セットから除去したい件数
+  ```
+  
+- 条件を指定件数までに制限
+
+  ```shell
+  cursor.limit(<LIMIT>)
+  結果セットから指定した件数より後ろのデータを除去する
+  
+  LIMIT
+  結果セットに残したいデータの件数
+  ```
+  
+- ドキュメント取得制限
+
+  ```shell
+  db.<TARGET>.find(<QUERY>).sort(<ORDER>).skip(<OFFSET>).limit(<LIMIT>)
+  ```
+- Practice
+
+  ```shell
+  #1.出版日が新しい順にソート
+  db.books.find().sort({ launch: -1})
+  #2.先頭から2件除去
+  db.books.find().sort({ launch: -1}).skip(2)
+  #3.先頭から2件除去した結果から3件だけ取り出す
+  ```
+
 ### 20. インデックス作成/確認/削除
+
+- インデックスとは
+
+  - 検索を早くするための仕組み
+
+  インデックスなし：一件一件探す
+
+  インデックスあり：インデックス辞書を使う、すぐ目的のデータを特定できる
 
 - インデックス作成
 
   ```shell
   db.<TARGET>.createIndex(<keys>, <OPTIONS>)
+  指定したコレクションのキーに対してインデックスを作成する
+  
   ※一意制約はOPTIONSに{unique:true}を指定
+  
+  KEYS
+  インデックス作成するキー及び方向(昇順は"1",降順は"-1")を指定
+  
+  OPTIONS
+  インデックス作成に関するオプションを指定
+  インデックス名(name)や一意制約(unique)など
   ```
 
 - インデックス確認
@@ -567,11 +669,77 @@ ObjectIdはMongoDB独自で一意な値。
 
   ```shell
   db.<TARGET>.dropIndex(<NAME>)
+  指定したインデックスを削除する
+
+  NAME
+  削除したいインデックス名
+  
+  ※ポイント
+  ドキュメント書き込み時にインデックス更新があるため、更新処理が遅くなる
+  ```
+  
+- Practice
+
+  ```shell
+  #1. "users"コレクションの"email"フィールドに対してインデックス "IX_EMAIL"を作成
+  db.users.createIndex({email: 1}, {name: "IX_EMAIL"})
+  
+  #2.インデクスが追加されたことを確認
+  db.users.getIndexes()
+  
+  #3.追加したインデックスを削除
+  db.users.dropIndex("IX_EMAIL")
   ```
 
   
 
 ### 21.　一意制約(ユニーク制約)作成
+
+- 一意制約(ユニーク制約)
+
+- 一意制約作成
+
+  ```shell
+  db.<TARGET>.createIndex(<KEYS>, <OPTIONS>)
+  指定したコレクションのキーに対してインデクスを作成する
+  
+  KEYS
+  インデクス作成するキー及び方向(昇順は"1"、降順は"-1")を指定
+  
+  OPTIONS
+  インデクス作成に関するオプションを指定
+  一意制約は {unique:true}を指定
+  ```
+
+- Practice
+
+  ```shell
+  #1. "users"の"email"フィールドに一意制約を作成
+  db.users.createIndex( {email:1 }, { name: "IX_EMAIL", unique: true})
+  
+  #2. 一意制約が作成されたことを確認
+  db.users.getIndexes()
+  
+  #3.emailが重複するデータを投入してエラーになることを確認
+  db.users.insert({
+      name: "tekitou",
+      email: "tsuyoshi.tanaka@sample.co.jp"
+  })
+  #error
+  "errmsg" : "E11000 duplicate key error 
+  
+  #4.一意制約を削除
+  db.users.dropIndex("IX_EMAIL")
+  db.users.getIndexes()
+  
+  #5.emailが重複するデータを投入してからエラーにならないことを確認(処理は4と同じ)
+  db.users.insert({
+      name: "tekitou",
+      email: "tsuyoshi.tanaka@sample.co.jp"
+  })
+  ```
+
+  
 
 ###　【補足】MongoDBを初期化する手順
 
