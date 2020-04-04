@@ -26,7 +26,7 @@ https://microk8s.io/docs/
 
 * Redesign the app to be more like a microservice architecture
 
-![Todo](mdImage\Capture3.PNG)
+![Todo](mdImage/Capture3.PNG)
 
 ### Creating Production Docker Images
 
@@ -52,7 +52,7 @@ https://microk8s.io/docs/
   * AWS RDS Database(replaces postgre container)
   * AWS Elasticsearch( replaces elastic container)
 
-  ![FlowChart](mdImage\Capture4.PNG)
+  ![FlowChart](mdImage/Capture4.PNG)
  ### Kubernetes Overview
 
 * Introduction to Kubernetes 
@@ -66,7 +66,7 @@ https://microk8s.io/docs/
 * Introduction to Kompose
 * Running app solution in local Kubernetes
 
-![Kubernetes locally](mdImage\Capture5.PNG)
+![Kubernetes locally](mdImage/Capture5.PNG)
 
 
 
@@ -90,7 +90,7 @@ https://microk8s.io/docs/
 * Install app solution from private helm repo
 * Publish charts automatically with Travis CI build
 
-![Helm Repository](mdImage\Capture6.PNG)
+![Helm Repository](mdImage/Capture6.PNG)
 
   
 
@@ -104,15 +104,15 @@ https://microk8s.io/docs/
 
 ### Kubernetes in AWS -Kops
 
-![Kops](mdImage\Capture7.PNG)
+![Kops](mdImage/Capture7.PNG)
 
 ### Kubernetes in AWS - EKS
 
-![EKS](mdImage\Capture8.PNG)
+![EKS](mdImage/Capture8.PNG)
 
 ### Kubernetes in GCP
 
-![K8s GCP](mdImage\Capture9.PNG)
+![K8s GCP](mdImage/Capture9.PNG)
 
 ### Kubernetes cluster managerment
 
@@ -120,8 +120,8 @@ https://microk8s.io/docs/
 * Installing apps from Rancher
 * Monitoring from Rancher
 
-![k8s Rancher](mdImage\Capture10.PNG)
+![k8s Rancher](mdImage/Capture10.PNG)
 
 ###  Section 2: Docker
 
-![Docker](mdImage\Capture11.PNG)
+![Docker](mdImage/Capture11.PNG)
