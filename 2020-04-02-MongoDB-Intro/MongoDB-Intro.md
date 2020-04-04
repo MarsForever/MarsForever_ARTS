@@ -228,7 +228,7 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
 
 - データ構造(ER図)
 
-  ![ER図](images\Capture1.PNG)
+  ![ER図](images/Capture1.PNG)
 
 - データ投入/削除に利用するコマンド
 
