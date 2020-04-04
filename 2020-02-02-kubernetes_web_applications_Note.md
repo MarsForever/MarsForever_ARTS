@@ -177,6 +177,7 @@ host => Pod
 kubectl cp <src> <pod-name>:<dest>
 Pod => host
 kubectl cp <pod-name>:<src> <dest>
+
 ### Example
 kubectl cp ./sample.txt debug:/var/tmp/sample1.txt
 kubectl exec -it debug sh
@@ -187,13 +188,13 @@ kubectl logs [TYPE/NAME] [--tail=n]
 kubectl logs pod/nginx
 
 ## build Web application practice
-Web(nginx) => AP(Node.js) => DB (MongoDB) => Local Storage
-Web(nginx): Service=>Pod(Deployment) 
-=> ConfigMap
-AP(Node.js): Service => Pod(Deployment)
-=>Secret<=StatefulSet(DB (MOngoDB))
-DB(MongoDB):Headless Service =>Pod(PVC)(StatefulSet)
-Local Storage:PV
+Web(nginx) => AP(Node.js) => DB (MongoDB) => Local Storage 
+Web(nginx): Service=>Pod(Deployment)  
+=> ConfigMap  
+AP(Node.js): Service => Pod(Deployment)  
+=>Secret<=StatefulSet(DB (MOngoDB))  
+DB(MongoDB):Headless Service =>Pod(PVC)(StatefulSet)  
+Local Storage:PV  
 
 ### Procedures
 DB => AP => Web => LoadBalancer
@@ -285,22 +286,24 @@ kubectl get pod
 
 ### 2.Create DB Server image
 #### Workflow
+```html
 1. base image:alpineLinux
 2. constructure flow
-    2.1 copy shell which startUp will be executed
-    2.2 add user
-    2.3 install MongDB
-    2.4 create directory which will be used to save
-    2.5 change properties
-    2.6 set mount point
-    2.7 publish port 27017
+   2.1 copy shell which startUp will be executed
+   2.2 add user
+   2.3 install MongDB
+   2.4 create directory which will be used to save
+   2.5 change properties
+   2.6 set mount point
+   2.7 publish port 27017
 3. command
-    ENTRYPOINT startup shell
-    CMD         mongd    
+   ENTRYPOINT startup shell
+   CMD         mongd    
 4. ROOT
-.dockerignore
-docker-entrypoint.sh
-Dockerfile
+   .dockerignore
+   docker-entrypoint.sh
+   Dockerfile
+```
 
 .dockerignore
 ```.dockerignore
@@ -391,21 +394,29 @@ EXPOSE 27017
 ENTRYPOINT [ "docker-entrypoint.sh" ]
 CMD [ "mongod" ]
 ```
-docker build -t weblog-db:v1.0.0 .
-docker run -d weblog-db:v1.0.0
-docker container ls
-docker exec -it romantic_panini(image:weblog-db:v1.0.0) sh
-mongo
-show dbs
-exit;exit
-docker stop romantic_panini
-docker system prune
+```shell
+# Operation
+docker build -t weblog-db:v1.0.0 .  
+docker run -d weblog-db:v1.0.0  
+docker container ls  
+docker exec -it romantic_panini(image:weblog-db:v1.0.0) sh  
+mongo  
+show dbs  
+exit;exit  
+docker stop romantic_panini  
+docker system prune  
+```
+
 ### 3.Build DB Server(Storage)
 #### Workflow
-1. Create pv,pvc
-2. Check created resource
-ROOT
-weblog-db-storage.yml
+```html
+1. Create pv,pvc  
+2. Check created resource  
+   ROOT
+   weblog-db-storage.yml
+```
+
+
 
 ```yml
 apiVersion: v1
@@ -447,12 +458,15 @@ spec:
 ### 4.Build DB Server(Pod)
 
 #### Workflow
+```html
 1. create pv,pvc,pod
 2. check created file
 3. login to created pod
 4. access to mongo db
-ROOT
-weblog-db-pod.yml(pv and pvc is similar to weblog-db-storage.yml )
+   ROOT
+   weblog-db-pod.yml(pv and pvc is similar to weblog-db-storage.yml )
+```
+
 ```yml
 apiVersion: v1
 kind: PersistentVolume
@@ -514,6 +528,8 @@ spec:
       claimName: storage-claim
 ```
 
+```shell
+#operation
 mkdir -p /data/db
 mkdir -p /data/storage
 
@@ -530,16 +546,21 @@ mongo
 show dbs
 exit
 exit
+```
+
 #### clean resource
 kubectl delete -f weblog-db-pod.yml
 
 ### 5.Build DB Server(Pod + Secret)
 #### Workflow
+```html
 1. create keyfile(random string)
 2. create secret source
 3. get yaml file of secret resouce 
 4. merge weblog-db-pod.yml
 5. delete secret resource
+```
+
 #### Check flow
 1. create pv,pod,secret 
 2. login pod
@@ -584,6 +605,7 @@ type: Opaque
 #### 4. merge weblog-db-pod.yml
 refer to weblog-db-pod.yml
 #### 5. delete secret resource
+```shell
 ls /data/storage
 rf -rf /data/storage/*
 ls /data/storage
@@ -592,7 +614,10 @@ kubectl get pod
 
 kubectl exec -it mongodb sh
 mongo
+```
+
 ##### can't show
+```mongodb
 show dbs
 use admin
 db.auth("admin","Passw0rd")
@@ -601,6 +626,7 @@ show dbs
 ROOT
 keyfile
 weblog-db-pod.yml
+```
 
 
 ```keyfile
@@ -857,22 +883,25 @@ spec:
 ```
 #### Workflow
 
+```shell
 1. create pv,secret,statefulset
-mkdir -p /data/pv0000
-mkdir -p /data/pv0001
-mkdir -p /data/pv0002
+   mkdir -p /data/pv0000
+   mkdir -p /data/pv0001
+   mkdir -p /data/pv0002
 
 kubectl apply -f  weblog-db-statfulset.yml
+
 2. login created pod
-kubectl get pod
-kubectl exec -it mongo-0 sh
+   kubectl get pod
+   kubectl exec -it mongo-0 sh
 
 3. access mongodb
 4. authicate username/password
-show dbs
-use admin
-db.auth("admin","Passw0rd")
-exit
+   show dbs
+   use admin
+   db.auth("admin","Passw0rd")
+   exit
+```
 
 kubectl get pv,pvc
 kubectl delete persistentvolumeclaim/storage-mongo-0 persistentvolumeclaim/storage-mongo-1 persistentvolumeclaim/storage-mongo-2
@@ -1051,6 +1080,7 @@ spec:
 #### Workflow
 1. Create pv,secret statefulset,service
 ##### Check if there is file ,and delete files
+```shell
 ls {/data/pv0000,/data/pv0001,/data/pv0002}
 rm -rf {/data/pv0000/*,/data/pv0001/*,/data/pv0002/*}
 ls /data/pv0000 /data/pv0001 /data/pv0002
@@ -1058,13 +1088,15 @@ ls /data/pv0000 /data/pv0001 /data/pv0002
 kubectl apply -f weblog-db-fullset.yml
 
 2. login pod
-kubectl exec -it mongo-0 sh
-ping mongo-1.db-svc
+   kubectl exec -it mongo-0 sh
+   ping mongo-1.db-svc
 
 3. initialize MongoDB
-mongo
-use admin
-db.auth("admin", "Passw0rd")
+   mongo
+   use admin
+   db.auth("admin", "Passw0rd")
+```
+
 ```sh
 rs.initiate({
 ..._id:"rs0",
@@ -1170,46 +1202,60 @@ db.privileges.drop();
 ```
 
 #### Workflow
+```shell
 1. launch debug pod
 2. copy initial script to pod
-mkdir script
-mv *.js ./script
-mv *.sh ./script
-kubectl cp . debug:/root/init-db
+   mkdir script
+   mv *.js ./script
+   mv *.sh ./script
+   kubectl cp . debug:/root/init-db
 3. login debug pod
-kubectl exec -it debug sh
-cd /data/init-db
-#show script 
-ls
+   kubectl exec -it debug sh
+   cd /data/init-db
+   #show script 
+   ls
 4. access mongdb and check primary,logout
-mongo mongo-0.db-svc
-use admin
-db.auth("admin","Passw0rd")
+   mongo mongo-0.db-svc
+   use admin
+   db.auth("admin","Passw0rd")
+```
+
 #### Check there is primary and secondary
+```shell
 rs.status()
 exit
 
 5. modify initial script (if need)
-#check "mongo-0.db-svc"
+   #check "mongo-0.db-svc"
 6. execute initial script
-sh init.sh
+   sh init.sh
 
 7. access any MongoDB and check data
-mongo mongo-0.db-svc
-use admin
-db.auth("admin","Passw0rd")
+   mongo mongo-0.db-svc
+   use admin
+   db.auth("admin","Passw0rd")
+```
+
 ##### will show weblog dbs
+```mongodb
 show dbs
 use weblog
 show collections
+```
+
 ##### will show datas
+```mongodb
 posts
 privileges
 users
 
 db.posts.find().pretty()
+```
+
 ### 9.Create AP Server image 
 ROOT(All file in same folder)
+
+```html
   Node.js application
     app.js
     package.json
@@ -1223,7 +1269,9 @@ ROOT(All file in same folder)
     views
  .dockerignore
  docker-entrypoint.sh
- Dockerfile
+```
+
+Dockerfile
 
 ```.dockeringore
 **/.vscode
@@ -1265,19 +1313,24 @@ CMD [ "npm", "start" ]
 ##### check 
 db server is launched and initiliazed
 
-
 #### Senario
+
+```html
 0. create image
-docker build -t weblog-app:v1.0.0 .
+   docker build -t weblog-app:v1.0.0 .
 1. check MongoDB
-kubectl exec -it mongo-0 sh
-use admin
-db.auth("admin","Passw0rd")
+   kubectl exec -it mongo-0 sh
+   use admin
+   db.auth("admin","Passw0rd")
+```
+
 ##### can check which pod is primary or secondary
+```shell
 rs.status()
 
-2. create service,endpoints for MongoDB(kubectl apply)
+2.create service,endpoints for MongoDB(kubectl apply)
 kubectl apply -f weblog-db-service.yml
+```
 
 weblog-db-service.yml
 ```yml
@@ -1310,27 +1363,29 @@ subsets:
   - port: 27017
 
 ```
+```shell
 3. execute image(docker run)
-docker run \
-    -e MONGODB_USERNAME="user" \
-    -e MONGODB_PASSWORD="welcome" \
-    -e MONGODB_HOSTS="192.168.207.129:32717" \
-    -e MONGODB_DATABASE="weblog" \
-    -d \
-    -p 8080:3000 \
-    weblog-app:v1.0.0
-
+   docker run \
+     -e MONGODB_USERNAME="user" \
+     -e MONGODB_PASSWORD="welcome" \
+     -e MONGODB_HOSTS="192.168.207.129:32717" \
+     -e MONGODB_DATABASE="weblog" \
+     -d \
+     -p 8080:3000 \
+     weblog-app:v1.0.0
 4. access to Node.js application container(curl)
-open below url with browser
-192.168.207.129:8080
+   open below url with browser
+   192.168.207.129:8080
 5. delete service endopoints that access MongoDB(kubectl delete)
-docker container ls
-docker stop (image:weblog-app:v1.0.0)
-docker container prune
-#the blow erros is double delete,is ok
-#Error from server (NotFound): error when deleting "weblog-db-service.yml": endpoints "mongodb" not found
-kubectl delete -f weblog-db-service.yml
-kubectl get svc,ep
+   docker container ls
+   docker stop (image:weblog-app:v1.0.0)
+   docker container prune
+   #the blow erros is double delete,is ok
+   #Error from server (NotFound): error when deleting "weblog-db-service.yml": endpoints "mongodb" not found
+   kubectl delete -f weblog-db-service.yml
+   kubectl get svc,ep
+```
+
 ### 10.Build AP Server(Pod + Secret)
 ROOT
  weblog-app-pod.yml
@@ -1390,15 +1445,18 @@ spec:
 ```
 echo -n "<String>" | base64
 #### Senario
+
+```html
 1. Create Secret(Reuse which created in db server),Pod(kubectl apply)
-kubectl apply -f weblog-app-pod.yml
+   kubectl apply -f weblog-app-pod.yml
 2. Access debug Pod(kubectl exec)
-kubectl exec -it debug sh
+   kubectl exec -it debug sh
 3. Certificate it can access AP Server Pod(curl)
-kubectl get pod -o wide (check nodeapp's ip)
-curl $IP:3000
+   kubectl get pod -o wide (check nodeapp's ip)
+   curl $IP:3000
 4. Delete nodeapp node
-kubectl delete pod nodeapp
+   kubectl delete pod nodeapp
+```
 
 ### 11.Build AP Server(Deployment)
 ROOT
@@ -1474,21 +1532,26 @@ spec:
           value: "rs0"
 ```
 #### Senario
+```shell
 1. Create Secret,Deployment(kubectl apply)
-kubectl apply -f weblog-app-deployment.yml
+   kubectl apply -f weblog-app-deployment.yml
 2. Access debug pod(kubectl exec)
+
 ##### Check ip 
+
 kubectl get pod -o wide | grep nodeapp
 kubectl exec -it debug sh
 
 3. Access ap server and check pod's connection(curl)
-curl $ip0:3000
-curl $ip1:3000
-curl $ip2:3000
-exit
+   curl $ip0:3000
+   curl $ip1:3000
+   curl $ip2:3000
+   exit
 4. Delete Deployment
-kubectl delete deploy nodeapp
-kubectl get deploy nodeapp
+   kubectl delete deploy nodeapp
+   kubectl get deploy nodeapp
+```
+
 ### 12.Build AP Server(Service)
 ROOT
   weblog-app-fullset.yml
@@ -1581,17 +1644,22 @@ spec:
 
 ```
 #### Senario
+```shell
 1. Create Secret,Deployment,Service
-kubectl apply -f weblog-app-fullset.yml
-
+   kubectl apply -f weblog-app-fullset.yml
 2. Access Debug Pod
-kubectl exec -it debug sh
-
+   kubectl exec -it debug sh
 3. Access service
+```
+
 #####  kubectl get svc (get service name)
 curl http://app-svc:3000
+
+```shell
 4. Check Ap Server log(Check every nodeapp pod,so you can find which pod you accessed)
 kubectl logs $(nodeapp)
+```
+
 ##### you can get log just like below log
 ```log
 [2020-01-30T14:23:59.235] [INFO] access - ::ffff:172.17.0.8 - - "GET / HTTP/1.1" 200 1404 "" "curl/7.29.0"
@@ -1711,11 +1779,14 @@ envsubst "$$Env Variate" < "Input" > "Output"
 |command       |ENTRYPOINT boot shell                     |
 |              |CMD  nginx -g daemon off;|
 #### Senario
-0. Create image
-docker build -t weblog-web:v1.0.0 .
-1. Create service which accesses AP Server
-kubectl apply -f weblog-app-service.yml
-2. Launch Web Conainer
+```shell
+1. Create image
+   docker build -t weblog-web:v1.0.0 .
+2. Create service which accesses AP Server
+   kubectl apply -f weblog-app-service.yml
+3. Launch Web Conainer
+```
+
 ```sh
 docker run \
 > -e APPLICATION_HOST=192.168.207.129:30000 \
@@ -1723,19 +1794,26 @@ docker run \
 > -d \
 > weblog-web:v1.0.0
 ```
+```shell
 8080:nginx
 80:docker container 
+
 3. Access from external brower
+
 ##### Check 
+
 docker container ls
 http://$HOSTIP:8080/
 
 4. Stop container
-docker stop $containerID
-docker container prune
+   docker stop $containerID
+   docker container prune
 
 5. Delete Service
-kubectl delete -f  weblog-app-service.yml
+   kubectl delete -f  weblog-app-service.yml
+```
+
+
 
 ### 14.Build Web Server(Pod)
 ROOT
@@ -1762,24 +1840,28 @@ spec:
 ```
 
 #### Senario
+
+```html
 1. Create Pod
-kubectl apply -f weblog-web-pod.yml
+   kubectl apply -f weblog-web-pod.yml
 
 2. Check web pod's ip
-kubectl get pod -o wide(get pod nginx's ip )
+   kubectl get pod -o wide(get pod nginx's ip )
 
 3. Access debug pod
-kubectl exec -it debug sh
+   kubectl exec -it debug sh
 
 4. Access Web Server
-curl $IP
+   curl $IP
 
 5. Check accessed Web Server's log(check every nodeapp pod)
-kubectl log pod/$nodeapp
+   kubectl log pod/$nodeapp
+```
 
 ### 15.Build Web Server(Pod + ConfigMap)
-ROOT
+ROOT \
   weblog-web-pod+configmap.yml
+
 ```yml
 apiVersion: v1
 kind: ConfigMap
@@ -1878,26 +1960,31 @@ spec:
 
 ```
 #### Senario
+
+```html
 1. Create ConfigMap,Pod
-kubectl apply -f weblog-web-pod+configmap.yml
+   kubectl apply -f weblog-web-pod+configmap.yml
 
 2. Access Web Server's Pod, and check it used ConfigMap
-kubectl exec -it nginx sh
-cat /etc/nginx/nginx.conf
+   kubectl exec -it nginx sh
+   cat /etc/nginx/nginx.conf
 
 3. Check Web Server's Pod ip
-kubectl get pod -o wide
+   kubectl get pod -o wide
 
 4. Access debug pod
-kubectl exec -it debug sh
+   kubectl exec -it debug sh
 
 5. Check can access Web Server's pod
-cat $IP
+   cat $IP
 
 6. Delete Pod,ConfigMap
+```
+
 ### 16.Build Web Server(Deployment)
-ROOT
+ROOT  \
   weblog-web-deployment.yml
+
 ```yml
 apiVersion: v1
 kind: ConfigMap
@@ -2015,24 +2102,28 @@ spec:
 
 ```
 #### Senario
+
+```html
 1. Create ConfigMap,Deployment
-kubectl apply -f weblog-web-deployment.yml
+   kubectl apply -f weblog-web-deployment.yml
 
 2. Check Web Server's Pod ip (check pod $nginx ip )
-kubectl get pod -o wide
+   kubectl get pod -o wide
 
 3. Access debug pod
-kubectl exec -it debug sh
+   kubectl exec -it debug sh
 
 4. Check Web Server's either pod
-curl $NginxPod IP
+   curl $NginxPod IP
 
 5. Delete ConfigMap,Deployment
-kubectl delete -f weblog-web-deployment.yml
+   kubectl delete -f weblog-web-deployment.yml
+```
 
 ### 17.Build Web Server(Service)
-ROOT
+ROOT  \
   weblog-web-fullset.yml
+
 ```yml
 apiVersion: v1
 kind: Service
@@ -2167,15 +2258,18 @@ spec:
 
 ```
 #### Senario
+
+```html
 1. Create Config,Deployment
-kubectl apply -f weblog-web-fullset.yml
-kubectl get pod,svc
+   kubectl apply -f weblog-web-fullset.yml
+   kubectl get pod,svc
 
 2. Access debug pod
-kubectl exec -it debug sh
+   kubectl exec -it debug sh
 
 3. Check can access web server's service
-curl http://web-svc
+   curl http://web-svc
+```
 
 ### 18.Publish Web Server(Ingress)
 ROOT
@@ -2202,12 +2296,15 @@ spec:
           servicePort: 80
 ```
 #### Senario
+
+```html
 1. Create Ingress
-kubectl apply -f weblog-ingress.yml
-kubectl get ing
+   kubectl apply -f weblog-ingress.yml
+   kubectl get ing
 
 2. Access minikube(From brower)
-$IP
+   $IP
+```
 
 ### Those stuff from MOOC
 
