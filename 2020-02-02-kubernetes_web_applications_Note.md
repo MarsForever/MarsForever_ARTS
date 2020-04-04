@@ -173,7 +173,7 @@ spec:
 ```
 ## send file between pod and host
 
-host => Pod
+host => Pod 
 kubectl cp <src> <pod-name>:<dest>
 Pod => host
 kubectl cp <pod-name>:<src> <dest>
@@ -203,9 +203,9 @@ DB => AP => Web => LoadBalancer
 #### Construce flow
 1. copy file what will be install
 2. install module
-  mongodb shell ,tool
-  ip,jq,curl
-  delete file not needed
+    mongodb shell ,tool
+    ip,jq,curl
+    delete file not needed
 3. ROOT
 mongodb-org-4.0.repo
 Dockerfile
@@ -1312,13 +1312,13 @@ subsets:
 ```
 3. execute image(docker run)
 docker run \
-  -e MONGODB_USERNAME="user" \
-  -e MONGODB_PASSWORD="welcome" \
-  -e MONGODB_HOSTS="192.168.207.129:32717" \
-  -e MONGODB_DATABASE="weblog" \
-  -d \
-  -p 8080:3000 \
-  weblog-app:v1.0.0
+    -e MONGODB_USERNAME="user" \
+    -e MONGODB_PASSWORD="welcome" \
+    -e MONGODB_HOSTS="192.168.207.129:32717" \
+    -e MONGODB_DATABASE="weblog" \
+    -d \
+    -p 8080:3000 \
+    weblog-app:v1.0.0
 
 4. access to Node.js application container(curl)
 open below url with browser
@@ -1706,7 +1706,7 @@ envsubst "$$Env Variate" < "Input" > "Output"
 |          |                            |
 |----------|----------------------------|
 |base image| Nginx v1.17 on Alpine Linux|
-|  Procedures  |1. copy nginx.conf and boot shell | 
+|  Procedures  |1. copy nginx.conf and boot shell |
 |              |2. move boot shell and change permissions |
 |command       |ENTRYPOINT boot shell                     |
 |              |CMD  nginx -g daemon off;|
