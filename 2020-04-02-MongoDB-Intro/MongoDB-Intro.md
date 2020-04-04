@@ -375,15 +375,28 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
 
   ```shell
   db.<SOURCE>.renameCollection(<TARGET>,<DROP>)
-  ?
+  新しいコレクション名に名前を変更する
+  
+  SOURCE:変更元コレクション
+  TARGET: 変更後の新しいコレクション名
+  DROP:古いコレクションを削除するかどうか。デフォルト "false"
   ```
 
 - コレクション削除
 
   ```shell
   db.<TARGET>.drop()
-  ```
+  指定したコレクションを削除する
 
+  TARGET: 削除したいコレクション
+  
+  #practice
+  use sample
+  db.createCollection("test")
+  db.test.renameCollection("new_test")
+  
+  ```
+  
   
 
 ### 15.ドキュメント操作
@@ -391,7 +404,12 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
 - ドキュメント作成
 
   ```shell
+  指定したコレクションにドキュメントを挿入する
   db.<TARGET>.insert(<DOCUMENTS>)
+  
+  DOCUMENTS
+  挿入したいドキュメント(オブジェクト)
+  複数の場合は配列を指定する
   ```
 
   
@@ -399,7 +417,12 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
 - ドキュメント一覧表示
 
   ```shell
+  指定した条件に一致するドキュメントを表示する
   db.<TARGET>.find(<QUERY>)
+  
+  QUERY
+  検索条件。何も指定しないと全件表示
+  
   ```
 
   
@@ -407,7 +430,17 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
 - ドキュメント更新
 
   ```shell
+  条件に一致するドキュメントを更新する
   db.<TARGET>.update(<QUERY>, <UPDATE>, <OPTION>)
+  
+  QUERY
+  検索条件
+  UPDATE
+  更新方法及び更新するドキュメント
+  OPTION
+  更新オプション
+  ※何も指定しなければ最初にヒットした1件のみを更新
+  条件を合致するすべてを更新したい場合{multi:true}を指定
   ```
 
   
@@ -415,10 +448,47 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
 - ドキュメント削除
 
   ```shell
-  db.<TARGET>.remove(<QUERY>)
+  db.<TARGET>.remove(<QUERY>, <JUSTONE>)
+  条件に一致するドキュメントを削除する
+  
+  QUERY
+  検索条件
+  
+  JUSTONE
+  最初に一致した1件のみを対象とする場合"true"、全件を対象とする場合"false"。デフォルト"false"
   ```
 
+- Practice
+
+  ```shell
   
+  #1."users"にユーザー"佐藤"を追加
+  db.users.insert({
+      email: "sachiko.sato@sample.co.jp",
+      password: "P@ssw0rd",
+      name: "佐藤 幸子"
+  })
+  
+  #2.ユーザ "佐藤"が追加されているのを確認
+  db.users.find()
+  
+  #3.追加したユーザ情報一部"パスワード"を更新
+  db.users.update({
+      email: "sachiko.sato@sample.co.jp"
+  },{
+      $set : {password: "abc123" }
+  },{
+      multi: true
+  })
+  #check password was updated
+  db.users.find({email: "sachiko.sato@sample.co.jp"})
+  
+  #4.追加したユーザ"佐藤"を削除
+  db.users.remove({ email: "sachiko.sato@sample.co.jp"})
+  
+  5."users"からユーザ"佐藤"が消えていることを確認
+  db.users.find({email: "sachiko.sato@sample.co.jp"})
+  ```
 
 - ドキュメント件数取得
 
@@ -442,6 +512,35 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
   
 
 ### 16. データ型
+
+![alt データ型](images/Capture2.png)
+
+JavaScriptと同じ部分を赤くする
+
+![alt データ型javascript](images/Capture3.png)
+
+version 4.0で非推奨 Symbol,Undefined,Timestamp(内部用)
+
+**数字の場合標準は"double"**
+
+それ以外は指定必要
+
+| Int     | NumberInt(<N>)     |
+| ------- | ------------------ |
+| Long    | NumberLong(<N>)    |
+| Decimal | NumberDecimal(<N>) |
+
+**日付は指定が必要**
+
+ISODate("YYYY-MM-DDThh:mm:ssTZD")
+
+※W3C-DTF形式(ISO 8601)
+
+**ObjectId**
+
+ObjectIdはMongoDB独自で一意な値。
+
+特別な指定が必要: ObjectId( <ID>)
 
 ### 17. ドキュメント件数の取得
 
