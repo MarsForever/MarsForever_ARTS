@@ -191,8 +191,8 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
 　net:
 　  bindIpAll: true
 　  port: 27017
-　```
-　
+```
+
 2. MongoDBサーバー起動
 
     mongod --config "C:\MongoDB\server\mongod.cfg"
@@ -228,7 +228,7 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
 
 - データ構造(ER図)
 
-  ![ER図](C:\Users\marsforever\git_repositories\MarsForever_ARTS\2020-04-02-MongoDB-Intro\images\Capture1.PNG)
+  ![ER図](images\Capture1.PNG)
 
 - データ投入/削除に利用するコマンド
 
@@ -306,11 +306,712 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
   Ctrl + c
   ```
 
-- 
+### 13.データベース操作
+
+- データベース作成
+
+  ```shell
+  利用したいデータベースを指定する
+  use <DATABASE>
+  利用するデータベースを指定するだけ、データが入る前に作らない
+  ```
+
+- 接続中データベース確認
+
+  ```shell
+  db
+  ```
+
+- データベース一覧表示
+
+  ```shell
+  show dbs
+  ```
+
+- データベース名変更
+
+  ```shell
+  db.copyDatabase(<OLD_DATABASE>, <NEW_DATABASE>)
+  use <OLd_DATABASE>
+  db.dropDatabase()
+  ```
+
+- データベース削除
+
+  ```shell
+  use <DATABASE>
+  db.dropDatabase()
+  
+  #practice
+  use sample
+  db.createCollection("test")
+  # will show sample
+  show dbs
+  use sample
+  #delete sample
+  db.dropDatabase()
+  
+  #check if sample exists
+  show dbs
+  ```
+
+### 14.コレクション操作
+
+- コレクション作成
+
+  ```shell
+  db.createCollection(<TARGET>)
+  # sample
+  db.createCollection("test")
+  ```
+
+- コレクション一覧表示
+
+  ```shell
+  show collections
+  ```
+
+- コレクション名変更
+
+  ```shell
+  db.<SOURCE>.renameCollection(<TARGET>,<DROP>)
+  ?
+  ```
+
+- コレクション削除
+
+  ```shell
+  db.<TARGET>.drop()
+  ```
+
+  
+
+### 15.ドキュメント操作
+
+- ドキュメント作成
+
+  ```shell
+  db.<TARGET>.insert(<DOCUMENTS>)
+  ```
+
+  
+
+- ドキュメント一覧表示
+
+  ```shell
+  db.<TARGET>.find(<QUERY>)
+  ```
+
+  
+
+- ドキュメント更新
+
+  ```shell
+  db.<TARGET>.update(<QUERY>, <UPDATE>, <OPTION>)
+  ```
+
+  
+
+- ドキュメント削除
+
+  ```shell
+  db.<TARGET>.remove(<QUERY>)
+  ```
+
+  
+
+- ドキュメント件数取得
+
+  ```shell
+  db.<TARGET>.count(<QUERY>)
+  db.<TARGET>.find(<QUERY>).count()
+  ```
+
+- ドキュメント取得結果のソート
+
+  ```shell
+  db.<TARGET>.find(<QUERY>).sort(<ORDER>)
+  ```
+
+- ドキュメント取得制限
+
+  ```shell
+  db.<TARGET>.find(<QUERY>).sort(<ORDER>).skip(<OFFSET>).limit(<LIMIT>)
+  ```
+
+  
+
+### 16. データ型
+
+### 17. ドキュメント件数の取得
+
+### 18.　検索結果のソート
+
+### 19. 検索結果の件数制限
+
+### 20. インデックス作成/確認/削除
+
+- インデックス作成
+
+  ```shell
+  db.<TARGET>.createIndex(<keys>, <OPTIONS>)
+  ※一意制約はOPTIONSに{unique:true}を指定
+  ```
+
+- インデックス確認
+
+  ```shell
+  db.<TARGET>.getIndexs()
+  ```
+
+- インデックス削除
+
+  ```shell
+  db.<TARGET>.dropIndex(<NAME>)
+  ```
+
+  
+
+### 21.　一意制約(ユニーク制約)作成
+
+###　【補足】MongoDBを初期化する手順
+
+- 方法 1 簡易初期化(booklogデータベースだけ初期化)
+
+  1. 古いデータベース削除
+
+     ```shell
+     mongo 127.0.0.1:27017/booklog drop.js
+     ```
+
+  2. データの再投入
+
+     ```shell
+     mongo 127.0.0.1:27017/booklog insert.js
+     ```
+
+     
+
+- 方法 2 完全な初期化
+
+  1. MongoDBサービス停止
+
+     管理者権限でコマンドプロンプトを起動し、下記のコマンドを実行
+
+     ```shell
+     net stop "MongoDB"
+     ```
+
+  2. MongoDBフォルダのdata及びlog配下にあるファイルをすべて削除
+
+  3. MongoDBサービスを起動
+
+     ```shell
+     net start "MongoDB"
+     ```
+
+  4. データの再投入
+
+     コマンドプロンプトで以下のコマンドを実行
+
+     ```shell
+     mongo 127.0.0.1:27017/booklog insert.js
+     ```
+
+     
+
+## Section 5:ドキュメント検索で使う演算子
+
+- 検索クエリ
+
+  db.[COLLECTION].find([QUERY])
+
+### 23.関係演算子
+
+- 等価(=) equal
+
+  ```shell
+  { <FIELD>: { $eq: <VAULE> } }
+  ```
+
+- 非等価(≠) no equal
+
+  ```shell
+  { <FIELD>: { $ne: <VALUE> } }
+  ```
+
+- より大きい(>) greater than
+
+  ```shell
+  { <FIELD>: { $gt : <VALUE> } }
+  ```
+
+- 以上 greater equal 
+
+  ```shell
+  { <FIELD>: { $get : <VALUE> } }
+  ```
+
+- より小さい lower than 
+
+  ```shell
+  { <FIELD>: {$lt: <VALUE> } }
+  ```
+
+- 以下 lower than equal
+
+  ```shell
+  { <FIELD>: { $lte}}
+  ```
+
+- いずれか
+
+  ```shell
+  { <FIELD>: { $in: [<VALUE1>, <VALUE2>, ...] } }
+  ```
+
+  
+
+### 24.論理演算子
+
+- 論理積
+
+  ```shell
+  { $and: { <EXPRESSION1>, <EXPRESSION2>, ...} }
+  ```
+
+- 論理和
+
+  ```shell
+  { $or : { <EXPRESSION1>, <EXPRESSION2>, ...} }
+  ```
+
+- 論理否定
+
+  ```shell
+  { <FIELD>: { $not: <EXPRESSION> } }
+  ```
+
+  
+
+###　25. 評価演算子
+
+- 正規表現
+
+  ```shell
+  { <FIELD>: { $regex: <REGEX> } }
+  ```
+
+- アグリゲーション
+
+  ```shell
+  { $expr: <EXPRESSION> }
+  ```
+
+###　26. 要素演算子
+
+- フィールドの存在
+
+  ```shell
+  { <FIELD>: { $exists: <BOOL> } }
+  ```
+
+- バリューの型
+
+  ```shell
+  { <FIELD>: { $type: [ <TYPE1>, <TYPE2>, ...] } }
+  ```
+
+  
+
+###　27. 配列演算子
+
+ - 配列要素に一致
+
+   ```shell
+   { <FIELD>: { $elemMath:{ <EXPRESSION1>,
+   <EXPRESION2>, ...}}}
+   ```
+
+ - 配列要素数
+
+```shell
+{ <FIELD>: { $size: [SIZE]}}
+```
 
 
 
+## Section 6:ドキュメント更新で使う演算子
 
+### 29.フィールドの更新
+
+- 単純フィールド更新
+
+  ```shell
+  #フィールドの更新
+  db.<COLLECTION>.update(
+    <QUERY>,
+    { $set : { <FIELD1>: <VALUE>, ... } }
+  )
+  #フィールドの削除
+  #フィールド名の変更
+  #フィールドを現在日時で更新
+  #フィールドを加算して更新
+  #フィールドを乗算して更新
+  ```
+
+- 配列フィールド更新
+
+  ```shell
+  #配列要素に追加
+  db.<COLLECTION>.update(
+    <QUERY>,
+    { $push: { "<FIELD1>" : <VALUE>, ...}}
+  )
+  #配列要素に追加(修飾子しゅうしょく利用)
+  db.<COLLECTION>.update(
+  	<QUERY>,
+  	{
+  	  $push: {
+  	    "<FIELD1>":{
+  	      $each: [ <VALUE>, ...],
+  	      $sort: { <FIELDa>, <1 | -1>, ...},
+  	      $slice: <NUMBER>,
+  	      $position: <NUMBER>
+  	    }, ...
+  	  }
+  	}
+  )
+  #配列要素の更新
+  db.<COLLECTION>.update(
+  	<QUERY>,
+  	{ <OPERATOR>: { "<ARRAY>.$[<ID>]": <VALUE>, ...} },
+  	{ arrayFilters: [ <EXPRESSION> ], multi: true }
+  )
+  #配列要素から先頭/末尾を削除
+  db.<COLLECTION>.update(
+  	<QUERY>,
+  	{ $pop: { "<ARRAY>" : <-1 | 1>, ...} }
+  )
+  #配列要素を削除
+  db.<COLLECTION>.update(
+  	<QUERY>,
+  	{ $pull: { "<ARRAY>" : <VALUE | EXPRESSION>, ...} }
+  )
+  ```
+
+  
+
+### 30.フィールドの削除
+
+### 31.フィールド名の変更
+
+### 32.フィールドを現在に日時で更新
+
+### 33.フィールドを加算/減算して更新
+
+### 34.配列要素に追加
+
+### 35.配列要素の削除
+
+## Section 7: アグリゲーション
+
+### 40. オペレーター(演算子)の種類
+
+```shell 
+
+# アグリゲーションパイプライン
+db.<COLLECTION>.aggreate( [ <STAGE1>, ...] )
+```
+
+- 加算
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+  	<STAGE>: {
+  		<FIELD>: {$add: [ <VALUE1>, ... ]}, ...
+  	}
+  }])
+  ```
+
+- 減算
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+  	<STAGE>: {
+  		<FIELD>: {$subtract: [<VALUE1>, <VALUE2>]},...
+  	}
+  }])
+  ```
+
+  
+
+- 乗算
+
+  ```shell
+  db.<COLLECTION>.aggreate([{
+  	<STAGE>: {
+  		<FIELD>: {$multiply: [<VALUE1>, <VALUE2>]}, ...
+  	}
+  }])
+  ```
+
+- 除算
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+  	<STAGE>: {
+  		<FIELD>: {$divide: [<VALUE1>, <VALUE2>]}, ...
+  	}
+  }])
+  ```
+
+- 合計
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+    $group: {
+    	_id: <CONDITION>,
+    	<FIELD1>: {$sum: <EXPRESSION1> }, ...
+    }
+  }])
+  ```
+
+- 最小値
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+  	$group: {
+  		_id: <CONDITION>,
+  		<TRG_FIELD>: { $min: "<SRC_FIELD>"}, ...
+  	}
+  }])
+  ```
+
+  
+
+- 最大値
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+  	$group: {
+  		_id: <CONDITION>,
+  		<TRG_FIELD>: { $max: "$<SRC_FIELD>"}, ...
+  	}
+  }])
+  ```
+
+  
+
+- 配列追加
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+  	$group: {
+  		_id: <CONDITION>,
+  		<FIELD>: { $push: <EXPRESSION>}, ...
+  	}
+  }])
+  ```
+
+- 文字列分割
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+  	<STAGE>: {
+  	 <FIELD>: {$split: [<TEXT>, <DELIMITER>]}, ...
+  	}
+  }])
+  ```
+
+  
+
+- 文字列結合
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+  	<STAGE>: {
+  		<FIELD>: {$concat: [<EXPRESSION>, ...]}, ...
+  	}
+  }])
+  ```
+
+- if文
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+  	<STAGE>: {
+  	  <FIELD>: { $cond: {
+  	   if: <EXPRESSION>, then: <TRUE_CASE>, else: <FALSE_CASE>
+  	  }}, ...
+  	}
+  }])
+  ```
+
+  
+
+- switch 文
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+  	<STAGE>: {
+  		<FIELD>: {$cond: {
+  			branches: [<EXPRESSION1>, ...],
+  			default: <<EXPRESSION>>
+  		}}, ...
+  	}
+  }])
+  ```
+
+  
+
+### 41.ドキュメント絞込
+
+```shell
+db.<COLLECTION>.aggregate([{
+	$match: { <EXPRESSION> }
+}])
+```
+
+### 42. 再フォーマット
+
+```shell
+#１：表示、０：非表示
+db.<COLLECTION>.aggregate([{
+  $project: { <FIELD>: <1 | 0>, ...}
+}])
+```
+
+### 43.検索結果ソート
+
+```shell
+# 1:昇順、-1:降順
+db.<COLLECTION>.aggregate([{
+	$sort: { <FIELD>: <1 | -1>, ...}
+}])
+```
+
+### 44. ドキュメント件数取得
+
+```shell
+db.<COLLECTION>.aggregate([{
+	$count: "<FIELD>"
+}])
+```
+
+### 45. グループごとにデータ件数を集計
+
+```shell
+db.<COLLECTION>.aggregate([{
+	$group: {
+		_id: <CONDITION (*) >,
+		<FIELD1>: { <ACCUMULATOR1> : <EXPRESSION1> },...
+	}
+}])
+```
+
+#### 設定例
+
+- 単純にフィールドでグループ化する場合
+
+  ```shell
+  _id: "$<FIELD>"
+  ```
+
+- 年月日でグループ化する場合
+
+  ```shell
+  _id: {
+  	year:  {$year: "$date"},
+  	month: {$month: "$date"},
+  	day: {$dayOfMonth: "$date"}
+  }
+  ```
+
+- 全体に対し集合する場合
+
+  ```shell
+  _id: 0
+  ```
+
+- スキップ
+
+  ```shell
+  db.<COLLECTION>.aggregate([{
+  	$skip: <NUMBER>
+  }])
+  ```
+
+  
+
+### 46.グループごとに合計値を集計
+
+### 47. グループごとに最小値/最大値を集計
+
+### 48. グループごとに平均/分散を集計
+
+### 49.指定した範囲を取得
+
+- リミット
+
+  ```shell
+  db.<COLLECTION>.aggreagte([{
+  	$limit: <NUMBER>
+  }])
+  ```
+
+  
+
+### 50.検索結果フィールド名を変更
+
+### 51.検索フィールド値を変更
+
+### 52.検索結果を条件に応じて表記変更
+
+### 53.コレクションを結合
+
+```shell
+#コレクション外部結合
+db.<SRC_COLLECTION>.aggregate([{
+	$lookup: {
+	  from: <TRG_COLLECTION>,
+	  localField: <SRC_FIELD>,
+	  foreignField: <TRG_FIELD>,
+	  as: <OUT_FIELD>
+	}
+}])
+
+db.<SRC_COLLECTION>.aggregate([{
+	$lookup: {
+	 from: <TRG_COLLECTION>,
+	 let: { <VAR1>: <SRC_FIELD1>, ...},
+	 pipeline: [<EXPRESSION>, ...],
+	 as: <OUT_FIELD>
+	}
+}])
+```
+
+
+
+### 54.配列フィールドの展開
+
+```shell
+db.<COLLECTION>.aggregate([{
+	$unwinde: "<FIELD>"
+}])
+```
+
+
+
+### 55.ビューの作成
+
+```shell
+db.createView( <NAME>, <SOURCE>, <PIPELINE>)
+```
+
+
+
+### use Laravel with mongodb
 
 https://medium.com/@alexrenoki/when-to-use-nosql-getting-started-with-mongodb-in-laravel-f5376ceaf545
 
