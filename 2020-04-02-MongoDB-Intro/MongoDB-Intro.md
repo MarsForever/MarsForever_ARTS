@@ -813,19 +813,19 @@ ObjectIdはMongoDB独自で一意な値。
   { <FIELD>: { $gt : <VALUE> } }
   ```
 
-- 以上 greater equal 
+- より大きいか等しい greater than equal 
 
   ```shell
-  { <FIELD>: { $get : <VALUE> } }
+  { <FIELD>: { $gte : <VALUE> } }
   ```
 
-- より小さい lower than 
+- より小さい less than 
 
   ```shell
   { <FIELD>: {$lt: <VALUE> } }
   ```
 
-- 以下 lower than equal
+- より小さいか等しい lower than equal
 
   ```shell
   { <FIELD>: { $lte}}
@@ -835,6 +835,51 @@ ObjectIdはMongoDB独自で一意な値。
 
   ```shell
   { <FIELD>: { $in: [<VALUE1>, <VALUE2>, ...] } }
+  ```
+
+- Practice
+
+  ```shell
+  #1.出版社が「講話社」と等しい
+  db.books.find({
+      publisher: { $eq : "講話社" }
+  })
+  
+  #2.出版社が「講話社」と異なる
+  db.books.find({
+  	publisher: { $ne : "講話社"}
+  })
+  
+  #3.価格が「454円」より高い
+  db.books.find({
+  	price: { $gt : 454}
+  })
+  
+  #4.価格が「454円」以上
+  db.books.find({
+  	price: { $gte: 454}
+  })
+  
+  #5.価格が「454円」より安い
+  db.books.find({
+  	price: { $lt: 454}
+  })
+  #6.価格が「454円」以下
+  db.books.find({
+  	price: { $lte: 454}
+  })
+  
+  #7.出版社が「講話社」か「角河書店」のどちらか
+  db.books.find({
+  	publisher: { $in: ["講話社", "角河書店"] }
+  })
+  
+  #8.出版日が「2003年1月1日」よりあたらしい
+  db.books.find({
+  	launch: { $gt : ISODate("2013-01-01T00:00:00+09:00")}
+  })
+  ※2013-01-01T00:00:00：グリニッジ標準時間
+  日本の場合は+09:00が必要
   ```
 
   
@@ -857,6 +902,40 @@ ObjectIdはMongoDB独自で一意な値。
 
   ```shell
   { <FIELD>: { $not: <EXPRESSION> } }
+  ※文字列比較の場合、正規表現を利用する
+```
+  
+- Practice
+
+  ```shell
+  #1.出版社「新朝社」かつ価格「300円」より高い
+  db.books.find({
+  	$and: [
+  		{publisher: "新朝社"},
+  		{price: { $gt: 300}}
+  	]
+  })
+  
+  #2.出版社「講話社」または「角河書店」
+  db.books.find({
+  	$or: [
+  		{publisher: "講話社"},
+  		{publisher: "角河書店"}
+  	]
+  })
+  
+  #3.価格が500円より高くない
+  db.books.find({
+  	price: { $not: { $gt: 500}}
+  })
+  db.books.find({
+  	price: {$lte: 500}
+  })
+  #4.出版社が「新朝社」ではない
+  db.books.find({
+  	publisher: {$not: /新朝社/}
+  })
+  ここ要調べ
   ```
 
   
@@ -867,12 +946,28 @@ ObjectIdはMongoDB独自で一意な値。
 
   ```shell
   { <FIELD>: { $regex: <REGEX> } }
+  { <FLD>: {$regex: /<REGEX>/<OPT> }}
+  ※ $regexは省略可能
+  {<FLD>: /<REGEX>/<OPT>}
   ```
 
 - アグリゲーション
 
   ```shell
   { $expr: <EXPRESSION> }
+  ```
+  
+- Practice
+
+  ```shell
+  #1.出版社が「社」を含む書籍
+  db.books.find({
+  	publisher: {$regex: /社/g}
+  })
+  #2.出版社が「社」を含む書籍(短縮表記)
+  db.books.find({
+  	publisher:  /社/g 
+  })
   ```
 
 ###　26. 要素演算子
@@ -889,6 +984,28 @@ ObjectIdはMongoDB独自で一意な値。
   { <FIELD>: { $type: [ <TYPE1>, <TYPE2>, ...] } }
   ```
 
+- Practice
+
+  ```shell
+  #1."dob"フィールドが存在している著者
+  db.authors.find({
+  	dob: { $exists: true}
+  })
+  #2."dob"フィールドが文字列の著者
+  db.authors.find({
+  	dob: { $type: "string"}
+  })
+  
+  #3."dob"フィールドが存在していてかつ日付でない著者
+  db.authors.find({
+  	$and: [
+  		{dob: { $exists: true} },
+  		{dob: {$not: {$type: "date"} } }
+  	]
+  })
+  ※dob=date of birth(誕生日)
+  ```
+
   
 
 ###　27. 配列演算子
@@ -896,17 +1013,59 @@ ObjectIdはMongoDB独自で一意な値。
  - 配列要素に一致
 
    ```shell
-   { <FIELD>: { $elemMath:{ <EXPRESSION1>,
-   <EXPRESION2>, ...}}}
+   { <FIELD>: { $elemMath:{ <EXPRESSION1>,<EXPRESION2>, ...}}}
    ```
-
+   
  - 配列要素数
 
-```shell
-{ <FIELD>: { $size: [SIZE]}}
-```
+   ```shell
+   { <FIELD>: { $size: <SIZE>}}
+   ```
 
+- Practice
 
+  ```shell
+  #1.カテゴリが「日本文学」の書籍
+  db.books.find({
+  	categories: { 
+  		$elemMatch: {　$eq: "日本文学"}
+  	}
+  })
+  #※短縮型
+  db.books.find({
+  	categories: "日本文学"
+  })
+  
+  #2.「2018年2月1日」以降に本を読み終わっているユーザ
+  db.users.find({
+  	bookshelf:{
+  		$elemMatch:{
+  			status: "読了",
+  			readed: { $gte: ISODate("2018-02-01T00:00:00+09:00")}
+  		}
+  	}
+  })
+  
+  #人間が読みやすくするため
+  db.users.find({
+  	bookshelf:{
+  		$elemMatch:{
+  			status: "読了",
+  			readed: { $gte: ISODate("2018-02-01T00:00:00+09:00")}
+  		}
+  	}
+  }).pretty()
+  #省略形
+  db.users.find({
+  	"bookshelf.status": "読了"
+  })
+  
+  #3.カテゴリ登録が3件の書籍
+  
+  #4.カテゴリが1件より多く登録されている書籍
+  ```
+
+  
 
 ## Section 6:ドキュメント更新で使う演算子
 
