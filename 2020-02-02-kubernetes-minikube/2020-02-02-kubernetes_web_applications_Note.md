@@ -19,57 +19,16 @@ minikube stop
 minikube status
 # Create docker and kubernetes Environment
 
-minikube-installer.sh
+####  minikube version 1.6 kubernetes 1.16.0
+chmod +x minikube-1-6-0-installer.sh
+minikube-1-6-0-installer.sh
 
-```sh
-#! /bin/sh
+#### minikube version 1.2 kubernetes 1.15.1
+chmod +x minikube-1-2-0-installer.sh
+minikube-1-2-0-installer.sh
 
-# Install "Docker"
-yum install -y yum-utils \
-  device-mapper-persistent-data \
-  lvm2
+./minikube-$version-installer.sh
 
-yum-config-manager \
-    --add-repo \
-    https://download.docker.com/linux/centos/docker-ce.repo
-
-yum install -y \
-  docker-ce-19.03.1 \
-  docker-ce-cli-19.03.1 \
-  containerd.io
-
-systemctl enable docker
-systemctl start docker
-
-# Install "kubectl"
-## kubectl version 1.15.1
-#curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.1/bin/linux/amd64/kubectl
-
-## kubectl version 1.17.0
-curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl
-
-chmod +x ./kubectl
-mv ./kubectl /usr/local/bin
-
-# Install "minikube"
-### version 1.2.0
-curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.2.0/minikube-linux-amd64
-### version 1.9.0
-#curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.9.0/minikube-linux-amd64
-
-chmod +x minikube
-install minikube /usr/local/bin
-rm -f minikube
-
-# stop firewall
-systemctl disable firewalld
-systemctl stop firewalld
-
-# Add addons
-minikube start --vm-driver=none
-minikube addons enable heapster
-minikube addons enable ingress
-```
 # contorl addons 
 minikube addons enable $AADON_NAME
 
