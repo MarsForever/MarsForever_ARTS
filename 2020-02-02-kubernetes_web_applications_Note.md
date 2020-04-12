@@ -42,12 +42,21 @@ systemctl enable docker
 systemctl start docker
 
 # Install "kubectl"
-curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.1/bin/linux/amd64/kubectl
+## kubectl version 1.15.1
+#curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.1/bin/linux/amd64/kubectl
+
+## kubectl version 1.17.0
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl
+
 chmod +x ./kubectl
 mv ./kubectl /usr/local/bin
 
 # Install "minikube"
+### version 1.2.0
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.2.0/minikube-linux-amd64
+### version 1.9.0
+#curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.9.0/minikube-linux-amd64
+
 chmod +x minikube
 install minikube /usr/local/bin
 rm -f minikube
