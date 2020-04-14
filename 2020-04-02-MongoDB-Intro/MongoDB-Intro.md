@@ -1061,8 +1061,16 @@ ObjectIdはMongoDB独自で一意な値。
   })
   
   #3.カテゴリ登録が3件の書籍
+  db.books.find({
+  	categories: { $size: 3}
+  })
   
   #4.カテゴリが1件より多く登録されている書籍
+  db.books.find({
+  	$expr: {
+  		$gt: [{ $size: "$categories"}, 1]
+  	}
+  })
   ```
 
   
@@ -1070,6 +1078,27 @@ ObjectIdはMongoDB独自で一意な値。
 ## Section 6:ドキュメント更新で使う演算子
 
 ### 29.フィールドの更新
+
+- ドキュメント更新(復習)
+
+  ```shell
+  db.< TARGET >.update( <QUERY>, <UPDATE>, <OPTION>)
+  条件に一致するドキュメントを更新する
+  
+  QUERY
+  検索条件
+  
+  UPDATE
+  更新方法及び更新するドキュメント
+  
+  OPTION
+  更新オプション
+  multi		:条件に合致するすべてを更新するかどうか
+  upsert		:存在すれば更新、なければ挿入
+  arrayFilters:配列更新時に使う修飾子
+  ```
+
+  
 
 - 単純フィールド更新
 
@@ -1079,6 +1108,8 @@ ObjectIdはMongoDB独自で一意な値。
     <QUERY>,
     { $set : { <FIELD1>: <VALUE>, ... } }
   )
+  指定された値に条件に一致するフィールドを更新する
+  
   #フィールドの削除
   #フィールド名の変更
   #フィールドを現在日時で更新
