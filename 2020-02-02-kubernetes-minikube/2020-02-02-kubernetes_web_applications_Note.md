@@ -11,6 +11,21 @@ Spec:
 3. hardice 16GB
 4. OS CentOS 7
 
+### Install minikube
+
+####  minikube version 1.6 kubernetes 1.16.0
+
+chmod +x minikube-1-6-0-installer.sh
+
+
+
+#### minikube version 1.2 kubernetes 1.15.1
+
+chmod +x minikube-1-2-0-installer.sh
+
+./minikube-$version-installer.sh
+
+
 
 #### minikube command
 
@@ -19,15 +34,7 @@ minikube stop
 minikube status
 # Create docker and kubernetes Environment
 
-####  minikube version 1.6 kubernetes 1.16.0
-chmod +x minikube-1-6-0-installer.sh
-minikube-1-6-0-installer.sh
 
-#### minikube version 1.2 kubernetes 1.15.1
-chmod +x minikube-1-2-0-installer.sh
-minikube-1-2-0-installer.sh
-
-./minikube-$version-installer.sh
 
 # contorl addons 
 minikube addons enable $AADON_NAME
