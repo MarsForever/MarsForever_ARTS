@@ -34,11 +34,11 @@ REST API, REST Service, REST Web Service(Basically, same thing)
 
 ### API Functions
 
-![API Functions](.\images\Capture.PNG)
+![API Functions](./images/Capture.PNG)
 
 ### API Management
 
-![API Management](.\images\Capture2.PNG)
+![API Management](./images/Capture2.PNG)
 
 
 
@@ -107,7 +107,20 @@ docker-compose up
 
 execute file docker-setup.md's command
 
+#### Dummy Service List
 
+* Alpha
+  * Virtual IP:172.1.1.1
+  * Virtual DNS: alpha
+* Beta
+  * Virtual IP: 172.1.1.2
+  * Virtual DNS: beta
+* Gamma
+  * Virtual IP: 172.1.1.3
+  * Virtual DNS: gamma
+* Omega
+  * Virtual IP: 172.1.1.4
+  * Virtual DNS: omega
 
-
+Konga url: localhost:1337
 
