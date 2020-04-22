@@ -1,3 +1,9 @@
+
+
+
+
+
+
 ### REST API Principles
 
 * Uniform Interface
@@ -185,3 +191,118 @@ Common functionality per consumer(via Kong Plugins)  => Kong (path:gamma) => API
 
 
 
+### Load Balancer
+
+* Weighted Round Robin
+* Hash-Based
+* Health Check
+
+docker container stop alpha
+
+docker-compose stop alpha
+
+### HMAC Authentication
+
+* username
+* algorithm="hmac-sha256"
+* headers= "" [RFC7231](https://tools.ietf.org/html/rfc7231)
+* signature="<base64 HMAC signature>"
+
+[Calculate a SHA or MD5, or an HMAC with SHA or MD5](https://dinochiesa.github.io/hmachash/index.html)
+
+```logs
+Not worked for me
+----------------------------------------------------
+HMAC Message for the course.
+Adjust the value of "date" according to when you use the lecture.
+
+date: Sat, 16 Feb 2019 07:10:00 GMT
+dummy: kong
+GET /beta/ping HTTP/1.1
+
+-----------------------------------------------------
+
+Authorization header value
+Adjust the value according to HMAC rules explained in lecture
+
+hmac username="helen123", algorithm="hmac-sha256", headers="date dummy request-line", signature="Me2z6hug2TPHVHUIJ0UzEPKhnw623brq+W63BgzG3Q4="
+```
+
+### JWT Token
+
+* header 
+* Payload
+* Signature
+
+https://jwt.io/
+
+https://www.epochconverter.com/
+
+##### not work for me
+
+#### Negative Security Model
+
+* Defines list of "blacklisted" elements
+* Allow everything else not in "blacklist"
+* "Whitelist" in bot-detection plugin is an extension
+  * Explicitly allow elements in "whitelist"
+  * Event if value matches "blacklist"
+
+Add Bot Detection
+
+whitelist: [Cc]hrome
+
+blacklist: ^[Mm]ozilla 
+
+^[Mm]:start with M or m
+
+[Regular expression](https://www.wikiwand.com/en/Regular_expression)
+
+[Perl Compatible Regular Expressions](https://www.wikiwand.com/en/Perl_Compatible_Regular_Expressions)
+
+[Regular expression testing Web](https://regex101.com/)
+
+
+
+#### IP Restriction Whitelist
+
+#### IP Restriction Blacklist
+
+* CIDR site
+
+#### IP Address Expression
+
+* Specific IP: xxx.xxx.xxx.xxx
+* CIDR(Classless Inter-Domain Routing):
+  * xxx.xxx.xxx.xxx/24
+  * https://www.ipaddressguide.com/cidr
+  * https://cidr.xyz/
+
+#### Access Control List
+
+| Service/Group | ACL             |
+| ------------- | --------------- |
+| alpha         | whitelist: blue |
+| beta          | blacklist: blue |
+
+
+
+| User   | Group | api key    |
+| ------ | ----- | ---------- |
+| zeus   | blue  | zeus-key   |
+| helen  | red   | helen-key  |
+| apollo | green | apollo-key |
+
+
+
+
+
+| api key\ Service | alpha                           | beta                            |
+| ---------------- | ------------------------------- | ------------------------------- |
+| zeus-key         | 〇                              | You cannot consume this service |
+| helen-key        | You cannot consume this service | 〇                              |
+| apollo-key       | You cannot consume this service | 〇                              |
+
+whitelist: only whitelist group can access
+
+blacklist:  only black can not access
