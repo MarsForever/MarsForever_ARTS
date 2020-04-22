@@ -86,7 +86,7 @@ The following port must be available to be used in this course:
 
 - **5432** : PostgreSQL. If you have PostgreSQL server currently running, please stop it since we will use Docker PostgreSQL.
 - **3306**:  Mysql
-- **8000** : Kong gateway
+- **8000** : Kong gateway Proxy
 - **80** : Kong gateway (we will change later from 8000 to 80)
 - **8001** : Kong admin API
 - **1337** : Kong administration dashboard
@@ -123,4 +123,65 @@ execute file docker-setup.md's command
   * Virtual DNS: omega
 
 Konga url: localhost:1337
+
+### Docker Network
+
+![Docker Netword](./images/Capture9.PNG)
+
+#### Prepare for kong
+
+* Postman : download postman for your OS(Windows,Linux or macOS)
+* Setting variables for postman: 
+  * 1. Save http://localhost:8080
+    2. Edit Collection' Variables: 
+       1. VARIABLE: kong.host
+       2. INITIAL VALUE: http://localhost:8001
+  * Access with {{kong.host}} at GET,and push Send button
+
+### Kong Service & Routes
+
+QR code API
+
+http://goqr.me/api/doc/
+
+export ./file/kong-postman.json to Postman 
+
+[Documentation for Kong Gateway](https://docs.konghq.com/)
+
+
+
+#### Kong ADMIN & PROXY
+
+![Kong ADMIN & PROXY](./images/Capture10.PNG)
+
+### Update Services & Routes
+
+![Update Services & Routes](./images/Capture11.PNG)
+
+Access http://localhost:8000/qr/v1/create-qr-code/?data=Hello
+
+change port and execute those commands
+
+```shell
+#for docker-compose
+docker-compose stop kong
+docker-compose rm kong
+docker-compose up -d
+#for docker
+docker container stop kong
+docker container rm kong
+docker run -d --name kong --network=kong-net --restart always -e "KONG_DATABASE=postgres" -e "KONG_PG_HOST=kong-database" -e "KONG_PROXY_ACCESS_LOG=/dev/stdout" -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" -e "KONG_PROXY_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl" -p 80:8000 -p 443:8443 -p 8001:8001 -p 8444:8444 --ip 172.1.1.40 kong:1.3
+```
+
+[QR code API: Documentation](http://goqr.me/api/doc/)
+
+#### Kong COnsumers
+
+Common functionality per consumer(via Kong Plugins)  => Kong (path:gamma) => API gamma(Business logic)
+
+### Kong Administration Tool
+
+#### [Konga Documentation](https://pantsel.github.io/konga/)
+
+
 
