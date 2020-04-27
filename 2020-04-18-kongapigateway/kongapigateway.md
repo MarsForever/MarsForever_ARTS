@@ -306,3 +306,56 @@ blacklist: ^[Mm]ozilla
 whitelist: only whitelist group can access
 
 blacklist:  only black can not access
+
+
+
+#### Request Termination
+
+setting status code and show the message
+
+#### Request Transformer
+
+remove,rename,replace,add ,append
+
+body/headers,querystring(Params)
+
+![Request Transformer](./images/Capture14.PNG)
+
+
+
+#### Response Transformer
+
+![response transformer](./images/CaptureA1.PNG)
+
+### Anaylytics & Monitoring
+
+#### Distributed Tracing
+
+```dockerfile
+docker run -d --name zipkin --restart always --network kong-net -p 9411:9411 openzipkin/zipkin
+```
+
+#### Elastic Stack for Analytics
+
+problem: can't create index pattern in kibana
+
+
+
+
+
+
+
+
+
+
+
+
+
+Production Checklist
+
+* Don't use docker for database
+* Use docker for Kong/ Konga
+* Secure your admin API
+* Use HTTPS for Kong connection
+* Monitor your Kong machine
+* 

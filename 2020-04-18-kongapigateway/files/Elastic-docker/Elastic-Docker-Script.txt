@@ -1,0 +1,31 @@
+----------------------------------------------------------------------------------------
+This course use elastic stack version 6.8
+Today, elastic stack version 7 is available.
+If you want to experiment with elastic stack 7, use scripts below
+
+NOTE : The user interface & navigation of elastic stack 7 might be different with elastic stack 6 (in this course), but the concept is same.
+----------------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------------
+Elasticsearch 6 scripts
+----------------------------------------------------------------------------------------
+
+docker run -d --name elasticsearch --restart always --network kong-net -p 9200:9200 -p 9300:9300 -e "ES_JAVA_OPTS=-Xms1024m -Xmx1024m" -e "cluster.name=elasticsearch" elasticsearch:6.8.0
+
+docker run -d --name logstash --restart always --network kong-net -p 5555:5555/udp -p 5044:5044 -p 9600:9600 -e "ELASTICSEARCH_URL=http://elasticsearch:9200" -v d:/development/api-management/logstash/pipeline:/usr/share/logstash/pipeline/ logstash:6.8.0
+
+docker run -d --name kibana --restart always --network kong-net -p 5601:5601  -e "ELASTICSEARCH_URL=http://elasticsearch:9200" kibana:6.8.0
+
+
+
+----------------------------------------------------------------------------------------
+Elasticsearch 7 scripts
+----------------------------------------------------------------------------------------
+
+#docker run -d --name elasticsearch --restart always --network kong-net -p 9200:9200 -p 9300:9300 -e "ES_JAVA_OPTS=-Xms1024m -Xmx1024m" -e "discovery.type=single-node" elasticsearch:7.4.0
+docker run -d --name elasticsearch --restart always --network kong-net -p 9200:9200 -p 9300:9300 -e "cluster.name=elasticsearch" -e "ES_JAVA_OPTS=-Xms1024m -Xmx1024m" -e "discovery.type=single-node" elasticsearch:7.4.0
+
+docker run -d --name logstash --restart always --network kong-net -p 5555:5555/udp -p 5044:5044 -p 9600:9600 -e "ELASTICSEARCH_URL=http://elasticsearch:9200" -v c:/Users\marsforever/git_repositories/MarsForever_ARTS/2020-04-18-kongapigateway/files/Elastic-docker/pipline.conf:/usr/share/logstash/pipeline/pipeline.conf logstash:7.4.0
+
+docker run -d --name kibana --restart always --network kong-net -p 5601:5601  -e "ELASTICSEARCH_URL=http://elasticsearch:9200" kibana:7.4.0
