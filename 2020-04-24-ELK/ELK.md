@@ -333,3 +333,37 @@ https://linuxacademy.com/cp/modules/view/id/409
 Course data mining
 
 https://www.coursera.org/learn/data-manipulation/lecture/goGJR/appetite-whetting-extreme-weather
+
+
+
+Complete Guide to Elasticsearch
+
+https://www.udemy.com/course/elasticsearch-complete-guide/
+
+
+
+ElasticSearch, LogStash, Kibana ELK #1 - Learn ElasticSearch
+
+https://learning.oreilly.com/videos/elasticsearch-logstash-kibana/9781788999816?autoplay=false
+
+
+
+ElasticSearch, LogStash, Kibana ELK #2 - Learn LogStash
+
+https://learning.oreilly.com/videos/elasticsearch-logstash-kibana/9781788997904
+
+
+
+ElasticSearch, LogStash, Kibana ELK #3 - Learn Kibana
+
+https://learning.oreilly.com/videos/elasticsearch-logstash-kibana/9781788991193
+
+
+
+ElasticSearch, LogStash, Kibana (the ELK Stack) # 1
+
+https://learning.oreilly.com/videos/elasticsearch-logstash-kibana/100000006A0739
+
+ElasticSearch, LogStash, Kibana (the ELK Stack) # 2
+
+https://learning.oreilly.com/videos/elasticsearch-logstash-kibana/100000006A0740
