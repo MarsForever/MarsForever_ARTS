@@ -66,7 +66,7 @@
     * AWS S3 buckets
     * Files
 
-![](./images/Screen Shot 2020-04-24 at 09.20.46.PNG)
+![](./images/image01.PNG)
 
 
 
@@ -135,25 +135,25 @@ logstash -e 'input{ stdin{} } output{ stdin{} }'
 
 Advanced Pipeline
 
-![Advanced Pipeline](./images/Screen Shot 2020-04-25 at 21.39.36.PNG)
+![Advanced Pipeline](./images/image02.PNG)
 
 
 
 ### LogStash Plugins
 
-![](./images/Screen Shot 2020-04-25 at 21.42.32.PNG)
+![](./images/image03.PNG)
 
 #### Input Plugin
 
-![](./images/Screen Shot 2020-04-25 at 21.44.16.PNG)
+![](./images/image04.PNG)
 
 #### Filter Plugin
 
-![](./images/Screen Shot 2020-04-25 at 21.46.24.PNG)
+![](./images/image05.PNG)
 
 #### Output Plugin
 
-![](./images/Screen Shot 2020-04-25 at 21.47.36.PNG)
+![](./images/image06.PNG)
 
 #### Input Plugins
 
