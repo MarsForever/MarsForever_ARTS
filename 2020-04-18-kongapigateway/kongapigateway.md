@@ -196,6 +196,7 @@ Common functionality per consumer(via Kong Plugins)  => Kong (path:gamma) => API
 * Weighted Round Robin
 * Hash-Based
 * Health Check
+  * generate slack webhook url
 
 docker container stop alpha
 
@@ -336,13 +337,45 @@ docker run -d --name zipkin --restart always --network kong-net -p 9411:9411 ope
 ```
 
 #### Elastic Stack for Analytics
+##### API Analytics
 
-problem: can't create index pattern in kibana
+* Usage frequency
+* Performance
+* Error rate
+
+![](./images/CaptureA3.PNG)
 
 
 
+```
+# 存在確認
+curl -XGET localhost:9200/index_name/_mapping?pretty=true
+
+# 削除
+curl -XDELETE localhost:9200/index_name?pretty=true
+
+# 存在確認(消えていること)
+curl -XGET localhost:9200/index_name/_mapping?pretty=true
+
+#削除成功
+{
+  "acknowledged": true
+}
+
+#削除後の確認
+{
+  "error": "IndexMissingException[[index_name] missing]",
+  "status": 404
+}
+```
 
 
+
+##### Monitoring Kong Vitals
+
+create a channel and app for grafana alert
+
+generate slack webhook url for grafana alerts
 
 
 
@@ -359,3 +392,9 @@ Production Checklist
 * Use HTTPS for Kong connection
 * Monitor your Kong machine
 * 
+
+
+
+
+
+## need brush up(复习)

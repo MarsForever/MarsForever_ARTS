@@ -1,0 +1,5 @@
+docker run -d --name prometheus --restart always --network kong-net -p 9090:9090 -v c:\Users\marsforever\git_repositories\MarsForever_ARTS\2020-04-18-kongapigateway\files\prometheus-docker\config/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+
+
+docker run -d --name grafana --restart always --network kong-net -p 3000:3000 grafana/grafana
+
