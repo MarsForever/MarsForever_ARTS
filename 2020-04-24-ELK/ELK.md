@@ -1,4 +1,176 @@
-## LogStash
+#### 0 Firewall Setting
+
+##### 1. [+] create new zone for elk service
+
+firewall-cmd --permanent --new-zone=elk
+
+##### 2. [+] add new zong to device
+
+#check device
+
+#method1
+
+firewalld-cmd --get-active-zone
+
+#method2
+
+ip addr
+
+firewall-cmd --permanent --zone=elk --change-interface=enp0s3
+
+firewall-cmd --permanent --zone=elk --change-interface=enp0s8
+
+
+
+##### 3. [+] add serivce to new zone
+
+firewall-cmd --permanent --zone=elk --add-service=dhcpv6-client
+
+firewall-cmd --permanent --zone=elk --add-service=ssh
+
+firewall-cmd --permanent --zone=elk --add-service=http
+
+
+
+##### 4.[+] add port to service
+
+##### add elastic port
+
+firewall-cmd --permanent --zone=elk --add-port =9200/tcp
+
+##### add kibana port
+
+firewall-cmd --permanent -zone=elk --add-port=5601/tcp
+
+##### 5. [*] apply the setting to firewalld and change the default zone
+
+firewall-cmd --reload
+
+firewall-cmd --set-default --zone=elk
+
+
+
+#### 1 Install ELK
+
+##### 1.[+]  Create a yum repository for elastic products
+```
+#Install public signing key
+rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+```
+
+vim /etc/yum.repos.d/elastic_stack.repo
+```
+#Installing from the RPM repository
+[elasticsearch]
+name=Elasticsearch repository for 7.x packages
+baseurl=https://artifacts.elastic.co/packages/7.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+```
+##### 2.[+]  Install Java
+```
+yum install java-1.8.0-openjdk -y
+```
+
+#####  3. [+]Install elasticsearcy
+yum install elasticsearch -y
+
+#####  4.[*] Modify yml file
+
+vim /etc/elasticsearch/elasticsearch.yml
+
+```
+network.host: $kibana_private_ip
+http.port: 9200
+```
+#####  5.[+] Start Elasticsearch
+
+systemctl daemon-reload
+
+systemctl enable elasticsearch
+systemctl start elasticseearch
+
+systemctl status elasticsearch
+
+curl localhost:9200
+
+##### 6. [+] Install kibana
+yum install kibana -y
+
+##### 7. [*] Modify yml file
+
+vim /etc/kibana/kibana.yml
+
+```
+server.port: 5601
+server.host: "localhost"
+elasticsearch.hosts: ["http://$elasticsearch_private_ip:9200"]
+discovery.seed_hosts: ["elasticsearch_private_ip"]
+```
+#####  8. [+]Start Kibana
+
+systemctl daemon-reload
+
+systemctl enable kibana
+
+systemctl start kibana
+
+systemctl status kibana
+
+curl localhost:5601
+
+##### 9. [+] Install logstash
+
+
+
+
+
+##### 10. [*]  edit yml 
+
+vim /etc/filebeat/filebeat.yml
+
+```
+filebeat.inputs:
+- type: docker
+  containers.ids:
+  - '*'
+  paths:
+  - /var/lib/docker/containers/*.log
+
+
+setup.kibana:
+  host: 192.168.99.105:5601
+
+
+output.elasticsearch:
+  # Array of hosts to connect to.
+  hosts: ["http://192.168.99.105:9200"]
+
+  # Protocol - either `http` (default) or `https`.
+  #protocol: "https"
+  protocol: "http"
+```
+
+# LogStash
+
+## Data Processing with Logstash(and Filebeat)
+
+### Section 1: Getting Started
+
+https://github.com/codingexplained/data-processing-with-logstash
+
+### Section 2: Basics of Logstash
+
+### Section 3: Project Apache
+
+### Section 4: Collecting Logs with Filebeat
+
+### Section 5: COnclusion
+
+
 
 #### Learning Outcomes
 
@@ -311,6 +483,24 @@ Grok supports custom patterns
 
 * inline cutom pattern using Oniguruma syntax
 * file based custom patterns
+
+## Beats
+
+### Key takeways
+
+* Beats is collection of light-weight data shippers
+* They are installed on servers and send data to outputs
+* The most commonly used Beats are FileBeat and MetricBeat
+* Modules reduce configuration and provide Kibana dashboards
+* Sending data over the network has numerous advantages
+
+
+
+FileBeat
+
+https://www.elastic.co/blog/enrich-docker-logs-with-filebeat
+
+
 
 
 
