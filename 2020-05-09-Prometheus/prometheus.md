@@ -536,5 +536,36 @@ https://github.com/prometheus/prometheus#architecture-overview
 
   [Prometheus default port number](https://github.com/prometheus/prometheus/wiki/Default-port-allocations)
 
+* Make sure the user has the following IAM role: **AmazonEC2ReadOnlyAccess
 
+* Make sure you security groups allows access to port(9100,9090)
 
+* EC2 Example:
+
+  Only monitor instances started with the name PROD
+
+![](./images/CaptureA1.PNG)
+
+* Kubernetes Example:
+
+  Add following config to /etc/prometheus/prometheus.yml
+
+![](./images/CaptureA2.PNG)
+
+* DNS Example:
+
+  ADD following config to /etc/prometheus/prometheus.yml
+
+  ![](./images/CaptureA3.PNG)
+
+* File Example:
+
+  Add following config to /etc/prometheus/prometheus.yml
+
+  ![](./images/CaptureA4.PNG)
+
+* Format target.json
+
+  ![](./images/CaptureA5.png)
+
+  
