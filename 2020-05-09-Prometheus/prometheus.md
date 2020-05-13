@@ -228,6 +228,7 @@ New Dashboard => Dashboard => Choose Visualization => Graph
     ```
 
 * Status (Check config and basic info)
+  
   * $IP:9090/targets
 
 ### 9. Monitoring Nodes(Servers) with Prometheus
@@ -246,7 +247,7 @@ Linux machine(node exporter(HTTP)) or Windows machine(node exporter(HTTP)) => Pr
 
 ```shell
 scripts/2-node-exporter.sh
-#Add the following lines to /etc/prometheus/prometheus.yml:
+#Add the following lines to /etc/prometheus/prometheus.yml 's last line':
   - job_name: 'node_exporter'
     scrape_interval: 5s
     static_configs:
@@ -367,7 +368,7 @@ https://github.com/prometheus/prometheus#architecture-overview
 
 ![](./images/Capture5.PNG)
 
-* Summayr
+* Summary
 
   ```Go
   prometheus.NewSummary()
@@ -568,4 +569,258 @@ https://github.com/prometheus/prometheus#architecture-overview
 
   ![](./images/CaptureA5.png)
 
+  ### 18. Exporters 
   
+  * Build for exporting prometheus metrics from existing third-party metrics
+  * When Prometheus is not able to pull metrics directly(Linux sys stats, haproxy, ...)
+  * Examples:
+    * MySQL server exporter
+    * Mymcached exporter
+    * Consul exporter
+    * Node/system metrics exporter
+    * MongoDB
+    * Redis
+    * Many more ...
+  * https://prometheus.io/docs/instrumenting/exporters/
+  
+  ## Section 4: Alerting
+  
+  ### 19. Introduction to Alerting
+  
+  * Alerting in Prometheus is separated into 2 parts
+  
+    * Alerting rules in Prometheus server
+    * Alertmanager 
+  
+    ![](./images/CaptureA6.png)
+  
+    
+
+#### Alerting Rules
+
+* Rules live in Prometheus server config
+
+* Best practice to separate the alerts from the prometheus config
+
+  * Add an include to /etc/prometheus/prometheus.yml
+
+    ```
+    rule_files:
+      - "/etc/prometheus/alert.rules"
+    ```
+
+* Alert format:
+
+  ```
+  ALERT <alert name>
+    IF <expression>
+    [ FOR <duration>]
+    [ LABELS <label set>]
+    [ ANNOTATION <label set>]
+  ```
+
+* Alert example:
+
+  ```
+  groups:
+  - name: example
+    rules:
+    - alert: cpuUge
+       expr: 100 - (avg by (instance) (irate(node_cpu_secons_total{job='node_exporter', mode="idle"}[5m])) * 100) > 95
+       for: 1m
+       labels:
+         serverity: critical
+       annotations:
+          summary: Machie user healvy load
+  ```
+
+* Alerting rules allow you to define the alert conditions
+
+* Alerting rules sent the alerts being fired to an external service
+
+* The format of these alerts is in Prometheus expression language
+
+* Example:
+
+  ```
+  groups:
+  - name: Important instance
+    rules:
+    
+    #Alert for any instance that is unreachable for > 5 minutes
+    - alert: InstanceDown
+      expr: up == 0
+      for: 5m
+      labels:
+        serverity: page
+      annotations:
+        summary: "Instance {{$labels.instance }} dwon"
+        description: "{{ $label.instance }} of job {{ $labels.job}} has been down for more than 5 mintues."
+  ```
+
+#### Alertmanager
+
+* **Alertmanager** handles the alerts fired by the prometheus server
+
+* Handles **deduplication**(重复数据删除),**grouping** and **routing** of alerts
+
+* **Routes** alerts to **receivers** (Pagerduty, Opsgenie, email, Slack,...)
+
+* Alermanager Configuration (/etc/alertmanager/alertmanager.yml):
+
+  ```
+  global:
+    smtp_smarthost: 'localhost:25'
+    smtp_from: 'alertmanager@xxx.com'
+    smtp_auth_username: ''
+    smtp_auth_password: ''
+  
+  templates:
+  - '/etc/alertmanager/template/*.tmpl'
+  
+  route:
+    repeat_interval: 1h
+    receiver: operations-team
+  
+  receivers:
+  - name: 'operations-team'
+    email_configs:
+    - to : 'operations-team+alerts@xxx.com'
+    slack_configs:
+    - api_usr: https://hooks.slack.com/services/
+      channel: '#xxxxx'
+      send_resolved: true
+  ```
+
+* Prometheus Configuration(/etc/prometheus/prometheus.yml)
+
+  ![](./images/CaptureA7.png)
+
+* Concepts:
+
+  * **Grouping**: groups similar alerts into 1 notification
+
+  * **Inhibition**(抑制): Silence other alerts if one specified alert is already fired
+
+  * **Silences**: A simple way to mute certain notifications
+
+  * **High availability**
+
+    * You can create a high available **Alertmanager** cluster using mesh config
+    * Do **not** load balancer this service?!
+      * Use a list of Alertmanager nodes in Prometheus config
+    * All alerts are sent to all known Alertmanager nodes
+    * No need to monitor the monitoring
+    * Guarantees the notification is at least send once
+    * 
+  
+* Alert states:
+    * Inactive - No rule is met
+    * Pending - Rule is met but can be suppressed(压制) due to validations(确认)
+    * Firing - Alert is sent to the configured channel(mail, Slack, ...)
+    
+* Port 9093
+
+* Notifying multiple destinations
+
+    *  mail,slack etc
+
+### 20. Setting up Alerts
+
+* Install Alertmanager
+* Create config for the Alertmanager
+  * Mail
+  * Slack
+* Alert prometheus config
+* Setup an alert
+  * See the notification coming in when an alert is fired
+
+```
+scripts/4-install-alertmanager.sh
+
+https://api.slack.com/apps?new_app=1
+=> Create New App 
+=> Basic Information 
+=> Add features and functionality 
+=> Incoming Webhooks
+=> add to Channel
+=> Copy Webhook URL
+
+add webhook url to /etc/alertmanager/alertmanager.yml
+
+systemctl restart alertmanager
+systemctl status alertmanager
+
+vim /etc/prometheus/prometheus.yml
+---
+localhost:9093
+---
+
+http://192.168.99.106:9093/#/alerts
+
+http://192.168.99.106:9090/graph
+```
+
+##### Send mail
+
+```
+# install mail server
+./5-
+yum install mailx
+
+#setting mail
+http://kkv.hatenablog.com/entry/2015/06/12/001436
+
+#add modules
+https://machua.hatenadiary.org/entry/20120301/1330625122
+
+# add modify password to /etc/postfix/sasl_passwd
+https://support.google.com/mail/?p=InvalidSecondFactor
+
+
+echo "You successfully installed the mail server" | mail -s "Prometheus mail server OK" xxxxxx@xxx.com
+```
+
+vim /etc/prometheus/prometheus.yml
+
+```
+rule_files:
+  - "/etc/prometheus/alert.rules"
+```
+
+vim /etc/prometheus/alert.rules
+
+```
+groups:
+- name: example
+  rules:
+  - alert: cpuUsage
+    expr: 100 - (avg by(instance)(irate(node_cpu_seconds_total{job='node_exporter', mode= "idle"}[5m])) * 100) > 95
+    for: 1m
+    labels:
+      servrity: critical
+    annotations:
+       summary: Machine under healthy load
+```
+
+check your browser
+
+$ip:9090/alerts
+
+
+
+```
+yes > /dev/null &
+yes >> /dev/null &
+top
+
+# prometheus
+$ip:9090/alerts
+
+# alert manager
+$ip:9093/#/alerts
+
+
+https://yohei-a.hatenablog.jp/entry/20141007/1412690972
+```
+
