@@ -379,7 +379,18 @@ generate slack webhook url for grafana alerts
 
 
 
+### Section 17: Securing Kong
 
+docker-compose.yml
+
+1. KONG_SSL_CERT: [path_co_cert]
+2. KONG_SSL_CERT_KEY: [path_co_cert_key]
+
+docker script
+
+```
+docker run .... -e "KONG_SSL_CERT =[path_to_cert]" -e "KONG_SSL_CERT_KEY=[path_to_cert_key]" ... kong:latest
+```
 
 
 
