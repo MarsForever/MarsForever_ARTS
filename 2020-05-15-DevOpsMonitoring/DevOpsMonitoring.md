@@ -127,7 +127,7 @@ docker build -t forethought .
 
 ````shell
 docker image list
-docker run --name ft-app -p 80:8080 -d forethgought
+docker run --name ft-app -p 80:8080 -d forethought
 ````
 
 ### Prometheus Setup
@@ -677,3 +677,353 @@ The above expressions will show us the 30-second average of bytes either transmi
 When we talk about load, we're referencing the amount of processes waiting to be served by the CPU. You've probably seen these metrics before: They're sitting at the top of any `top` command run, and are available for us to view in the `/proc/loadavg` file. Taken every 1, 5, and 15 minutes, the load average gives us a snapshot of how hard our system is working. We can view these statistics in Prometheus at `node_load1`, `node_load5`, and `node_load15`.
 
 That said, load metrics are mostly useless from a monitoring standpoint. What is a heavy load to one server can be an easy load for another, and beyond looking at any trends in load in the time series, there is nothing we can alert on here nor any real data we can extract through queries or any kind of math.
+
+#### Using cAdvisor to Monitor Containers
+
+1. Launch cAdvisor:
+
+   ```
+    $ sudo docker run \
+      --volume=/:/rootfs:ro \
+      --volume=/var/run:/var/run:ro \
+      --volume=/sys:/sys:ro \
+      --volume=/var/lib/docker/:/var/lib/docker:ro \
+      --volume=/dev/disk/:/dev/disk:ro \
+      --publish=8000:8080 \
+      --detach=true \
+      --name=cadvisor \
+      google/cadvisor:latest
+   ```
+
+2. List available containers to confirm it's working:
+
+   ```
+    $ docker ps
+   ```
+
+3. Update the Prometheus config:
+
+   ```
+    $ sudo $EDITOR /etc/prometheus/prometheus.yml
+   
+      - job_name: 'cadvisor'
+        static_configs:
+        - targets: ['localhost:8000']
+   ```
+
+4. Restart Prometheus:
+
+   ```
+    $ sudo systemctl restart prometheus
+   ```
+
+5. Open browsers $IP:8000/containers, $IP:8000/docker/
+
+![](./images/cAdvisor.png)
+
+```
+docker run --name ft-app -p 80:8080 -d forethought 
+docker update --restart=always ft-app
+
+docker run \
+   --volume=/:/rootfs:ro \
+   --volume=/var/run:/var/run:ro \
+   --volume=/sys:/sys:ro \
+   --volume=/var/lib/docker/:/var/lib/docker:ro \
+   --volume=/dev/disk/:/dev/disk:ro \
+   --publish=8000:8080 \
+   --detach=true \
+   --name=cadvisor \
+   --restart=always \
+   google/cadvisor:latest
+```
+
+```
+# get container ft-app's cpu usage
+container_memory_usage_bytes{name="ft-app"}
+```
+
+#### Using a Client Library
+
+1. Move into the `forethought` directory:
+
+   ```
+    cd forethought
+   ```
+
+2. Install the `prom-client` via `npm`, Node.js's package manager:
+
+   ```
+    npm install prom-client --save
+   ```
+
+3. Open the `index.js` file, where we'll be adding all of our metrics code:
+
+   ```
+    vim $EDITOR index.js
+   ```
+
+4. Require the use of the `prom-client` by adding it to our variable list:
+
+   ```
+    var express = require('express');
+    var bodyParser = require('body-parser');
+    var app = express();
+    const prom = require('prom-client');
+   ```
+
+   With `prom` being the name we'll use when calling the client library.
+
+5. Enable default metrics scraping:
+
+   ```
+    const collectDefaultMetrics = prom.collectDefaultMetrics;
+    collectDefaultMetrics({ prefix: 'forethought' });
+   ```
+
+6. Use Express to create the `/metrics` endpoint and call in the Prometheus data:
+
+   ```
+    app.get('/metrics', function (req, res) {
+      res.set('Content-Type', prom.register.contentType);
+      res.end(prom.register.metrics());
+    });
+   ```
+
+7. test
+
+   ````
+   node index.js
+   
+   $IP:8080/metrics
+   ````
+
+#### Counters
+
+1. Open up the `index.js` file:
+
+   ```
+    cd forethought
+    $EDITOR index.js
+   ```
+
+2. Define a new metric called `forethought_number_of_todos_total` that works as a counter:
+
+   ```
+    // Prometheus metric definitions
+    const todocounter = new prom.Counter({
+      name: 'forethought_number_of_todos_total',
+      help: 'The number of items added to the to-do list, total'
+    });
+   ```
+
+3. Call the new metric in the `addtask` post function so it increases by one every time the function is called while adding a task:
+
+   ```
+    // add a task
+    app.post("/addtask", function(req, res) {
+      var newTask = req.body.newtask;
+      task.push(newTask);
+      res.redirect("/");
+      todocounter.inc();
+    });
+   ```
+
+   Save and exit.
+
+4. Test the application:
+
+   ```
+    node index.js
+   ```
+
+5. While the application is running, visit MYLABSERVER:8080 and add a few tasks to the to-do list.
+
+6. Visit `MYLABSERVER:8080/metrics` to view your newly created metric!
+
+#### Gauges
+
+1. Define the new gauge metric for tracking tasks added and completed:
+
+   ```
+   const todogauge = new prom.Gauge ({
+     name: 'forethought_current_todos',
+     help: 'Amount of incomplete tasks'
+   });
+   ```
+
+2. Add a gauge `.inc()` to the `/addtask` method:
+
+   ```
+   // add a task
+   app.post("/addtask", function(req, res) {
+     var newTask = req.body.newtask;
+     task.push(newTask);
+     res.redirect("/");
+     todocounter.inc();
+     todogauge.inc();
+   });
+   ```
+
+3. Add a gauge `dec()` to the `/removetask` method:
+
+   ```
+   // remove a task
+   app.post("/removetask", function(req, res) {
+     var completeTask = req.body.check;
+     if (typeof completeTask === "string") {
+       complete.push(completeTask);
+       task.splice(task.indexOf(completeTask), 1);
+     }
+     else if (typeof completeTask === "object") {
+       for (var i = 0; i < completeTask.length; i++) {
+         complete.push(completeTask[i]);
+         task.splice(task.indexOf(completeTask[i]), 1);
+         todogauge.dec();
+       }
+     }
+     res.redirect("/");
+   });
+   ```
+
+   Save and exit the file.
+
+4. Test the application:
+
+   ```
+   node index.js
+   ```
+
+5. While the application is running, visit MYLABSERVER:8080 and add a few tasks to the to-do list.
+
+6. Visit `MYLABSERVER:8080/metrics` to view your newly created metric!
+
+#### Summaries and Histograms
+
+1. Move into the `forethought` directory:
+
+   ```
+    cd forethought
+   ```
+
+2. Install the Node.js module `response-time`:
+
+   ```
+    npm install response-time --save
+   ```
+
+3. Open the `index.js` file:
+
+   ```
+    $EDITOR index.js
+   ```
+
+4. Define both the summary and histogram metrics:
+
+   ```
+    const tasksumm = new prom.Summary ({
+      name: 'forethought_requests_summ',
+      help: 'Latency in percentiles',
+    });
+    const taskhisto = new prom.Histogram ({
+      name: 'forethought_requests_hist',
+      help: 'Latency in history form',
+    });
+   ```
+
+5. Call the `response-time` module with the other variables:
+
+   ```
+    var responseTime = require('response-time');
+   ```
+
+6. Around where we define our website code, add the `response-time` function, calling the `time` parameter within our `.observe` metrics:
+
+   ```
+    app.use(responseTime(function (req, res, time) {
+      tasksumm.observe(time);
+      taskhisto.observe(time);
+    }));
+   ```
+
+7. Save and exit the file.
+
+8. Run the demo application:
+
+   ```
+    node index.js
+   ```
+
+9. View the demo application on port 8080, and add the tasks to generate metrics.
+
+10. View the `/metrics` endpoint. Notice how our response times are automatically sorted into percentiles for our summary. Also notice how we're not using all of our buckets in the histogram.
+
+11. Return to the command line and use **CTRL+C** to close the demo application.
+
+12. Reopen the `index.js` file:
+
+    ```
+    $EDITOR index.js
+    ```
+
+13. Add the `buckets` parameter to the histogram definition. We're going to adjust our buckets based on the response times collected:
+
+    ```
+    const taskhisto = new prom.Histogram ({
+      name: 'forethought_requests_hist',
+      help: 'Latency in history form',
+      buckets: [0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+    });
+    ```
+
+14. Save and exit. Run `node index.js` again to test.
+
+#### Redeploying the Application
+
+1. Stop the current Docker container for our application:
+
+   ```
+    docker stop ft-app
+   ```
+
+2. Remove the container:
+
+   ```
+    docker rm ft-app
+   ```
+
+3. Remove the image:
+
+   ```
+    docker image rm forethought
+   ```
+
+4. Rebuild the image:
+
+   ```
+    docker build -t forethought .
+   ```
+
+5. Deploy the new container:
+
+   ```
+    docker run --name ft-app -p 80:8080 -d forethought
+   ```
+
+6. Add the application as an endpoint to Prometheus:
+
+   ```
+    sudo $EDITOR /etc/prometheus/prometheus.yml
+   
+      - job_name: 'forethought'
+        static_configs:
+        - targets: ['localhost:80']
+   ```
+
+   Save and exit.
+
+7. Restart Prometheus:
+
+   ```
+    sudo systemctl restart prometheus
+   ```
