@@ -1027,3 +1027,303 @@ container_memory_usage_bytes{name="ft-app"}
    ```
     sudo systemctl restart prometheus
    ```
+
+## Expanding the Monitoring Stack
+
+### Managing Alerts
+
+#### Recording Rules
+
+1. Using the expression editor, view the uptime of all targets:
+
+   ```
+    up
+   ```
+
+2. Since we don't want to alert on each individual job and instance we have, let's take the average of our uptime instead:
+
+   ```
+    avg (up)
+   ```
+
+3. We do not want an average of *everything*, however. Next, use the `without` clause to ensure we're not merging our targets by instance:
+
+   ```
+    avg without (instance) (up)
+   ```
+
+4. Further refine the expression so we only see the uptime for our `forethought` jobs:
+
+   ```
+    avg without (instance) (up{job="forethought"})
+   ```
+
+5. Now that we have our expression written, we can look into how to add this as a rule. Switch to your terminal.
+
+6. Open the Prometheus configuration file:
+
+   ```
+    $ sudo $EDITOR /etc/prometheus/prometheus.yml
+   ```
+
+7. Locate the `rule_files` parameter. Add a rule file at `rules.yml`:
+
+   ```
+    rule_files:
+      - "rules.yml"
+   ```
+
+   Save and exit the file.
+
+8. Create the `rules.yml` file in `/etc/prometheus`:
+
+   ```
+    $ sudo $EDITOR /etc/prometheus/rules.yml
+   ```
+
+9. Every rule needs to be contained in a group. Define a group called `uptime`, which will track the uptime of anything that affects the end user:
+
+   ```
+    groups:
+      - name: uptime
+   ```
+
+10. We're first going to define a *recording* rule, which will keep track of the results of a PromQL expression, without performing any kind of alerting:
+
+    ```
+    groups:
+      - name: uptime
+        rules:
+          - record: job:uptime:average:ft
+            expr: avg without (instance) (up{job="forethought"})
+    ```
+
+    Notice that format of `record` — this is the setup we need to use to define the name of our recording rule. Once defined, we can call this metric directly in PromQL.
+
+    The `expr` is just the expression, as we would normally write it in the expression editor.
+
+    Save and exit the file.
+
+11. Restart Promtheus for the rules changes to take effect:
+
+    ```
+    $ sudo systemctl restart prometheus
+    ```
+
+12. Return to the web UI and navigate to **Status** > **Rules**.
+
+13. Click on the provided rule — it will take us to the expression editor! Return to the **Rules** page when done.
+
+#### Alerting Rules
+
+1. Now that we have a recording rule, we can build our alerting rule based on this. We know we want to alert when we have less than 75% of our application containers up, so we'll use the `job:uptime:average:ft < .75` expression:
+
+   ```
+    groups:
+      - name: uptime
+        rules:
+          - record: job:uptime:average:ft
+            expr: avg without (instance) (up{job="forethought"})
+          - alert: ForethoughtApplicationDown
+            expr: job:uptime:average:ft < .75
+   ```
+
+   Notice how we define this rule with `alert` instead of `record` and that the name does not have to follow the previously defined format.
+
+   Save and exit when done.
+
+2. Restart Prometheus:
+
+   ```
+    $ sudo systemctl restart prometheus
+   ```
+
+3. Refresh the **Rules** page to view the second rule.
+
+#### For
+
+To prevent alerts from firing in instances such as this, we use the `for` parameter:
+
+```
+groups:
+  - name: uptime
+    rules:
+      - record: job:uptime:average:ft
+        expr: avg without (instance) (up{job="forethought"})
+      - alert: ForethoughtApplicationDown
+        expr: job:uptime:average:ft < .75
+        for: 5m
+```
+
+When we set `for` to `5m`, we're telling Prometheus to hold the alert in a `pending` state until it's been down for five minutes. Then — and only then — will it fire the alert to Alertmanager. This prevents any unnecessary alerting from issues like the above. 
+
+#### Annotations
+
+Annotations let us pass in additional information to our alerts. These are written as key-value pairs in the YAML itself and can make use of Go's templating language to pull in special values. Generally, we want to provide any relevant information we can in the annotations, including information about the issue itself, links to any documentation, and debugging information.
+
+Two variables are provided for us to use: `$value`, which calls the value of the expression that triggered the alert (`job:uptime:average:ft < .75` for our example alert), and `$label.NAME`, which lets us call a label by its name. So if we wanted to call our `job` label, we would use `$label.job`.
+
+At the very least, we generally want to include an overview of the issue at hand, ensuring whoever is addressing the issue knows both what the problem is and which parts of your platform are affected:
+
+```
+groups:
+  - name: uptime
+    rules:
+      - record: job:uptime:average:ft
+        expr: avg without (instance) (up{job="forethought"})
+      - alert: ForethoughtApplicationDown
+        expr: job:uptime:average:ft < .75
+        for: 5m
+        annotations:
+          overview: '{{printf "%.2f" $value}}% instances are up for {{ $labels.job }}'
+```
+
+#### Labels
+
+Up until this point, much of our configurations for our alerts have been directly for our benefit — clear annotations, a `for` value to make sure we don't get alerted unnecessarily — but we also want to include labels for better routing to Alertmanager.
+
+Labels are key-value pairs that will eventually let us sort through our tickets by what we deem important. These should be consistent across your alerts and generally contain information such as severity and which team will take over to address the issue. This way, once we get our alerts into the Alertmanager, we can sort them by these labels, ensuring we're funneling our alerts to the right place.
+
+We can set these alerts via the `labels` parameter, just as we did for our annotations:
+
+```
+groups:
+  - name: uptime
+    rules:
+      - record: job:uptime:average:ft
+        expr: avg without (instance) (up{job="forethought"})
+      - alert: ForethoughtApplicationDown
+        expr: job:uptime:average:ft < .75
+        for: 5m
+        labels:
+          severity: page
+          team: devops
+        annotations:
+          overview: '{{printf "%.2f" $value}}% instances are up for {{ $labels.job }}'
+```
+
+#### Preparing Our Receiver
+
+1. Go to [slack.com](http://slack.com/) and create a new workspace, following the step-by-step instructions on screen until you are given your workspace. Be sure to add a `prometheus` channel!
+2. From your chat, use the workspace menu to go to **Administration** and then **Manage apps**.
+3. Select **Build** on the top menu.
+4. Press **Start Building**, then **Create New App**. Give your application a name, and then select the workspace you just created. Click **Create App** when done.
+5. Select **Incoming Webhooks** from the menu.
+6. Turn webhooks on.
+7. Click **Add New Webhook to Workspace**, setting the channel name to the `prometheus` channel. **Authorize** the webhook.
+8. Make note of the webhook URL.
+
+#### Using ALertmanager
+
+1. Open the Alertmanager configuration:
+
+   ```
+    $ sudo $EDITOR /etc/alertmanager/alertmanager.yml
+   ```
+
+2. Set the default route's `repeat_interval` to one minute and update the receiver to use our Slack endpoint:
+
+   ```
+    route:
+      receiver: 'slack'
+      group_by: ['alertname']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1m
+   ```
+
+3. Create a secondary route that will send `severe: page` alerts to the Slack receiver; group by the `team` label:
+
+   ```
+    route:
+      receiver: 'slack'
+      group_by: ['alertname']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1m
+      routes:
+        - match:
+            severity: page
+          group_by: ['team']
+          receiver: 'slack'
+   ```
+
+4. Add a tertiary route that sends all alerts for the `devops` team to Slack:
+
+   ```
+    route:
+      receiver: 'slack'
+      group_by: ['alertname']
+      repeat_interval: 1m
+      routes:
+        - match:
+            severity: page
+          group_by: ['team']
+          receiver: 'slack'
+          routes:
+            - match:
+                team: devops
+              receiver: 'slack'
+   ```
+
+5. Update the receiver to use Slack:
+
+   ```
+    receivers:
+    - name: 'slack'
+      slack_configs:
+        - channel: "#prometheus"
+          api_url: APIKEY
+          text: "Overview: {{ .CommonAnnotations.overview }}"
+   ```
+
+6. Update the `inhibit_rules` so that any alerts with the severity of `ticket` for the DevOps team are suppressed when a `page`-level alert is happening:
+
+   ```
+    inhibit_rules:
+      - source_match:
+          severity: 'page'
+        target_match:
+          severity: 'ticket'
+        equal: ['team']
+   ```
+
+   Save and exit.
+
+7. Restart Alertmanager:
+
+   ```
+    $ sudo systemctl restart alertmanager
+   ```
+
+8. View your Slack chat and wait to see the firing alert.
+
+#### Silences
+
+#### Building a Panel
+
+1. Return to your Grafana instance at port 3000.
+
+2. Switch to the *Forethought* dashboard.
+
+3. Click **Add Panel**. Select **Heatmap**.
+
+4. When the panel appears, click on the name and then **Edit**.
+
+5. Switch to the **General** tab, and set the name of the chart to *Response Time Distribution*.
+
+6. Return to the **Metrics** tab. We're going to calculate the average response time over time of each of our buckets:
+
+   ```
+    sum(rate(forethought_requests_hist_bucket[30s])) by (le)
+   ```
+
+   Set the **Legend** to `{{le}}`.
+
+7. From the **Axes** tab, switch the **Data format** to *Time series buckets*.
+
+8. If desired, further alter the graph's colors and appearance by using the **Display** tab.
+
+9. Return to the dashboard.
+
+10. Click the **Save** icon, add a comment, and **Save**.
