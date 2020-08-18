@@ -493,11 +493,11 @@ mongod -dbpath "C:\MongoDB\server\data" --logpath "C:\MongoDB\server\log\mongod.
 
 ### 16. データ型
 
-![alt データ型](images/Capture2.png)
+![alt データ型](images/Capture2.PNG)
 
 JavaScriptと同じ部分を赤くする
 
-![alt データ型javascript](images/Capture3.png)
+![alt データ型javascript](images/Capture3.PNG)
 
 version 4.0で非推奨 Symbol,Undefined,Timestamp(内部用)
 
@@ -903,6 +903,7 @@ ObjectIdはMongoDB独自で一意な値。
   ```shell
   { <FIELD>: { $not: <EXPRESSION> } }
   ※文字列比較の場合、正規表現を利用する
+  ```
 ```
   
 - Practice
@@ -936,7 +937,7 @@ ObjectIdはMongoDB独自で一意な値。
   	publisher: {$not: /新朝社/}
   })
   ここ要調べ
-  ```
+```
 
   
 
