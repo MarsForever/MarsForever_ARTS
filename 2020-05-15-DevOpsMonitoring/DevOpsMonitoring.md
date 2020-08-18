@@ -2,6 +2,8 @@
 
 https://linuxacademy.com/cp/modules/view/id/329
 
+https://interactive.linuxacademy.com/diagrams/ProjectForethought.html
+
 # Linux User Management Deep Dive
 
 https://linuxacademy.com/cp/modules/view/id/443
@@ -39,8 +41,6 @@ https://www.bilibili.com/video/BV16J411z7SQ?from=search&seid=8467648674941710661
 # Elasticsearch Deep Dive
 
 https://linuxacademy.com/cp/modules/view/id/213
-
-https://interactive.linuxacademy.com/diagrams/ProjectForethought.html
 
 
 
