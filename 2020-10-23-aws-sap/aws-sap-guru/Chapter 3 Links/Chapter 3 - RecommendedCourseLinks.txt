@@ -1,0 +1,13 @@
+Recommended Course Links:
+
+https://acloud.guru/series/acg-fundamentals/view/62f923ef-8f30-2f51-8681-5ab5de29b45d
+
+Subnet Calculator:
+http://www.subnet-calculator.com/cidr.php
+
+Security in Amazon Virtual Private Cloud
+https://docs.aws.amazon.com/vpc/latest/userguide/security.html
+
+GitHub Lab Networking:
+https://github.com/ACloudGuru-Resources/Course_Certified_Solutions_Architect_Professional/tree/master/lab-networking
+

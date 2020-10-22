@@ -1,0 +1,47 @@
+Here are my exam tips
+for the storage module.
+The most important thing I can recommend
+is be sure to read the AWS Storage Options whitepaper
+and note the anti-patterns in that particular paper.
+You really need a solid understanding
+of when to use various data stores,
+for instance, when the question asks for
+an OLTP or ACID-compliant data store,
+then RDS is your answer.
+If it talks about storing blobs, then S3 is the best choice,
+and if it mentions something about
+needing complete control over the database
+then that should lead you to the EC2 option.
+Now in each chapter,
+I've assembled some resources for further study
+and they come in two flavors,
+AWS Whitepapers and re:Invent videos.
+Now the whitepapers are absolutely required,
+there will be questions on the exam
+and in my quizzes and in the exam simulator
+that come straight out of the whitepapers.
+So you really wanna read those.
+The re:Invent videos are optional
+but they're recommended for maximum badassery.
+The reason I recommend that you watch those re:Invent videos
+is a lot of times the speakers will use case studies
+and they'll talk about real-world examples
+of stuff that maybe applies directly
+to what you're trying to do.
+So it's definitely a good learning tool
+to hear about how other people solve problems.
+But if you're short on time,
+you can probably safely skip them
+in the context of the exam.
+The exam won't have questions
+that'll be sourced from re:Invent videos,
+rather, question material will come from
+whitepapers documentation and best practices.
+The resources are gonna be off on the left hand side
+if you happen to be watching this in a browser
+or if you happen to be watching this content
+on a mobile device, they'll be down below in portrait mode.
+Now we update these links every so often
+as AWS has new versions of whitepapers
+or they publish new videos.
+So always be sure to use the hyperlinks here.

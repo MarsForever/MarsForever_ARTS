@@ -1,0 +1,9 @@
+Recommended Links:
+
+https://aws.amazon.com/marketplace/solutions/infrastructure-software/ids-ips
+https://aws.amazon.com/whitepapers/?whitepapers-main.sort-by=item.additionalFields.sortDate&whitepapers-main.sort-order=desc#security
+
+Recommended Videos:
+https://www.youtube.com/watch?v=gjrcoK8T3To
+https://www.youtube.com/watch?v=71fD8Oenwxc
+https://www.youtube.com/watch?v=fxo67UeeN1A
