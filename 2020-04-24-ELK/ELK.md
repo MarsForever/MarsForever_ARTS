@@ -154,21 +154,225 @@ output.elasticsearch:
   protocol: "http"
 ```
 
+
+
 # LogStash
 
 ## Data Processing with Logstash(and Filebeat)
 
 ### Section 1: Getting Started
 
+```
+wget https://artifacts.elastic.co/downloads/logstash/logstash-7.7.0.tar.gz
+tar -xzvf logstash-7.7.0.tar.gz
+cd logstash-7.7.0
+bin/logstash -e "input { stdin { } } output { stdout { } }"
+```
+
+Section 2: Basics of Logstash
+
+```
+mkdir pipelines
+cd pipelines
+vim pipelines.conf
+---
+input{
+	stdin{
+	
+	}
+}
+
+output{
+	stdout{
+	
+	}
+}
+---
+cd ../..
+bin/logstash -f config/pipelines/pipeline.conf
+abc
+```
+
+pipeline.conf
+
+**in version 7.7 it's same to the before conf file**
+
+```
+input{
+	stdin{
+	
+	}
+}
+
+output{
+	stdout{
+		codec => rubydebug
+	}
+}
+input:
+abc
+output:
+{
+          "host" => "ELK",
+      "@version" => "1",
+    "@timestamp" => 2020-05-14T13:25:42.431Z,
+       "message" => "abcd"
+}
+```
+
+### 6. Handling JSON input
+
+```
+bin/logstash -f config/pipelines/pipeline.conf
+input:
+{ "amount": 10, "quantity": 2}
+output:
+{
+    "@timestamp" => 2020-05-14T13:21:38.426Z,
+      "@version" => "1",
+       "message" => "{ \"amount\": 10, \"quantity\": 2}",
+          "host" => "ELK"
+}
+```
+
+
+
+```
+vim config/pipelines/pipeline.conf
+---
+input{
+	stdin{
+		codec => json
+	}
+}
+
+output{
+	stdout{
+		codec => rubydebug
+	}
+}
+---
+bin/logstash -f config/pipelines/pipeline.conf
+input:
+{ "amount": 10, "quantity": 2}
+output:
+{
+          "host" => "ELK",
+    "@timestamp" => 2020-05-14T13:27:22.240Z,
+      "@version" => "1",
+        "amount" => 10,
+      "quantity" => 2
+}
+
+input:
+[ { "name": "order1"}, {"name": "order2"}]
+output:
+{
+          "host" => "ELK",
+    "@timestamp" => 2020-05-14T13:29:26.095Z,
+          "name" => "order2",
+      "@version" => "1"
+}
+{
+          "host" => "ELK",
+    "@timestamp" => 2020-05-14T13:29:26.095Z,
+          "name" => "order1",
+      "@version" => "1"
+}
+
+input:
+{ invalid json }
+output:
+{
+          "host" => "ELK",
+    "@timestamp" => 2020-05-14T13:30:25.993Z,
+          "tags" => [
+        [0] "_jsonparsefailure"
+    ],
+      "@version" => "1",
+       "message" => "{ invalid json }"
+}
+```
+
+
+
+### 7. Outputting events to file
+
+```
+vim config/pipelines/pipeline.conf
+---
+input{
+	stdin{
+		codec => json
+	}
+}
+
+output{
+	stdout{
+		codec => rubydebug
+	}
+	file {
+	   path => "output.txt"
+	}
+}
+---
+input:
+{ "amount": 10, "quantity": 2}
+output:
+{
+      "@version" => "1",
+      "quantity" => 2,
+        "amount" => 10,
+    "@timestamp" => 2020-05-14T14:16:11.378Z,
+          "host" => "ELK"
+}
+[2020-05-14T10:16:12,213][INFO ][logstash.outputs.file    ][main][9864b56af4c10e48b43a086789ba1d9a423a5839fecb7ae25cf2ede92b325678] Opening file {:path=>"/root/logstashs/logstash-7.7.0/output.txt"}
+```
+
+
+
 https://github.com/codingexplained/data-processing-with-logstash
 
-### Section 2: Basics of Logstash
+
+
+### 8. Working with HTTP input
+
+### 9. Filtering events
+
+### 10. Common filter options
+
+### 11. Understanding the Logstash execution model
+
+### 12.Section wrap up
 
 ### Section 3: Project Apache
 
+### 14. Automatic config reload & file input
+
+### 15. Parsing request with Grok
+
+### 16. Finishing the Grok pattern
+### 17.Accessing field values
+### 18. Formatting dates
+### 19. Setting the time of the event
+
+### 20. Introduction to conditional statements
+
+### 21. Working with conditional statements
+
+
+
 ### Section 4: Collecting Logs with Filebeat
 
+
+
+### 51. Handling multiline logs - approach #2
+
+### 52. Wrap up
+
 ### Section 5: COnclusion
+
+
 
 
 

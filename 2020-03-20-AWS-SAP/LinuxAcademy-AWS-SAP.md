@@ -1,19 +1,22 @@
-### 0-Refrence
-
-
+## 0-Refrence
 
 [Blog: AWS Certified Solution Architect – Professional (SAP-C01) Exam Learning Path](https://jayendrapatil.com/aws-certified-solution-architect-professional-exam-learning-path/)
 
 [【AWS認定】ソリューションアーキテクト プロフェッショナル（AWS CSA-Pro）に合格してきた【英語重要】 2018-04-06](https://qiita.com/tmiki/items/c83df748261c7b87ed18)
 
-Linux Academy AWS SAP
+### Linux Academy AWS SAP
 
 https://interactive.linuxacademy.com/diagrams/OrionPapersPro.html
 
 [AWS Certified Solutions Architect- Professional(SAP-C01) Exam Guide](https://d1.awsstatic.com/training-and-certification/docs-sa-pro/AWS_Certified_Solutions_Architect_Professional-Exam_Guide_1.2.pdf)
 
-[WhizLabs](https://www.whizlabs.com/aws-solutions-architect-professional/)
 
+### WhizLabs
+[WhizLabs](https://www.whizlabs.com/aws-solutions-architect-professional/)
+https://www.whizlabs.com/learn/course/aws-csap-practice-tests/
+
+
+### Udemy AWS SAP
 [AWS Certified Solutions Architect Professional Practice Exam](https://www.udemy.com/course/aws-solutions-architect-professional-practice-exams-amazon/)
 
 
@@ -194,7 +197,7 @@ Integration Tools
 
 Specific:
 
-Got AWS sap certification on June
+Got AWS sap certification on August
 
 Measurable:
 
@@ -210,7 +213,7 @@ Can improve architect skill ,improve my salary
 
 Time-Based:
 
-before June
+before August
 
 #### Keyword
 
@@ -236,6 +239,137 @@ before June
 ##### Service
 
 If an instance reboots, the data in the instance store persists. If an instance stops, terminates, or the underlying disk(基本磁盘) fails, the data in the instance is lost.
+
+# AWS Certified Solutions Architect - Professional Linux Academy
+
+## Getting Started
+
+### CSA Pro Exam Overiew
+
+| Domain                                                 | % of Examination |
+| ------------------------------------------------------ | ---------------- |
+| Domain1: Design for Organizational Complexity          | 12.5%            |
+| Domain2: Design for New Solutions                      | 31%              |
+| Domain3: Migration Planning                            | 15%              |
+| Domain4: Cost Control                                  | 12.5%            |
+| Domain5: Continuous Improvement for Existing Solutions | 29%              |
+| **TOTAL**                                              | **100%**         |
+
+1. **Domain 1: Design for Organizational Complexity** 
+
+   1. Determine cross-account authentication and access strategy for complex organizations(for example, an organization with varying compliance requirements,multiple business units, and varying scalability requirements).
+
+      定义复杂组织的跨账户身份验证和访问策略（例如，不同的合规要求，多个业务部门和变化的可伸缩性要求的组织）
+
+   2. Determine how to design networks for complex organizations (for example, an organization with varying compliance requirements, multiple business units, and varying scalability requirements)
+
+      定义如何为复杂组织设计网络（例如，不同的合规要求，多个业务部门和变化的可伸缩性要求的组织）
+
+   3.  Determine how to design a multi-account AWS environment for complex organizations (for example, an organization with varying compliance requirements, multiple business units, and varying scalability requirements)
+
+      定义如何为复杂组织设计一个多账户AWS环境（例如，具有不同的合规性要求，多个业务部门和变化的可伸缩要求的组织）
+
+2. **Domain 2: Design for New Solutions **
+
+   1. Determine security requirements and controls when designing and implementing a solution 
+
+      在设计和实施解决方案时，确定安全要求和控制
+
+   2. Determine a solution design and implementation strategy to meet reliability requirements 
+
+      确定一个解决方案设计和实施策略以满足可靠性要求
+
+   3. Determine a solution design to ensure business continuity 
+
+      确定一个解决方案设计以确保业务连续性
+
+   4. Determine a solution design to meet performance objectives 
+
+      确定解决方案设计以满足性能目标
+
+   5. Determine a deployment strategy to meet business requirements when designing and implementing a solution
+
+      在设计和实施解决方案时，确定一个部署战略以满足业务需求
+
+3. **Domain 3:Migration Planing**
+
+   1.  Select existing workloads and processes for potential migration to the cloud 
+
+      为潜在的迁移到云选择现有的工作负载和流程
+
+   2. Select migration tools and/or services for new and migrated solutions based on detailed AWS knowledge 
+
+      依据详细的AWS知识选择迁移工具和/或服务为新的，移植的解决方案
+
+   3. Determine a new cloud architecture for an existing solution 
+
+      为现有的解决方案确定一个新的云构架
+
+   4. Determine a strategy for migrating existing on-premises workloads to the cloud
+
+      为迁移现有的私有工作负载到云定义一个战略
+
+4. **Domain 4: Cost Control**
+
+   1. Select a cost-effective pricing model for a solution 
+
+      选择一种具有成本效益的定价模型作为解决方案
+
+   2. Determine which controls to design and implement that will ensure cost optimization 
+
+      确定设计和实施哪些控件以确保成本优化
+
+   3. Identify opportunities to reduce cost in an existing solution
+
+      识别机会以降低现有解决方案的成本
+
+5. **Domain 5: Continuous Improvement for Existing Solutions**
+
+   1. Troubleshoot solution architectures 
+
+      排除结构性的解决方案故障
+
+   2. Determine a strategy to improve an existing solution for operational excellence 
+
+      为卓越的运营确定一个战略以改善现有解决方案
+
+   3. Determine a strategy to improve the reliability of an existing solution 
+
+      确定改善现有解决方案可靠性的战略
+
+   4. Determine a strategy to improve the performance of an existing solution 
+
+      确定改善现有解决方案的性能的战略
+
+   5. Determine a strategy to improve the security of an existing solution 
+
+      确定改善现有解决方案的安全的战略
+
+   6. Determine how to improve the deployment of an existing solution
+
+      确定如何去改善现有的部署解决方案
+
+https://d1.awsstatic.com/training-and-certification/docs-sa-pro/AWS-Certified-Solutions-Architect-Professional_Exam-Guide.pdf
+
+## AWS Essentials
+### AWS Accounts
+authenticate:鉴定，使生效
+authorize: 授权，批准，委托
+
+### Regions,AZs, and Edge Infrastructure
+
+### High Availability, Fault Tolerance, and Disaster Recovery
+
+HA:高可用，例子：汽车备胎
+
+FT:容错，例子HA，FT:飞机两翼各有两个引擎
+
+DR:灾难复原，例子：飞行员紧急弹射
+
+### Disaster Recovery: RPO and RTO
+
+
+
 
 ## Identity & Access Management(IAM)
 

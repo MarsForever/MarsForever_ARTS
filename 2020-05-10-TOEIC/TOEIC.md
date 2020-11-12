@@ -94,35 +94,42 @@ option：期权security：证券menutes:会议记录
 #### 1.托业词汇
 ##### 1.1情景引导
 
-| 托业情景                              |                | 情景描述                                                     | 词汇                                                         |
-| ------------------------------------- | -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| 1.交通                                | transportation | 用什么交通上班<br/>旅行社出差或旅行，在机场会经过哪些地方<br/>出国前先准备好什么 | arrival（到达）<br />Flight status, arrival, and departure times are available on the airline website<br/>boarding pass(登机牌)<br />Passengers will be issued(发) a boarding pass at the check-in counter<br/>captain（机长）The captain and flight(cabin) crew are responsible for your confort and safety.<br/>check-in-counter（登机柜台）<br />Please arrive at the check-in counter 1 hour prior to(在什么之前) departure<br/>customs（海关）<br />After passing through customs,please procceed directly to the Arrivals Hall.<br/>departure 离开；出发<br/>destination 目的地<br/>fare 票价<br/>flight attendant 空服人员<br/>itinerary 行程 |
-| 2.旅游计划                            |                |                                                              |                                                              |
-| 3.饭店住宿Hotels                      |                |                                                              |                                                              |
-| 4.休闲娱乐Events                      |                |                                                              |                                                              |
-| 5.外出用餐Dining Out                  |                |                                                              |                                                              |
-| 6.购物消费Shopping                    |                |                                                              |                                                              |
-| 7.人才招聘Recruitment                 |                |                                                              |                                                              |
-| 8.教育培训Training                    |                |                                                              |                                                              |
-| 9.工作表现Work Performance            |                |                                                              |                                                              |
-| 10.工作沟通Office Communication       |                |                                                              |                                                              |
-| 11.市场销售Marketing and Sales        |                |                                                              |                                                              |
-| 12.法律合约Law and Contracts          |                |                                                              |                                                              |
-| 13.采购与仓储Purchasing & warehousing |                |                                                              |                                                              |
-| 14.商用不动产Corporate Property       |                |                                                              |                                                              |
-| 15.科技硬件Technology                 |                |                                                              |                                                              |
+| 托业情景      |                          | 情景描述                                                     |
+| ------------- | ------------------------ | ------------------------------------------------------------ |
+| 1.交通        | transportation           | 用什么交通上班<br/>旅行社出差或旅行，在机场会经过哪些地方<br/>出国前先准备好什么 |
+| 2.旅游计划    | Travel Plans             |                                                              |
+| 3.饭店住宿    | Hotels                   |                                                              |
+| 4.休闲娱乐    | Events                   |                                                              |
+| 5.外出用餐    | Dining Out               |                                                              |
+| 6.购物消费    | Shopping                 |                                                              |
+| 7.人才招聘    | Recruitment              |                                                              |
+| 8.教育培训    | Training                 |                                                              |
+| 9.工作表现    | Work Performance         |                                                              |
+| 10.工作沟通   | Office Communication     |                                                              |
+| 11.市场销售   | Marketing and Sales      |                                                              |
+| 12.法律合约   | Law and Contracts        |                                                              |
+| 13.采购与仓储 | Purchasing & warehousing |                                                              |
+| 14.商用不动产 | Corporate Property       |                                                              |
+| 15.科技硬件   | Technology               |                                                              |
 
 
+
+##### 1.2交通  transportation
+
+| 中文             | 英文             | 例句                                                         |
+| ---------------- | ---------------- | ------------------------------------------------------------ |
+| 到达             | arrival          | Flight status, arrival, and departure times are available on the airline website |
+| 登机牌           | boarding pass    | Passengers will be issued(发) a boarding pass at the check-in counter |
+| 机长             | captain          | The captain and flight(cabin) crew are responsible for your confort and safety. |
+| 登机柜台         | check-in-counter | Please arrive at the check-in counter 1 hour prior to(在什么之前) departure |
+| 海关             | customs          | After passing through customs,please proceed directly to the Arrivals Hall. |
+| 离开；出发       | departure        |                                                              |
+| 目的地           | destination      |                                                              |
+| 票价             | fare             |                                                              |
+| flight attendant | 空服人员         |                                                              |
+| itinerary        | 行程             |                                                              |
 
    
-
-
-
-
-
-
-
-
 
 ####### 英语分类
 
