@@ -1,6 +1,9 @@
 
 Practice Test1:AWS Solutions Architect Professional Practice Test1
-https://www.evernote.com/shard/s230/sh/ef1ba7a9-e6e7-4e3e-a664-f1124f9944bb/ceca5fadd73da68342062fc4baf16f35
+問題内容
+https://www.evernote.com/l/AOZ1idSaqZFEAoXsjo-fL1gDO87zqhK51QI
+解釈
+https://www.evernote.com/l/AOYtf2oXq4JCYIlHGifIYg7K0Te8YW9eE4c
 
 
 Practice Test1:AWS Solutions Architect Professional Practice Test2
@@ -10,3 +13,29 @@ Practice Test1:AWS Solutions Architect Professional Practice Test3
 
 
 Practice Test1:AWS Solutions Architect Professional Practice Test4
+
+
+AWS 認定ソリューションアーキテクト プロフェッショナル模擬試験問題集（全5回分375問） | Udemy
+
+Practice Test1:プロフェッションナル模擬試験①
+問題内容
+https://www.evernote.com/l/AObfes7unp9NFZ_L_IhUQi8NXipS7lijL3w
+
+解釈
+https://www.evernote.com/l/AObuI2QByjFJ_asOor2cf5wmFjtfE1KJIXQ
+
+Practice Test2:プロフェッションナル模擬試験②
+問題内容
+解釈
+
+Practice Test3:プロフェッションナル模擬試験③
+問題内容
+解釈
+
+Practice Test4:プロフェッションナル模擬試験④
+問題内容
+解釈
+
+Practice Test5:プロフェッションナル模擬試験⑤
+問題内容
+解釈
