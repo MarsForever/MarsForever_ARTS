@@ -1,0 +1,5 @@
+docker run --name c1 -d ubuntu sh -c 'sleep 1d'
+docker exec c1 ps aux
+
+docker run --name c2 -d ubuntu sh -c 'sleep 999d'
+docker exec c2 ps aux
