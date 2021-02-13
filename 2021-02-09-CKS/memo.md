@@ -155,6 +155,32 @@ Technical Overview: Containers and system calls
 
 ![Technical Overview: Containers and system calls](images/Section4-15_Intro_TechnicalOverview.PNG)
 
+Containers and Docker
+
+![Containers and Docker](images/Section4-15_Intro_ContainersAndDocker.PNG)
+
+Containers and Docker 2
+
+![Containers and Docker](images/Section4-15_Intro_ContainersAndDocker2.PNG)
+
+Linux Kernel Namespace PID
+
+![Linux Kernel Namespace PID](images/Section4-15_Linux Kernel Namespace.png)
+
+
+
+Linux Kernel Namespace Mount
+
+![Linux Kernel Namespace Mount](images/Section4-15_Linux Kernel Namespace Mount.png)
+
+Linux Kernel Namespace Network
+
+![Linux Kernel Namespace Mount](images/Section4-15_Linux Kernel Namespace Network.png)
+
+Linux Kernel Namespace User
+
+![Linux Kernel Namespace User](images/Section4-15_Linux Kernel Namespace User.png)
+
 - Scenarios
 
 What have containers done for you lately?
