@@ -259,3 +259,22 @@ https://www.youtube.com/watch?v=MHv6cWjvQjM
 ### Section 5: Cluster Setup - Network Policies
 
 #### 18. Cluster Reset
+
+- NetworkPolicies
+  - Firewall Rules in Kubernetes
+  - Implemented by the Network Plugins CNI(Calico/Weave)
+  - Namespace level
+  - Restrict the Ingress and/or Egress for a group of Pods based on certain rules and conditions
+  - Without NetworkPolicies
+    - By default every pod can access every pod
+    - Pods are not isolated
+  - Parameters
+    - PodSelector:from pods
+      - policyType: Ingress
+    - namespaceSelector: from namespaces
+      - policyType:Ingress
+    - ipBlock: traffice to/from ip range(10.0.0.0/24)
+      - policyType:Egress
+      - policyType:Ingress
+- Default Deny
+- Scenarios
