@@ -1,24 +1,24 @@
-
 Kubernetes Security Best Practices - Ian Lewis, Google
 https://www.youtube.com/watch?v=wqsUfvRyYpw
 
 
 
-docker run --name c1 -d ubuntu sh -c 'sleep 1d'
-docker exec c1 ps aux
-
-docker run --name c2 -d ubuntu sh -c 'sleep 999d'
-docker exec c2 ps aux
-
-ps aux  | grep sleep
-
-docker rm c2 --force
-docker run --name c2 --pid=container:c1 -d ubuntu sh -c 'sleep 999d'
 
 
-Section 2-5 Cluster Specification 
+### Section 2-5 Cluster Specification 
+
+
+
+```sh
+gcloud projects list
+gcloud config set project PROJECT_ID
+gcloud config get-value project
+gcloud compute ssh cks-master
+gcloud compute ssh cks-worker
+```
 
 #### cks-master
+
 sudo -i
 bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/latest/install_master.sh)
 
@@ -181,18 +181,81 @@ Linux Kernel Namespace User
 
 ![Linux Kernel Namespace User](images/Section4-15_Linux Kernel Namespace User.png)
 
-- Scenarios
+##### Linux Kernel Isolation
 
-What have containers done for you lately?
+![Linux Kernel Isolation](images\Section4-15_Linux Kernel Isolation.png)
+
+
+
+
+
+
+
+
+
+
+
+### Section 4:Foundation-Containers under the hood
+
+#### 16. Practice The PID Namespace
+
+###### Docker isolation in action
+
+1.run a container in different pid namespace
+
+```sh
+#create a container
+docker run --name c1 -d ubuntu sh -c 'sleep 1d'
+
+#execute a command in a running container
+docker exec c1 ps aux
+--------------------------------------------------------------------------------
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.0   2608   544 ?        Ss   23:29   0:00 sh -c sleep 1d
+root         6  0.0  0.0   2508   528 ?        S    23:29   0:00 sleep 1d
+root         7  0.0  0.0   5896  2812 ?        Rs   23:33   0:00 ps aux
+--------------------------------------------------------------------------------
+docker run --name c2 -d ubuntu sh -c 'sleep 999d'
+
+docker exec c2 ps aux
+--------------------------------------------------------------------------------
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.4  0.0   2608   544 ?        Ss   23:35   0:00 sh -c sleep 999d
+root         6  0.0  0.0   2508   536 ?        S    23:35   0:00 sleep 999d
+root         7  0.0  0.0   5896  2832 ?        Rs   23:36   0:00 ps aux
+--------------------------------------------------------------------------------
+
+ps aux  | grep sleep
+```
+
+2.run a container in same pid namespace 
+
+```sh
+docker rm c2 --force
+#create a container which with same namespace
+docker run --name c2 --pid=container:c1 -d ubuntu sh -c 'sleep 999d'
+docker exec c2 ps aux
+------------------------------------------------------------------------------------------
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.0   2608   544 ?        Ss   23:29   0:00 sh -c sleep 1d
+root         6  0.0  0.0   2508   528 ?        S    23:29   0:00 sleep 1d
+root        12  0.0  0.0   2608   556 ?        Ss   23:38   0:00 sh -c sleep 999d
+root        17  0.0  0.0   2508   528 ?        S    23:38   0:00 sleep 999d
+root        18  0.0  0.0   5896  2760 ?        Rs   23:39   0:00 ps aux
+------------------------------------------------------------------------------------------
+```
+
+
+#### 17. Recap
+ What have containers done for you lately?
 https://www.youtube.com/watch?v=MHv6cWjvQjM
 
+- Containers
+- Virtual Machines
+- Namespaces
+- Cgroups
+- Docker
 
+### Section 5: Cluster Setup - Network Policies
 
-
-
-gcloud documentation
-gcloud projects list
-gcloud config set project PROJECT_ID
-gcloud config get-value project
-gcloud compute ssh cks-master
-gcloud compute ssh cks-worker
+#### 18. Cluster Reset
