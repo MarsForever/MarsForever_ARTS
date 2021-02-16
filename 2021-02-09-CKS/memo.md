@@ -261,6 +261,12 @@ https://www.youtube.com/watch?v=MHv6cWjvQjM
 #### 18. Cluster Reset
 
 - NetworkPolicies
+- Default Deny
+- Scenarios
+
+#### 19 Introduction 2
+
+- NetworkPolicies
   - Firewall Rules in Kubernetes
   - Implemented by the Network Plugins CNI(Calico/Weave)
   - Namespace level
@@ -276,5 +282,516 @@ https://www.youtube.com/watch?v=MHv6cWjvQjM
     - ipBlock: traffice to/from ip range(10.0.0.0/24)
       - policyType:Egress
       - policyType:Ingress
-- Default Deny
-- Scenarios
+
+#### 20 Introduction 2
+
+##### NetworkPolicies 1
+
+![NetworkPolicies](images\Section5 Cluster Setup NetworkPolicies\Screenshot_1.png)
+
+##### Multiple NetworkPolicies 
+
+![Multiple NetworkPolicies](images\Section5 Cluster Setup NetworkPolicies\Screenshot_2.png)
+
+##### Multiple NetworkPolicies  examples
+
+![Multiple NetworkPolicies examples](images\Section5 Cluster Setup NetworkPolicies\Screenshot_3.png)
+
+#### 21 Practice Default Deny
+
+##### Default Deny
+
+![Default Deny](images\Section5 Cluster Setup NetworkPolicies\Screenshot_4.png)
+
+```sh
+sudo -i
+k get node
+
+k run frontend --image=nginx
+k run backend --image=nginx
+
+k expose pod frontend --port 80
+k expose pod backend --port 80
+
+k get pod,svc
+------------------------------------------------------------------------------------------------------
+NAME           READY   STATUS    RESTARTS   AGE
+pod/backend    1/1     Running   0          45s
+pod/frontend   1/1     Running   0          2m46s
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/backend      ClusterIP   10.111.27.213   <none>        80/TCP    34s
+service/frontend     ClusterIP   10.97.79.94     <none>        80/TCP    111s
+service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   3d1h
+------------------------------------------------------------------------------------------------------
+
+k exec frontend -- curl backend
+------------------------------------------------------------------------------------------------------
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+100   612  100   612    0     0   119k      0 --:--:-- --:--:-- --:--:--  119k
+------------------------------------------------------------------------------------------------------
+k exec backend -- curl frontend
+------------------------------------------------------------------------------------------------------
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+100   612  100   612    0     0  87428      0 --:--:-- --:--:-- --:--:-- 87428
+------------------------------------------------------------------------------------------------------
+vim default-deny.yaml
+------------------------------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: default
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+------------------------------------------------------------------------------------------------------
+example https://kubernetes.io/docs/concepts/services-networking/network-policies/#networkpolicy-resource
+
+k -f default-deny.yaml create
+#can't from pod to pod
+k exec frontend -- curl backend
+------------------------------------------------------------------------------------------------------
+ % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:--  0:00:03 --:--:--     0
+------------------------------------------------------------------------------------------------------
+k exec backend -- curl frontend
+------------------------------------------------------------------------------------------------------
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0
+------------------------------------------------------------------------------------------------------
+```
+
+#### 21 Practice Frontend to Backend traffic
+
+![Frontend to Backend traffic](images\Section5 Cluster Setup NetworkPolicies\Screenshot_5.png)
+
+```sh
+vim frontend.yaml
+-----------------------------------------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      run: frontend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          run: backend
+-----------------------------------------------------------------------------------------------------------------
+example https://kubernetes.io/docs/concepts/services-networking/network-policies/#networkpolicy-resource
+
+k -f frontend.yaml
+k exec frontend -- curl backend
+-----------------------------------------------------------------------------------------------------------------
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:--  0:00:03 --:--:--     0
+-----------------------------------------------------------------------------------------------------------------
+cp frontend.yaml backend.yaml
+vim backend.yaml
+-----------------------------------------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      run: backend
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          run: frontend
+-----------------------------------------------------------------------------------------------------------------
+k -f backend.yaml create
+
+
+k exec frontend -- curl backend
+-----------------------------------------------------------------------------------------------------------------
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:--  0:00:03 --:--:--     0
+  0     0    0     0    0     0      0      0 --:--:--  0:00:05 --:--:--     0
+-----------------------------------------------------------------------------------------------------------------
+
+
+k get pod --show-labels -o wide
+-----------------------------------------------------------------------------------------------------------------
+NAME       READY   STATUS    RESTARTS   AGE   IP          NODE         NOMINATED NODE   READINESS GATES   LABELS
+backend    1/1     Running   1          12h   10.44.0.2   cks-worker   <none>           <none>            run=backend
+frontend   1/1     Running   1          12h   10.44.0.1   cks-worker   <none>           <none>            run=frontend
+-----------------------------------------------------------------------------------------------------------------
+
+# access backend's ip
+ k exec frontend -- curl 10.44.0.2
+-----------------------------------------------------------------------------------------------------------------
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   612  100   612    0     0   119k      0 --:--:-- --:--:-- --:--:--  119k
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+-----------------------------------------------------------------------------------------------------------------
+```
+
+
+
+
+
+Allow DNS resolution
+
+![Allow DNS resolution](images\Section5 Cluster Setup NetworkPolicies\Screenshot_6.png)
+
+```sh
+#because frontend -> backend is ok,but not network policy for backend -> frontend
+k exec backend -- curl 10.44.0.1
+---------------------------------------------------------------------------------
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:--  0:00:05 --:--:--     0
+---------------------------------------------------------------------------------  
+```
+
+
+
+#### 23. Practice Backend to Database traffic
+
+source:https://github.com/killer-sh/cks-course-environment/tree/master/course-content/cluster-setup/network-policies/frontend-backend-database
+
+##### Network Policy
+
+![Network Policy](images\Section5 Cluster Setup NetworkPolicies\Screenshot_7.png)
+
+```sh
+#create new namespace
+k create ns cassandra
+
+
+k edit ns cassandra
+------------------------------------------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: "2021-02-16T11:49:08Z"
+  name: cassandra
+  resourceVersion: "245776"
+  uid: 1276af52-f926-417c-ad4b-624a4583cd8b
+  labels:
+    ns: cassandra
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active
+------------------------------------------------------------------------
+
+# create cassandra pod in namespace cassandra
+k -n cassandra run cassandra --image=nginx
+
+k -n cassandra get pod -o wide
+--------------------------------------------------------------------------------------------------------------------------------
+NAME        READY   STATUS    RESTARTS   AGE   IP          NODE         NOMINATED NODE   READINESS GATES
+cassandra   1/1     Running   0          60s   10.44.0.3   cks-worker   <none>           <none>
+--------------------------------------------------------------------------------------------------------------------------------
+
+k exec backend -- curl 10.44.0.3
+--------------------------------------------------------------------------------------------------------------------------------
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:--  0:00:11 --:--:--     0
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+# create egress for backend
+vim backend.yaml
+--------------------------------------------------------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      run: backend
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          run: frontend
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          ns: cassandra
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+ k exec backend -- curl 10.44.0.3
+-------------------------------------------------------------------------------------------------------------------------------- 
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   612  100   612    0     0   597k      0 --:--:-- --:--:-- --:--:--  597k
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+vim cassandra-deny.yaml
+--------------------------------------------------------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cassandra-deny
+  namespace: cassandra
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+--------------------------------------------------------------------------------------------------------------------------------
+# create network policy deny ingress and egress from cassandra
+k -f cassandra-deny.yaml create
+
+k exec backend -- curl 10.44.0.3
+--------------------------------------------------------------------------------------------------------------------------------
+% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0^
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+cp backend.yaml cassandra.yaml
+k -f cassandra.yaml create
+--------------------------------------------------------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cassandra
+  namespace: cassandra
+spec:
+  podSelector:
+    matchLabels:
+      run: cassandra
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          ns: default
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+k -f cassandra.yaml create
+
+k exec backend -- curl 10.44.0.3
+--------------------------------------------------------------------------------------------------------------------------------
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0
+--------------------------------------------------------------------------------------------------------------------------------
+
+k edit ns default 
+--------------------------------------------------------------------------------------------------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: "2021-02-12T21:11:49Z"
+  name: default
+  resourceVersion: "248694"
+  selfLink: /api/v1/namespaces/default
+  uid: d38ab06a-c83c-447b-b5e3-928aaf37a492
+  labels:
+    ns: default
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+k exec backend -- curl 10.44.0.3
+--------------------------------------------------------------------------------------------------------------------------------
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+100   612  100   612    0     0   597k      0 --:--:-- --:--:-- --:--:--  597k
+--------------------------------------------------------------------------------------------------------------------------------
+```
+
+
+
+
+
+#### 24. Recap
+
+https://kubernetes.io/docs/concepts/services-networking/network-policies
+
+![24 Recap](images\Section5 Cluster Setup NetworkPolicies\Screenshot_8.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Kubernetes CKS Challenge Series](https://github.com/killer-sh/cks-challenge-series)
+
+[Kubernetes CKS Course Environment](https://github.com/killer-sh/cks-course-environment)
+
+ 
