@@ -776,17 +776,209 @@ https://kubernetes.io/docs/concepts/services-networking/network-policies
 
 
 
+#### Section 6: Cluster Setup - GUI Elements
+
+##### GUI Elements
+
+![GUI Elements](images\Section 6 Cluster Setup GUI Elements\Screenshot_1.png)
+
+##### GUI Elements and the Dashboard
+
+![GUI Elements and the Dashboard](images\Section 6 Cluster Setup GUI Elements\Screenshot_1.png)
+
+##### Kubernetes has some demerits
+
+![Kubernetes has some demerits](images\Section 6 Cluster Setup GUI Elements\Screenshot_3.png)
 
 
 
+##### Kubernetes proxy
+
+![Kubernetes proxy](images\Section 6 Cluster Setup GUI Elements\Screenshot_4.png)
 
 
 
+![Kubernetes proxy 2](images\Section 6 Cluster Setup GUI Elements\Screenshot_5.png)
 
 
 
+![Kubernetes port-forward](images\Section 6 Cluster Setup GUI Elements\Screenshot_6.png)
 
 
+
+![Kubernetes port-forward 2](images\Section 6 Cluster Setup GUI Elements\Screenshot_7.png)
+
+
+
+Ingress
+
+![Ingress](images\Section 6 Cluster Setup GUI Elements\Screenshot_8.png)
+
+#### 27. Practice - Install Dashboard
+
+##### Install and access the Dashboard
+
+
+
+https://github.com/kubernetes/dashboard
+
+```shell
+# install kubernetes dashboard
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.1.0/aio/deploy/recommended.yaml
+
+#
+k get ns
+k -n kubernetes-dashboard get pod,svc
+```
+
+
+
+##### 28. Practice Outside Insecure Access
+
+##### Dashboard available externally
+
+![Dashboard available externally](images\Section 6 Cluster Setup GUI Elements\Screenshot_9.png)
+
+```sh
+k -n kubernetes-dashboard get pod,svc
+# edit deploy
+k -n kubernetes-dashboard edit deploy kubernetes-dashboard
+# https://github.com/kubernetes/dashboard/blob/master/docs/common/dashboard-arguments.md
+
+```
+
+      # before
+      - args:
+        - --auto-generate-certificates
+        - --namespace=kubernetes-dashboard
+        image: kubernetesui/dashboard:v2.1.0
+        imagePullPolicy: Always
+        livenessProbe:
+        failureThreshold: 3
+        httpGet:
+        path: /
+        port: 8443
+        scheme: HTTPS
+        
+      #after
+      - args:
+        - --namespace=kubernetes-dashboard
+        - --insecure-port=9090
+        image: kubernetesui/dashboard:v2.1.0
+        imagePullPolicy: Always
+        livenessProbe:
+        failureThreshold: 3
+        httpGet:
+        path: /
+        port: 9090
+        scheme: HTTP
+
+```sh
+# edit svc
+k -n kubernetes-dashboard edit svc kubernetes-dashboard
+```
+
+```sh
+#before
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    k8s-app: kubernetes-dashboard
+  sessionAffinity: None
+  type: ClusterIP
+```
+
+
+
+```sh
+#after
+  ports:
+  - port: 9090
+    protocol: TCP
+    targetPort: 9090
+  selector:
+    k8s-app: kubernetes-dashboard
+  sessionAffinity: None
+  type: NodePort
+
+
+```
+
+
+
+```sh
+k -n kubernetes-dashboard get svc
+NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+dashboard-metrics-scraper   ClusterIP   10.99.15.60     <none>        8000/TCP         12h
+kubernetes-dashboard        NodePort    10.101.88.186   <none>        9090:30639/TCP   12h
+```
+
+###### can't access because the access control
+
+http://$exteralIP:30639/#/workloads?namespace=default
+
+http://$exteralIP:30639/#/workloads?namespace=default
+
+##### 28. Practice RBAC for the Dashboard
+
+![RBAC for the Dashboard](images\Section 6 Cluster Setup GUI Elements\Screenshot_10.png)
+
+```sh
+k -n kubernetes-dashboard get sa
+-----------------------------------------------------
+NAME                   SECRETS   AGE
+default                1         12h
+kubernetes-dashboard   1         12h
+-----------------------------------------------------
+k get clusterroles | grep view
+
+k -n kubernetes-dashboard create rolebinding insecure --serviceaccount kubernetes-dashboard:kubernetes-dashboard --clusterrole view -o yaml --dry-run=client 
+-----------------------------------------------------
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  name: insecure
+  namespace: kubernetes-dashboard
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+-----------------------------------------------------
+
+#create rolebinding
+k -n kubernetes-dashboard create rolebinding insecure --serviceaccount kubernetes-dashboard:kubernetes-dashboard --clusterrole view 
+```
+
+
+
+http://$ExternalIP:30639/#/pod?namespace=kubernetes-dashboard
+
+![kubernetes dashboard](images\Section 6 Cluster Setup GUI Elements\Screenshot_11.png)
+
+```sh
+k -n kubernetes-dashboard create clusterrolebinding insecure --serviceaccount kubernetes-dashboard:kubernetes-dashboard --clusterrole view
+```
+
+##### kubernetes dashboard 2
+
+![kubernetes dashboard 2](images\Section 6 Cluster Setup GUI Elements\Screenshot_12.png)
+
+##### Dashboard arguments
+
+![Dashboard arguments](images\Section 7 Cluster Setup - Secure Ingress\Screenshot_13.png)
+
+##### 30. Recap
+
+https://github.com/kubernetes/dashboard/blob/master/docs/common/dashboard-arguments.md
+
+https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/README.md
 
 
 
@@ -795,3 +987,23 @@ https://kubernetes.io/docs/concepts/services-networking/network-policies
 [Kubernetes CKS Course Environment](https://github.com/killer-sh/cks-course-environment)
 
  
+
+### Section 7
+
+#### Cluster Setup - Secure Ingress
+
+##### What is Ingress
+
+![What is Ingress](images\Section 7 Cluster Setup - Secure Ingress\Screenshot_1.png)
+
+##### What is Ingress
+
+![What is Ingress](images\Section 7 Cluster Setup - Secure Ingress\Screenshot_2.png)
+
+##### Setup an example Ingress
+
+##### Install NGINX Ingress
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.40.2/deploy/static/provider/baremetal/deploy.yaml
+
+##### K8s Ingress Docs
+https://kubernetes.io/docs/concepts/services-networking/ingress
