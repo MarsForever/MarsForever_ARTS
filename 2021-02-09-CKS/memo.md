@@ -988,9 +988,9 @@ https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/REA
 
  
 
-### Section 7
+### Section 7 Cluster Setup - Secure Ingress
 
-#### Cluster Setup - Secure Ingress
+#### 32. Introduction
 
 ##### What is Ingress
 
@@ -1003,7 +1003,287 @@ https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/REA
 ##### Setup an example Ingress
 
 ##### Install NGINX Ingress
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.40.2/deploy/static/provider/baremetal/deploy.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.44.0/deploy/static/provider/baremetal/deploy.yaml
 
 ##### K8s Ingress Docs
 https://kubernetes.io/docs/concepts/services-networking/ingress
+
+
+
+#### 33 Pratice - Create an Ingress
+
+##### Setup an example Ingress
+
+![Setup an example Ingress](images\Section 7 Cluster Setup - Secure Ingress\Screenshot_3.png)
+
+##### Install NGINX Ingress
+
+https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal
+
+
+
+
+
+```sh
+#create ingress nginx service
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.40.2/deploy/static/provider/baremetal/deploy.yaml
+
+#show svc and pod of ingress-nginx namespace
+k -n ingress-nginx get pod,svc
+-----------------------------------------------------------------------------------------------------------------------------
+NAME                                            READY   STATUS      RESTARTS   AGE
+pod/ingress-nginx-admission-create-96l7b        0/1     Completed   0          62s
+pod/ingress-nginx-admission-patch-phm8g         0/1     Completed   0          62s
+pod/ingress-nginx-controller-785557f9c9-nwkcl   1/1     Running     0          63s
+
+NAME                                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+service/ingress-nginx-controller             NodePort    10.108.254.76   <none>        80:30670/TCP,443:31240/TCP   63s
+service/ingress-nginx-controller-admission   ClusterIP   10.98.43.141    <none>        443/TCP                      63s
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+curl http://$ExternalIP:30670
+<html>
+<head><title>404 Not Found</title></head>
+<body>
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+```
+
+
+
+##### K8s Ingress Docs
+
+https://kubernetes.io/docs/concepts/services-networking/ingress
+
+
+
+```sh
+#before
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /testpath
+        pathType: Prefix
+        backend:
+          service:
+            name: test
+            port:
+              number: 80
+
+```
+```sh
+vim ingress.yaml
+--------------------------------------------------------------------------
+#after
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: secure-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /service1
+        pathType: Prefix
+        backend:
+          service:
+            name: service1
+            port:
+              number: 80
+      - path: /service2
+        pathType: Prefix
+        backend:
+          service:
+            name: service2
+            port:
+              number: 80
+--------------------------------------------------------------------------              
+k -f ingress.yaml create              
+k get ing
+--------------------------------------------------------------------------
+NAME             CLASS    HOSTS   ADDRESS   PORTS   AGE
+secure-ingress   <none>   *                 80      8s
+--------------------------------------------------------------------------
+              
+```
+
+```sh
+k run pod1 --image=nginx
+k run pod2 --image=httpd
+k expose pod pod1 --port 80 --name service1
+k expose pod pod2 --port 80 --name service2
+```
+
+
+
+##### 34. Practice - Secure an Ingress
+
+![Setup an example Ingress](images\Section 7 Cluster Setup - Secure Ingress\Screenshot_4.png)
+
+```sh
+curl http://35.187.199.19:30670/service1
+curl http://34.85.100.111:30670/service2
+
+curl https://34.85.100.111:32755/service1 -k
+curl https://34.85.100.111:32755/service2 -k
+curl https://34.85.100.111:32755/service2 -kv
+```
+
+
+
+
+
+```sh
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+----------------------------------------------------------------------------------------------------------
+Can't load /root/.rnd into RNG
+140531955634624:error:2406F079:random number generator:RAND_load_file:Cannot open file:../crypto/rand/randfile.c:88:Filename=/root/.rnd
+Generating a RSA private key
+.....................++++
+.....++++
+writing new private key to 'key.pem'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:
+State or Province Name (full name) [Some-State]:
+Locality Name (eg, city) []:
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:
+Organizational Unit Name (eg, section) []:
+Common Name (e.g. server FQDN or YOUR name) []:secure-ingress.com
+Email Address []:
+----------------------------------------------------------------------------------------------------------
+
+ll -ltr
+----------------------------------------------------------------------------------------------------------
+-rw------- 1 root root 3272 Feb 18 11:41 key.pem
+-rw-r--r-- 1 root root 2017 Feb 18 11:43 cert.pem
+----------------------------------------------------------------------------------------------------------
+```
+
+
+
+https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+
+```sh
+vim ingress.yaml
+----------------------------------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: secure-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - hosts:
+      - secure-ingress.com
+    secretName: secure-ingress
+  rules:
+  - host: secure-ingress.com
+  - http:
+      paths:
+      - path: /service1
+        pathType: Prefix
+        backend:
+          service:
+            name: service1
+            port:
+              number: 80
+      - path: /service2
+        pathType: Prefix
+        backend:
+          service:
+            name: service2
+            port:
+              number: 80
+----------------------------------------------------------------------------------------------------------
+ k apply -f ingress.yaml
+```
+
+```sh
+
+curl https://secure-ingress.com:$HttpsPort/service2 -kv --resolve secure-ingress.com:$HttpsPort:$externalIP
+----------------------------------------------------------------------------------------------------------
+*   Trying 34.85.100.111...
+* TCP_NODELAY set
+* Connected to 34.85.100.111 (34.85.100.111) port 32755 (#0)
+* schannel: SSL/TLS connection with 34.85.100.111 port 32755 (step 1/3)
+* schannel: disabled server certificate revocation checks
+* schannel: verifyhost setting prevents Schannel from comparing the supplied target name with the subject names in server certificates.
+* schannel: using IP address, SNI is not supported by OS.
+* schannel: sending initial handshake data: sending 147 bytes...
+* schannel: sent initial handshake data: sent 147 bytes
+* schannel: SSL/TLS connection with 34.85.100.111 port 32755 (step 2/3)
+* schannel: failed to receive handshake, need more data
+* schannel: SSL/TLS connection with 34.85.100.111 port 32755 (step 2/3)
+* schannel: encrypted data got 1310
+* schannel: encrypted data buffer: offset 1310 length 4096
+* schannel: sending next handshake data: sending 93 bytes...
+* schannel: SSL/TLS connection with 34.85.100.111 port 32755 (step 2/3)
+* schannel: encrypted data got 51
+* schannel: encrypted data buffer: offset 51 length 4096
+* schannel: SSL/TLS handshake complete
+* schannel: SSL/TLS connection with 34.85.100.111 port 32755 (step 3/3)
+* schannel: stored credential handle in session cache
+> GET /service1 HTTP/1.1
+> Host: 34.85.100.111:32755
+> User-Agent: curl/7.55.1
+> Accept: */*
+>
+* schannel: client wants to read 102400 bytes
+* schannel: encdata_buffer resized 103424
+* schannel: encrypted data buffer: offset 0 length 103424
+* schannel: encrypted data got 393
+* schannel: encrypted data buffer: offset 393 length 103424
+* schannel: decrypted data length: 364
+* schannel: decrypted data added: 364
+* schannel: decrypted data cached: offset 364 length 102400
+* schannel: encrypted data buffer: offset 0 length 103424
+* schannel: decrypted data buffer: offset 364 length 102400
+* schannel: schannel_recv cleanup
+* schannel: decrypted data returned 364
+* schannel: decrypted data buffer: offset 0 length 102400
+< HTTP/1.1 504 Gateway Time-out
+< Date: Thu, 18 Feb 2021 20:21:48 GMT
+< Content-Type: text/html
+< Content-Length: 160
+< Connection: keep-alive
+< Strict-Transport-Security: max-age=15724800; includeSubDomains
+<
+<html>
+<head><title>504 Gateway Time-out</title></head>
+<body>
+<center><h1>504 Gateway Time-out</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+* Connection #0 to host 34.85.100.111 left intact
+----------------------------------------------------------------------------------------------------------
+```
+
+
+
+[curl –resolve](https://siguniang.wordpress.com/2014/05/10/fake-http-request-hostname/)
+
+[curl command](https://qiita.com/shtnkgm/items/45b4cd274fa813d29539)
+
+#### Section 8: Cluster Setup - Node Metadata Protection
+
