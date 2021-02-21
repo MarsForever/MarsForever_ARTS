@@ -972,7 +972,7 @@ k -n kubernetes-dashboard create clusterrolebinding insecure --serviceaccount ku
 
 ##### Dashboard arguments
 
-![Dashboard arguments](images\Section 7 Cluster Setup - Secure Ingress\Screenshot_13.png)
+![Dashboard arguments](images\Section 6 Cluster Setup GUI Elements\Screenshot_13.png)
 
 ##### 30. Recap
 
@@ -1019,10 +1019,6 @@ https://kubernetes.io/docs/concepts/services-networking/ingress
 ##### Install NGINX Ingress
 
 https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal
-
-
-
-
 
 ```sh
 #create ingress nginx service
@@ -1133,12 +1129,33 @@ k expose pod pod2 --port 80 --name service2
 ![Setup an example Ingress](images\Section 7 Cluster Setup - Secure Ingress\Screenshot_4.png)
 
 ```sh
+# not found gateway 504
 curl http://35.187.199.19:30670/service1
 curl http://34.85.100.111:30670/service2
 
 curl https://34.85.100.111:32755/service1 -k
 curl https://34.85.100.111:32755/service2 -k
 curl https://34.85.100.111:32755/service2 -kv
+
+kubectl get netpol
+-------------------------------------------
+NAME           POD-SELECTOR   AGE
+backend        run=backend    4d
+default-deny   <none>         4d1h
+frontend       run=frontend   4d1h
+-------------------------------------------
+
+#delete network policies and can access the url
+kubectl delete netpol backend default-deny frontend 
+-------------------------------------------
+NAME           POD-SELECTOR   AGE
+backend        run=backend    4d
+default-deny   <none>         4d1h
+frontend       run=frontend   4d1h
+-------------------------------------------
+curl http://35.187.199.19:30255/service1
+
+curl https://35.187.199.19:32755/service1
 ```
 
 
@@ -1287,3 +1304,90 @@ curl https://secure-ingress.com:$HttpsPort/service2 -kv --resolve secure-ingress
 
 #### Section 8: Cluster Setup - Node Metadata Protection
 
+###### 36 Introduction
+
+##### Protect Node Metadata and Endpoints
+
+![Protect Node Metadata and Endpoints](images\Section 8 Cluster Setup -Node Metadata Protection\Screenshot_1.png)
+
+##### Cloud Platform Node Metadata
+
+![Cloud Platform Node Metadata](images\Section 8 Cluster Setup -Node Metadata Protection\Screenshot_2.png)
+
+##### Limit permissions for instance credentials
+
+![Limit permissions for instance credentials](images\Section 8 Cluster Setup -Node Metadata Protection\Screenshot_3.png)
+
+##### Restrict access using NetworkPolicies
+
+![Restrict access using NetworkPolicies](images\Section 8 Cluster Setup -Node Metadata Protection\Screenshot_4.png)
+
+#### 37. Practice : Access Node Metadata
+
+###### Access GCP Instance Metadata : Access GCP metadata from instance and pod
+
+
+
+https://cloud.google.com/compute/docs/storing-retrieving-metadata
+
+```sh
+curl "http://metadata.google.internal/computeMetadata/v1/instance/disks/" -H "Metadata-Flavor: Google"
+
+curl "http://metadata.google.internal/computeMetadata/v1/instance/disks/0" -H "Metadata-Flavor: Google"
+
+
+k run nginx --image=nginx
+k exec nginx -it -- bash
+```
+
+###### Metadata restriction with NetworkPolicy:
+
+###### Only allow pods with certain label to access the endpoint
+
+```sh
+ping metadata.google.internal
+PING metadata.google.internal (169.254.169.254) 56(84) bytes of data.
+64 bytes from metadata.google.internal (169.254.169.254): icmp_seq=1 ttl=255 time=0.704 ms
+64 bytes from metadata.google.internal (169.254.169.254): icmp_seq=2 ttl=255 time=0.305 ms
+64 bytes from metadata.google.internal (169.254.169.254): icmp_seq=3 ttl=255 time=0.239 ms
+64 bytes from metadata.google.internal (169.254.169.254): icmp_seq=4 ttl=255 time=0.315 ms
+```
+
+https://github.com/killer-sh/cks-course-environment/tree/master/course-content/cluster-setup/protect-node-metadata
+
+```sh
+# https://github.com/killer-sh/cks-course-environment/blob/master/course-content/cluster-setup/protect-node-metadata/np_cloud_metadata_deny.yaml
+k -f np_cloud_metadata_deny.yaml create
+
+
+# https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/cluster-setup/protect-node-metadata/np_cloud_metadata_allow.yaml
+k -f np_cloud_metadata_allow.yaml create
+k get pod --show-labels
+-------------------------------------------------------------------------------------
+nginx      1/1     Running   0          13m    run=nginx
+-------------------------------------------------------------------------------------
+k label pod nginx role=metadata-accessor
+-------------------------------------------------------------------------------------
+nginx      1/1     Running   0          15m    role=metadata-accessor,run=nginx
+-------------------------------------------------------------------------------------
+k exec nginx -it -- bash
+curl "http://metadata.google.internal/computeMetadata/v1/instance/disks/" -H "Metadata-Flavor: Google"
+-------------------------------------------------------------------------------------
+0/
+-------------------------------------------------------------------------------------
+exit
+
+# delete the label role
+k label pod nginx role-
+k exec nginx -it -- bash
+# get nothing
+curl "http://metadata.google.internal/computeMetadata/v1/instance/disks/" -H "Metadata-Flavor: Google"
+```
+
+Of particular note, 169.254.169.254 is used in Amazon EC2 and other cloud computing platforms to [distribute metadata to cloud instances](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
+
+#### 39. Recap
+
+###### Recap
+
+![Recap](images\Section 8 Cluster Setup -Node Metadata Protection\Screenshot_5.png)
