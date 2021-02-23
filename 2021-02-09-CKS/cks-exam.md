@@ -10,4 +10,4 @@ https://jimmysong.io/kubernetes-handbook/
 
 
 
-[CKS Simulator Kubernetes 1.20](https://www.evernote.com/shard/s230/sh/96ab185a-57e2-4ad1-bcb2-99aba713cf9f/)
+[CKS Simulator Kubernetes 1.20](https://www.evernote.com/shard/s230/sh/96ab185a-57e2-4ad1-bcb2-99aba713cf9f/7a9a5a909954f793c2de9ae3414a7266)
