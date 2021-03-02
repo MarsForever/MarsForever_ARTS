@@ -1391,3 +1391,149 @@ Of particular note, 169.254.169.254 is used in Amazon EC2 and other cloud comput
 ###### Recap
 
 ![Recap](images\Section 8 Cluster Setup -Node Metadata Protection\Screenshot_5.png)
+
+
+
+#### Section 9: Cluster Setup - CIS Benchmarks
+
+###### 40. Introduction
+
+![Introduction 1](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_1.png)
+
+![Introduction 2](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_2.png)
+
+##### CIS - Center for Internet Security 1
+
+![CIS - Center for Internet Security 1](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_3.png)
+
+##### CIS - Center for Internet Security 2
+
+![CIS - Center for Internet Security 2](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_4.png)
+
+#### 41. Practice - CIS in Action
+
+![CIS Benchmarks in action](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_5.png)
+
+#### 42. Practice - kube-bench
+
+![CIS Benchmarks in action](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_6.png)
+
+
+
+[Running inside a container](https://github.com/aquasecurity/kube-bench#running-inside-a-container)
+
+```sh
+# run on master
+docker run --pid=host -v /etc:/etc:ro -v /var:/var:ro -t aquasec/kube-bench:latest master --version 1.20
+
+------------------------------------------------------------
+== Summary master ==
+45 checks PASS
+10 checks FAIL
+10 checks WARN
+0 checks INFO
+------------------------------------------------------------
+
+#fixed fail 1.1.12
+stat -c %U:%G /var/lib/etcd
+useradd etcd
+chown etcd:etcd /var/lib/etcd
+stat -c %U:%G /var/lib/etcd
+
+------------------------------------------------------------
+== Summary master ==
+46 checks PASS
+9 checks FAIL
+10 checks WARN
+0 checks INFO
+------------------------------------------------------------
+
+# run on worker
+docker run --pid=host -v /etc:/etc:ro -v /var:/var:ro -t aquasec/kube-bench:latest node --version 1.20
+```
+
+#### 43. Recap
+
+[Martin White - Consistent Security Controls through CIS Benchmarks](https://www.youtube.com/watch?v=53-v3stlnCo)
+
+[Tool:Docker Bench](https://github.com/docker/docker-bench-security)
+
+https://cloud.google.com/kubernetes-engine/docs/concepts/cis-benchmarks
+
+![What are CIS Benchmarks](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_7.png)
+
+#### Section 10 : Cluster Setup - Verify Platform Binaries
+
+##### 44 Introduction
+
+###### Verify platform binaries
+
+![Verify platform binaries](images\Section 10 Cluster Setup- Verify Platform Binaries\Screenshot_1.png)
+
+##### Theory and Hashes
+
+![Theory and Hashes](images\Section 10 Cluster Setup- Verify Platform Binaries\Screenshot_2.png)
+
+```sh
+#get k8s version 
+k get node
+NAME         STATUS   ROLES                  AGE   VERSION
+cks-master   Ready    control-plane,master   14d   v1.20.2
+cks-worker   Ready    <none>                 14d   v1.20.2
+# downloade 
+wget https://dl.k8s.io/v1.20.4/kubernetes-server-linux-amd64.tar.gz
+sha512sum  kubernetes-server-linux-amd64.tar.gz
+--------------------------------------------------------------------------------------------------------------------------------
+37738bc8430b0832f32c6d13cdd68c376417270568cd9b31a1ff37e96cfebcc1e2970c72bed588f626e35ed8273671c77200f0d164e67809b5626a2a99e3c5f5 
+--------------------------------------------------------------------------------------------------------------------------------
+#
+sha512sum kubernetes-server-linux-amd64.tar.gz > compare
+#before
+------------------------------------------------------------
+37738bc8430b0832f32c6d13cdd68c376417270568cd9b31a1ff37e96cfebcc1e2970c72bed588f626e35ed8273671c77200f0d164e67809b5626a2a99e3c5f5  kubernetes-server-linux-amd64.tar.gz
+------------------------------------------------------------
+#after
+------------------------------------------------------------
+37738bc8430b0832f32c6d13cdd68c376417270568cd9b31a1ff37e96cfebcc1e2970c72bed588f626e35ed8273671c77200f0d164e67809b5626a2a99e3c5f5 ------------------------------------------------------------
+#copy  sha512sum form https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.20.md#server-binaries 
+# to compare file
+37738bc8430b0832f32c6d13cdd68c376417270568cd9b31a1ff37e96cfebcc1e2970c72bed588f626e35ed8273671c77200f0d164e67809b5626a2a99e3c5f5
+#vim compare
+------------------------------------------------------------
+37738bc8430b0832f32c6d13cdd68c376417270568cd9b31a1ff37e96cfebcc1e2970c72bed588f626e35ed8273671c77200f0d164e67809b5626a2a99e3c5f5
+37738bc8430b0832f32c6d13cdd68c376417270568cd9b31a1ff37e96cfebcc1e2970c72bed588f626e35ed8273671c77200f0d164e67809b5626a2a99e3c5f5
+------------------------------------------------------------
+#compare two files
+cat compare | uniq
+37738bc8430b0832f32c6d13cdd68c376417270568cd9b31a1ff37e96cfebcc1e2970c72bed588f626e35ed8273671c77200f0d164e67809b5626a2a99e3c5f5
+
+```
+
+#### 45. Practice - Download and verify K8s release
+
+![Verify binaries from container](images\Section 10 Cluster Setup- Verify Platform Binaries\Screenshot_3.png)
+
+```sh
+# unzip archive file 
+tar xfz kubernetes-server-linux-amd64.tar.gz
+
+#
+sha512sum kubernetes/server/bin/kube-apiserver
+
+#
+k -n kube-system get pod | grep api
+------------------------------------------------------------
+kube-apiserver-cks-master            1/1     Running   15         14d
+------------------------------------------------------------
+k -n kube-system get pod kube-apiserver-cks-master -oyaml | grep image
+
+docker ps | grep apiserver
+------------------------------------------------------------
+491c17322c10        a8c2fdb8bf76           "kube-apiserver --ad…"   About an hour ago   Up About an hour                        k8s_kube-apiserver_kube-apiserver-cks-master_kube-system_f6c58610040386ba7cf06646b052f201_15
+3d1b654402a7        k8s.gcr.io/pause:3.2   "/pause"                 About an hour ago   Up About an hour                        k8s_POD_kube-apiserver-cks-master_kube-system_f6c58610040386ba7cf06646b052f201_11
+------------------------------------------------------------
+
+
+docker cp 491c17322c10:/ container-fs
+```
+
