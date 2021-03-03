@@ -1518,7 +1518,7 @@ cat compare | uniq
 tar xfz kubernetes-server-linux-amd64.tar.gz
 
 #
-sha512sum kubernetes/server/bin/kube-apiserver
+sha512sum kubernetes/server/bin/kube-apiserver > compare
 
 #
 k -n kube-system get pod | grep api
@@ -1535,5 +1535,12 @@ docker ps | grep apiserver
 
 
 docker cp 491c17322c10:/ container-fs
+
+sha512sum container-fs/usr/local/bin/kube-apiserver >> compare
+
+#delete contents without sha512sum 
+cat compare | uniq
 ```
+
+##### 47.Recap
 
