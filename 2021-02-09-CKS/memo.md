@@ -1544,3 +1544,109 @@ cat compare | uniq
 
 ##### 47.Recap
 
+![Recap](images\Section 10 Cluster Setup- Verify Platform Binaries\Screenshot_4.png)
+
+
+
+#### Section 11: Cluster Hardening - RBAC
+
+##### 48. Intro
+
+![RBAC 1](images\Section 11 Cluster Hardening - RBAC\Screenshot_1.png)
+
+![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_2.png)
+
+![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_3.png)
+
+![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_4.png)
+
+![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_5.png)
+
+![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_6.png)
+
+![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_7.png)
+
+![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_8.png)
+
+![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_9.png)
+
+![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_10.png)
+
+![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_11.png)
+
+```sh
+k create ns red
+
+k create ns blue
+
+# Check the yaml file
+k -n red create role secret-manager --verb=get --resource=secrets -oyaml --dry-run=client
+------------------------------------------------------------------------------------
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  name: secret-manager
+  namespace: red
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+------------------------------------------------------------------------------------
+#Create the role resource for namespace red
+k -n red create role secret-manager --verb=get --resource=secrets 
+------------------------------------------------------------------------------------
+role.rbac.authorization.k8s.io/secret-manager created
+------------------------------------------------------------------------------------
+
+
+k -n red create rolebinding secret-manager --role=secret-manager --user=jane -oyaml --dry-run=client
+------------------------------------------------------------------------------------
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  name: secret-manager
+  namespace: red
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: secret-manager
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: jane
+------------------------------------------------------------------------------------
+
+#Create rolebinding for namespace red
+k -n red create rolebinding secret-manager --role=secret-manager --user=jane
+------------------------------------------------------------------------------------
+rolebinding.rbac.authorization.k8s.io/secret-manager created
+------------------------------------------------------------------------------------
+
+#Create the role resource for namespace blue
+k -n blue create role secret-manager --verb=get --verb=list --resource=secrets
+------------------------------------------------------------------------------------
+role.rbac.authorization.k8s.io/secret-manager created
+------------------------------------------------------------------------------------
+
+#Create rolebinding for namespace blue
+k -n blue create rolebinding secret-manager --role=secret-manager --user=jane
+------------------------------------------------------------------------------------
+rolebinding.rbac.authorization.k8s.io/secret-manager created
+------------------------------------------------------------------------------------
+#check the manual
+k auth can-i -h
+
+k -n red auth can-i get secrets --as jane
+yes
+
+ k -n red auth can-i get secrets --as matsu
+no
+
+
+```
+
