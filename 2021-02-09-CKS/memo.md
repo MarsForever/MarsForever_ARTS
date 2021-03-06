@@ -165,25 +165,25 @@ Containers and Docker 2
 
 Linux Kernel Namespace PID
 
-![Linux Kernel Namespace PID](images/Section4-15_Linux Kernel Namespace.png)
+![Linux Kernel Namespace PID](images/Section4-15_LinuxKernelNamespace.png)
 
 
 
 Linux Kernel Namespace Mount
 
-![Linux Kernel Namespace Mount](images/Section4-15_Linux Kernel Namespace Mount.png)
+![Linux Kernel Namespace Mount](images/Section4-15_LinuxKernelNamespaceMount.png)
 
 Linux Kernel Namespace Network
 
-![Linux Kernel Namespace Mount](images/Section4-15_Linux Kernel Namespace Network.png)
+![Linux Kernel Namespace Mount](images/Section4-15_LinuxKernelNamespaceNetwork.png)
 
 Linux Kernel Namespace User
 
-![Linux Kernel Namespace User](images/Section4-15_Linux Kernel Namespace User.png)
+![Linux Kernel Namespace User](images/Section4-15_LinuxKernelNamespace User.png)
 
 ##### Linux Kernel Isolation
 
-![Linux Kernel Isolation](images\Section4-15_Linux Kernel Isolation.png)
+![Linux Kernel Isolation](images\Section4-15_LinuxKernelIsolation.png)
 
 
 
@@ -994,11 +994,11 @@ https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/REA
 
 ##### What is Ingress
 
-![What is Ingress](images\Section 7 Cluster Setup - Secure Ingress\Screenshot_1.png)
+![What is Ingress](images\Section7_ClusterSetup-SecureIngress\Screenshot_1.png)
 
 ##### What is Ingress
 
-![What is Ingress](images\Section 7 Cluster Setup - Secure Ingress\Screenshot_2.png)
+![What is Ingress](images\Section7_ClusterSetup-SecureIngress\Screenshot_2.png)
 
 ##### Setup an example Ingress
 
@@ -1014,7 +1014,7 @@ https://kubernetes.io/docs/concepts/services-networking/ingress
 
 ##### Setup an example Ingress
 
-![Setup an example Ingress](images\Section 7 Cluster Setup - Secure Ingress\Screenshot_3.png)
+![Setup an example Ingress](images\Section7_ClusterSetup-SecureIngress\Screenshot_3.png)
 
 ##### Install NGINX Ingress
 
@@ -1126,7 +1126,7 @@ k expose pod pod2 --port 80 --name service2
 
 ##### 34. Practice - Secure an Ingress
 
-![Setup an example Ingress](images\Section 7 Cluster Setup - Secure Ingress\Screenshot_4.png)
+![Setup an example Ingress](images\Section7_ClusterSetup-SecureIngress\Screenshot_4.png)
 
 ```sh
 # not found gateway 504
@@ -1308,19 +1308,19 @@ curl https://secure-ingress.com:$HttpsPort/service2 -kv --resolve secure-ingress
 
 ##### Protect Node Metadata and Endpoints
 
-![Protect Node Metadata and Endpoints](images\Section 8 Cluster Setup -Node Metadata Protection\Screenshot_1.png)
+![Protect Node Metadata and Endpoints](images\Section8_ClusterSetup-NodeMetadataProtection\Screenshot_1.png)
 
 ##### Cloud Platform Node Metadata
 
-![Cloud Platform Node Metadata](images\Section 8 Cluster Setup -Node Metadata Protection\Screenshot_2.png)
+![Cloud Platform Node Metadata](images\Section8_ClusterSetup-NodeMetadataProtection\Screenshot_2.png)
 
 ##### Limit permissions for instance credentials
 
-![Limit permissions for instance credentials](images\Section 8 Cluster Setup -Node Metadata Protection\Screenshot_3.png)
+![Limit permissions for instance credentials](images\Section8_ClusterSetup-NodeMetadataProtection\Screenshot_3.png)
 
 ##### Restrict access using NetworkPolicies
 
-![Restrict access using NetworkPolicies](images\Section 8 Cluster Setup -Node Metadata Protection\Screenshot_4.png)
+![Restrict access using NetworkPolicies](images\Section8_ClusterSetup-NodeMetadataProtection\Screenshot_4.png)
 
 #### 37. Practice : Access Node Metadata
 
@@ -1390,7 +1390,7 @@ Of particular note, 169.254.169.254 is used in Amazon EC2 and other cloud comput
 
 ###### Recap
 
-![Recap](images\Section 8 Cluster Setup -Node Metadata Protection\Screenshot_5.png)
+![Recap](images\Section8_ClusterSetup-NodeMetadataProtection\Screenshot_5.png)
 
 
 
@@ -1398,25 +1398,25 @@ Of particular note, 169.254.169.254 is used in Amazon EC2 and other cloud comput
 
 ###### 40. Introduction
 
-![Introduction 1](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_1.png)
+![Introduction 1](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_1.png)
 
-![Introduction 2](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_2.png)
+![Introduction 2](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_2.png)
 
 ##### CIS - Center for Internet Security 1
 
-![CIS - Center for Internet Security 1](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_3.png)
+![CIS - Center for Internet Security 1](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_3.png)
 
 ##### CIS - Center for Internet Security 2
 
-![CIS - Center for Internet Security 2](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_4.png)
+![CIS - Center for Internet Security 2](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_4.png)
 
 #### 41. Practice - CIS in Action
 
-![CIS Benchmarks in action](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_5.png)
+![CIS Benchmarks in action](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_5.png)
 
 #### 42. Practice - kube-bench
 
-![CIS Benchmarks in action](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_6.png)
+![CIS Benchmarks in action](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_6.png)
 
 
 
@@ -1460,7 +1460,7 @@ docker run --pid=host -v /etc:/etc:ro -v /var:/var:ro -t aquasec/kube-bench:late
 
 https://cloud.google.com/kubernetes-engine/docs/concepts/cis-benchmarks
 
-![What are CIS Benchmarks](images\Section 9 Cluster Setup - CIS Benchmarks\Screenshot_7.png)
+![What are CIS Benchmarks](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_7.png)
 
 #### Section 10 : Cluster Setup - Verify Platform Binaries
 
@@ -1468,11 +1468,11 @@ https://cloud.google.com/kubernetes-engine/docs/concepts/cis-benchmarks
 
 ###### Verify platform binaries
 
-![Verify platform binaries](images\Section 10 Cluster Setup- Verify Platform Binaries\Screenshot_1.png)
+![Verify platform binaries](images\Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_1.png)
 
 ##### Theory and Hashes
 
-![Theory and Hashes](images\Section 10 Cluster Setup- Verify Platform Binaries\Screenshot_2.png)
+![Theory and Hashes](images\Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_2.png)
 
 ```sh
 #get k8s version 
@@ -1511,7 +1511,7 @@ cat compare | uniq
 
 #### 45. Practice - Download and verify K8s release
 
-![Verify binaries from container](images\Section 10 Cluster Setup- Verify Platform Binaries\Screenshot_3.png)
+![Verify binaries from container](images\Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_3.png)
 
 ```sh
 # unzip archive file 
@@ -1544,7 +1544,7 @@ cat compare | uniq
 
 ##### 47.Recap
 
-![Recap](images\Section 10 Cluster Setup- Verify Platform Binaries\Screenshot_4.png)
+![Recap](images\Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_4.png)
 
 
 
@@ -1552,27 +1552,27 @@ cat compare | uniq
 
 ##### 48. Intro
 
-![RBAC 1](images\Section 11 Cluster Hardening - RBAC\Screenshot_1.png)
+![RBAC 1](images\Section11_ClusterHardening-RBAC\Screenshot_1.png)
 
-![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_2.png)
+![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_2.png)
 
-![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_3.png)
+![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_3.png)
 
-![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_4.png)
+![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_4.png)
 
-![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_5.png)
+![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_5.png)
 
-![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_6.png)
+![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_6.png)
 
-![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_7.png)
+![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_7.png)
 
-![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_8.png)
+![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_8.png)
 
-![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_9.png)
+![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_9.png)
 
-![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_10.png)
+![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_10.png)
 
-![RBAC 2](images\Section 11 Cluster Hardening - RBAC\Screenshot_11.png)
+![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_11.png)
 
 ```sh
 k create ns red
@@ -1644,9 +1644,24 @@ k auth can-i -h
 k -n red auth can-i get secrets --as jane
 yes
 
- k -n red auth can-i get secrets --as matsu
+k -n red auth can-i get secrets --as matsu
 no
 
+k -n red auth can-i delete secrets --as jane
+no
+k -n red auth can-i list secrets --as jane
+no
+
+k -n blue auth can-i list secrets --as jane
+yes
+
+k -n blue auth can-i get secrets --as jane
+yes
+
+k -n blue auth can-i get pod --as jane
+no
 
 ```
+
+![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_12.png)
 
