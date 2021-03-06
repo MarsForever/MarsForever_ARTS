@@ -183,7 +183,7 @@ Linux Kernel Namespace User
 
 ##### Linux Kernel Isolation
 
-![Linux Kernel Isolation](images\Section4-15_LinuxKernelIsolation.png)
+![Linux Kernel Isolation](images/Section4-15_LinuxKernelIsolation.png)
 
 
 
@@ -287,21 +287,21 @@ https://www.youtube.com/watch?v=MHv6cWjvQjM
 
 ##### NetworkPolicies 1
 
-![NetworkPolicies](images\Section5 Cluster Setup NetworkPolicies\Screenshot_1.png)
+![NetworkPolicies](images/Section5 Cluster Setup NetworkPolicies\Screenshot_1.png)
 
 ##### Multiple NetworkPolicies 
 
-![Multiple NetworkPolicies](images\Section5 Cluster Setup NetworkPolicies\Screenshot_2.png)
+![Multiple NetworkPolicies](images/Section5 Cluster Setup NetworkPolicies\Screenshot_2.png)
 
 ##### Multiple NetworkPolicies  examples
 
-![Multiple NetworkPolicies examples](images\Section5 Cluster Setup NetworkPolicies\Screenshot_3.png)
+![Multiple NetworkPolicies examples](images/Section5 Cluster Setup NetworkPolicies\Screenshot_3.png)
 
 #### 21 Practice Default Deny
 
 ##### Default Deny
 
-![Default Deny](images\Section5 Cluster Setup NetworkPolicies\Screenshot_4.png)
+![Default Deny](images/Section5 Cluster Setup NetworkPolicies\Screenshot_4.png)
 
 ```sh
 sudo -i
@@ -420,7 +420,7 @@ k exec backend -- curl frontend
 
 #### 21 Practice Frontend to Backend traffic
 
-![Frontend to Backend traffic](images\Section5 Cluster Setup NetworkPolicies\Screenshot_5.png)
+![Frontend to Backend traffic](images/Section5 Cluster Setup NetworkPolicies\Screenshot_5.png)
 
 ```sh
 vim frontend.yaml
@@ -530,7 +530,7 @@ Commercial support is available at
 
 Allow DNS resolution
 
-![Allow DNS resolution](images\Section5 Cluster Setup NetworkPolicies\Screenshot_6.png)
+![Allow DNS resolution](images/Section5 Cluster Setup NetworkPolicies\Screenshot_6.png)
 
 ```sh
 #because frontend -> backend is ok,but not network policy for backend -> frontend
@@ -550,7 +550,7 @@ source:https://github.com/killer-sh/cks-course-environment/tree/master/course-co
 
 ##### Network Policy
 
-![Network Policy](images\Section5 Cluster Setup NetworkPolicies\Screenshot_7.png)
+![Network Policy](images/Section5 Cluster Setup NetworkPolicies\Screenshot_7.png)
 
 ```sh
 #create new namespace
@@ -770,7 +770,7 @@ Commercial support is available at
 
 https://kubernetes.io/docs/concepts/services-networking/network-policies
 
-![24 Recap](images\Section5 Cluster Setup NetworkPolicies\Screenshot_8.png)
+![24 Recap](images/Section5 Cluster Setup NetworkPolicies\Screenshot_8.png)
 
 
 
@@ -780,39 +780,39 @@ https://kubernetes.io/docs/concepts/services-networking/network-policies
 
 ##### GUI Elements
 
-![GUI Elements](images\Section 6 Cluster Setup GUI Elements\Screenshot_1.png)
+![GUI Elements](images/Section 6 Cluster Setup GUI Elements\Screenshot_1.png)
 
 ##### GUI Elements and the Dashboard
 
-![GUI Elements and the Dashboard](images\Section 6 Cluster Setup GUI Elements\Screenshot_1.png)
+![GUI Elements and the Dashboard](images/Section 6 Cluster Setup GUI Elements\Screenshot_1.png)
 
 ##### Kubernetes has some demerits
 
-![Kubernetes has some demerits](images\Section 6 Cluster Setup GUI Elements\Screenshot_3.png)
+![Kubernetes has some demerits](images/Section 6 Cluster Setup GUI Elements\Screenshot_3.png)
 
 
 
 ##### Kubernetes proxy
 
-![Kubernetes proxy](images\Section 6 Cluster Setup GUI Elements\Screenshot_4.png)
+![Kubernetes proxy](images/Section 6 Cluster Setup GUI Elements\Screenshot_4.png)
 
 
 
-![Kubernetes proxy 2](images\Section 6 Cluster Setup GUI Elements\Screenshot_5.png)
+![Kubernetes proxy 2](images/Section 6 Cluster Setup GUI Elements\Screenshot_5.png)
 
 
 
-![Kubernetes port-forward](images\Section 6 Cluster Setup GUI Elements\Screenshot_6.png)
+![Kubernetes port-forward](images/Section 6 Cluster Setup GUI Elements\Screenshot_6.png)
 
 
 
-![Kubernetes port-forward 2](images\Section 6 Cluster Setup GUI Elements\Screenshot_7.png)
+![Kubernetes port-forward 2](images/Section 6 Cluster Setup GUI Elements\Screenshot_7.png)
 
 
 
 Ingress
 
-![Ingress](images\Section 6 Cluster Setup GUI Elements\Screenshot_8.png)
+![Ingress](images/Section 6 Cluster Setup GUI Elements\Screenshot_8.png)
 
 #### 27. Practice - Install Dashboard
 
@@ -837,7 +837,7 @@ k -n kubernetes-dashboard get pod,svc
 
 ##### Dashboard available externally
 
-![Dashboard available externally](images\Section 6 Cluster Setup GUI Elements\Screenshot_9.png)
+![Dashboard available externally](images/Section 6 Cluster Setup GUI Elements\Screenshot_9.png)
 
 ```sh
 k -n kubernetes-dashboard get pod,svc
@@ -923,7 +923,7 @@ http://$exteralIP:30639/#/workloads?namespace=default
 
 ##### 28. Practice RBAC for the Dashboard
 
-![RBAC for the Dashboard](images\Section 6 Cluster Setup GUI Elements\Screenshot_10.png)
+![RBAC for the Dashboard](images/Section 6 Cluster Setup GUI Elements\Screenshot_10.png)
 
 ```sh
 k -n kubernetes-dashboard get sa
@@ -960,7 +960,7 @@ k -n kubernetes-dashboard create rolebinding insecure --serviceaccount kubernete
 
 http://$ExternalIP:30639/#/pod?namespace=kubernetes-dashboard
 
-![kubernetes dashboard](images\Section 6 Cluster Setup GUI Elements\Screenshot_11.png)
+![kubernetes dashboard](images/Section 6 Cluster Setup GUI Elements\Screenshot_11.png)
 
 ```sh
 k -n kubernetes-dashboard create clusterrolebinding insecure --serviceaccount kubernetes-dashboard:kubernetes-dashboard --clusterrole view
@@ -968,11 +968,11 @@ k -n kubernetes-dashboard create clusterrolebinding insecure --serviceaccount ku
 
 ##### kubernetes dashboard 2
 
-![kubernetes dashboard 2](images\Section 6 Cluster Setup GUI Elements\Screenshot_12.png)
+![kubernetes dashboard 2](images/Section 6 Cluster Setup GUI Elements\Screenshot_12.png)
 
 ##### Dashboard arguments
 
-![Dashboard arguments](images\Section 6 Cluster Setup GUI Elements\Screenshot_13.png)
+![Dashboard arguments](images/Section 6 Cluster Setup GUI Elements\Screenshot_13.png)
 
 ##### 30. Recap
 
@@ -994,11 +994,11 @@ https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/REA
 
 ##### What is Ingress
 
-![What is Ingress](images\Section7_ClusterSetup-SecureIngress\Screenshot_1.png)
+![What is Ingress](images/Section7_ClusterSetup-SecureIngress\Screenshot_1.png)
 
 ##### What is Ingress
 
-![What is Ingress](images\Section7_ClusterSetup-SecureIngress\Screenshot_2.png)
+![What is Ingress](images/Section7_ClusterSetup-SecureIngress\Screenshot_2.png)
 
 ##### Setup an example Ingress
 
@@ -1014,7 +1014,7 @@ https://kubernetes.io/docs/concepts/services-networking/ingress
 
 ##### Setup an example Ingress
 
-![Setup an example Ingress](images\Section7_ClusterSetup-SecureIngress\Screenshot_3.png)
+![Setup an example Ingress](images/Section7_ClusterSetup-SecureIngress\Screenshot_3.png)
 
 ##### Install NGINX Ingress
 
@@ -1126,7 +1126,7 @@ k expose pod pod2 --port 80 --name service2
 
 ##### 34. Practice - Secure an Ingress
 
-![Setup an example Ingress](images\Section7_ClusterSetup-SecureIngress\Screenshot_4.png)
+![Setup an example Ingress](images/Section7_ClusterSetup-SecureIngress\Screenshot_4.png)
 
 ```sh
 # not found gateway 504
@@ -1308,19 +1308,19 @@ curl https://secure-ingress.com:$HttpsPort/service2 -kv --resolve secure-ingress
 
 ##### Protect Node Metadata and Endpoints
 
-![Protect Node Metadata and Endpoints](images\Section8_ClusterSetup-NodeMetadataProtection\Screenshot_1.png)
+![Protect Node Metadata and Endpoints](images/Section8_ClusterSetup-NodeMetadataProtection\Screenshot_1.png)
 
 ##### Cloud Platform Node Metadata
 
-![Cloud Platform Node Metadata](images\Section8_ClusterSetup-NodeMetadataProtection\Screenshot_2.png)
+![Cloud Platform Node Metadata](images/Section8_ClusterSetup-NodeMetadataProtection\Screenshot_2.png)
 
 ##### Limit permissions for instance credentials
 
-![Limit permissions for instance credentials](images\Section8_ClusterSetup-NodeMetadataProtection\Screenshot_3.png)
+![Limit permissions for instance credentials](images/Section8_ClusterSetup-NodeMetadataProtection\Screenshot_3.png)
 
 ##### Restrict access using NetworkPolicies
 
-![Restrict access using NetworkPolicies](images\Section8_ClusterSetup-NodeMetadataProtection\Screenshot_4.png)
+![Restrict access using NetworkPolicies](images/Section8_ClusterSetup-NodeMetadataProtection\Screenshot_4.png)
 
 #### 37. Practice : Access Node Metadata
 
@@ -1390,7 +1390,7 @@ Of particular note, 169.254.169.254 is used in Amazon EC2 and other cloud comput
 
 ###### Recap
 
-![Recap](images\Section8_ClusterSetup-NodeMetadataProtection\Screenshot_5.png)
+![Recap](images/Section8_ClusterSetup-NodeMetadataProtection\Screenshot_5.png)
 
 
 
@@ -1398,25 +1398,25 @@ Of particular note, 169.254.169.254 is used in Amazon EC2 and other cloud comput
 
 ###### 40. Introduction
 
-![Introduction 1](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_1.png)
+![Introduction 1](images/Section9_ClusterSetup-CIS Benchmarks\Screenshot_1.png)
 
-![Introduction 2](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_2.png)
+![Introduction 2](images/Section9_ClusterSetup-CIS Benchmarks\Screenshot_2.png)
 
 ##### CIS - Center for Internet Security 1
 
-![CIS - Center for Internet Security 1](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_3.png)
+![CIS - Center for Internet Security 1](images/Section9_ClusterSetup-CIS Benchmarks\Screenshot_3.png)
 
 ##### CIS - Center for Internet Security 2
 
-![CIS - Center for Internet Security 2](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_4.png)
+![CIS - Center for Internet Security 2](images/Section9_ClusterSetup-CIS Benchmarks\Screenshot_4.png)
 
 #### 41. Practice - CIS in Action
 
-![CIS Benchmarks in action](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_5.png)
+![CIS Benchmarks in action](images/Section9_ClusterSetup-CIS Benchmarks\Screenshot_5.png)
 
 #### 42. Practice - kube-bench
 
-![CIS Benchmarks in action](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_6.png)
+![CIS Benchmarks in action](images/Section9_ClusterSetup-CIS Benchmarks\Screenshot_6.png)
 
 
 
@@ -1460,7 +1460,7 @@ docker run --pid=host -v /etc:/etc:ro -v /var:/var:ro -t aquasec/kube-bench:late
 
 https://cloud.google.com/kubernetes-engine/docs/concepts/cis-benchmarks
 
-![What are CIS Benchmarks](images\Section9_ClusterSetup-CIS Benchmarks\Screenshot_7.png)
+![What are CIS Benchmarks](images/Section9_ClusterSetup-CIS Benchmarks\Screenshot_7.png)
 
 #### Section 10 : Cluster Setup - Verify Platform Binaries
 
@@ -1468,11 +1468,11 @@ https://cloud.google.com/kubernetes-engine/docs/concepts/cis-benchmarks
 
 ###### Verify platform binaries
 
-![Verify platform binaries](images\Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_1.png)
+![Verify platform binaries](images/Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_1.png)
 
 ##### Theory and Hashes
 
-![Theory and Hashes](images\Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_2.png)
+![Theory and Hashes](images/Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_2.png)
 
 ```sh
 #get k8s version 
@@ -1511,7 +1511,7 @@ cat compare | uniq
 
 #### 45. Practice - Download and verify K8s release
 
-![Verify binaries from container](images\Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_3.png)
+![Verify binaries from container](images/Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_3.png)
 
 ```sh
 # unzip archive file 
@@ -1544,7 +1544,7 @@ cat compare | uniq
 
 ##### 47.Recap
 
-![Recap](images\Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_4.png)
+![Recap](images/Section10_ClusterSetup-VerifyPlatformBinaries\Screenshot_4.png)
 
 
 
@@ -1552,27 +1552,27 @@ cat compare | uniq
 
 ##### 48. Intro
 
-![RBAC 1](images\Section11_ClusterHardening-RBAC\Screenshot_1.png)
+![RBAC 1](images/Section11_ClusterHardening-RBAC\Screenshot_1.png)
 
-![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_2.png)
+![RBAC 2](images/Section11_ClusterHardening-RBAC\Screenshot_2.png)
 
-![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_3.png)
+![RBAC 2](images/Section11_ClusterHardening-RBAC\Screenshot_3.png)
 
-![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_4.png)
+![RBAC 2](images/Section11_ClusterHardening-RBAC\Screenshot_4.png)
 
-![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_5.png)
+![RBAC 2](images/Section11_ClusterHardening-RBAC\Screenshot_5.png)
 
-![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_6.png)
+![RBAC 2](images/Section11_ClusterHardening-RBAC\Screenshot_6.png)
 
-![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_7.png)
+![RBAC 2](images/Section11_ClusterHardening-RBAC\Screenshot_7.png)
 
-![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_8.png)
+![RBAC 2](images/Section11_ClusterHardening-RBAC\Screenshot_8.png)
 
-![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_9.png)
+![RBAC 2](images/Section11_ClusterHardening-RBAC\Screenshot_9.png)
 
-![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_10.png)
+![RBAC 2](images/Section11_ClusterHardening-RBAC\Screenshot_10.png)
 
-![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_11.png)
+![RBAC 2](images/Section11_ClusterHardening-RBAC\Screenshot_11.png)
 
 ```sh
 k create ns red
@@ -1663,5 +1663,5 @@ no
 
 ```
 
-![RBAC 2](images\Section11_ClusterHardening-RBAC\Screenshot_12.png)
+![RBAC 2](images/Section11_ClusterHardening-RBAC\Screenshot_12.png)
 
