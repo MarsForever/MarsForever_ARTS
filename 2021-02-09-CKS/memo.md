@@ -1398,25 +1398,25 @@ Of particular note, 169.254.169.254 is used in Amazon EC2 and other cloud comput
 
 ###### 40. Introduction
 
-![Introduction 1](images/Section9_ClusterSetup-CIS Benchmarks/Screenshot_1.png)
+![Introduction 1](images/Section9_ClusterSetup-CISBenchmarks/Screenshot_1.png)
 
-![Introduction 2](images/Section9_ClusterSetup-CIS Benchmarks/Screenshot_2.png)
+![Introduction 2](images/Section9_ClusterSetup-CISBenchmarks/Screenshot_2.png)
 
 ##### CIS - Center for Internet Security 1
 
-![CIS - Center for Internet Security 1](images/Section9_ClusterSetup-CIS Benchmarks/Screenshot_3.png)
+![CIS - Center for Internet Security 1](images/Section9_ClusterSetup-CISBenchmarks/Screenshot_3.png)
 
 ##### CIS - Center for Internet Security 2
 
-![CIS - Center for Internet Security 2](images/Section9_ClusterSetup-CIS Benchmarks/Screenshot_4.png)
+![CIS - Center for Internet Security 2](images/Section9_ClusterSetup-CISBenchmarks/Screenshot_4.png)
 
 #### 41. Practice - CIS in Action
 
-![CIS Benchmarks in action](images/Section9_ClusterSetup-CIS Benchmarks/Screenshot_5.png)
+![CIS Benchmarks in action](images/Section9_ClusterSetup-CISBenchmarks/Screenshot_5.png)
 
 #### 42. Practice - kube-bench
 
-![CIS Benchmarks in action](images/Section9_ClusterSetup-CIS Benchmarks/Screenshot_6.png)
+![CIS Benchmarks in action](images/Section9_ClusterSetup-CISBenchmarks/Screenshot_6.png)
 
 
 
@@ -1460,7 +1460,7 @@ docker run --pid=host -v /etc:/etc:ro -v /var:/var:ro -t aquasec/kube-bench:late
 
 https://cloud.google.com/kubernetes-engine/docs/concepts/cis-benchmarks
 
-![What are CIS Benchmarks](images/Section9_ClusterSetup-CIS Benchmarks/Screenshot_7.png)
+![What are CIS Benchmarks](images/Section9_ClusterSetup-CISBenchmarks/Screenshot_7.png)
 
 #### Section 10 : Cluster Setup - Verify Platform Binaries
 
