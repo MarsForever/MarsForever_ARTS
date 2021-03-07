@@ -1,0 +1,286 @@
+Google Kubernetes Engine (GKE): Beginner to Pro
+
+CHAPTER 1.2
+Welcome
+
+GCP Free Tier
+https://cloud.google.com/free/
+
+Intro to GCP Course
+https://acloud.guru/learn/gcp-101?_ga=2.26899006.2039012411.1599675383-1543127166.1597030420&_gac=1.204213796.1598370630.EAIaIQobChMIp8uUydq26wIVjqgYCh0mgwq5EAEYASAAEgJ6HvD_BwE
+
+Cloud Shell
+https://cloud.google.com/shell/docs/launching-cloud-shell
+
+Cloud Shell Editor
+https://cloud.google.com/shell/docs/viewing-and-editing-files
+
+GitHub Repo
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro
+
+CHAPTER 1.5
+Your First Container
+
+Dockerfile Reference
+https://docs.docker.com/engine/reference/builder/
+
+CHAPTER 1.6
+Lab: Your First Container
+
+Lab Files in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_One/Lecture_4_Lab/myapp
+
+CHAPTER 1.7
+Ready to Start Your Container Journey?
+
+The Twelve-Factor App
+https://12factor.net/
+
+
+CHAPTER 2.1
+The Anatomy of a Cluster
+
+GKE Cluster Architecture
+https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-architecture
+
+CHAPTER 2.3
+Forget Containers, Meet Pods!
+
+GKE Pods
+https://cloud.google.com/kubernetes-engine/docs/concepts/pod
+
+CHAPTER 2.4
+Lab: Creating Pods
+
+Lab files in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_Two/Lecture_4_Lab
+
+CHAPTER 2.5
+ReplicaSets and Deployments
+
+GKE Deployments
+https://cloud.google.com/kubernetes-engine/docs/concepts/deployment
+
+CHAPTER 2.6
+Accessing Applications
+
+GKE Services
+https://cloud.google.com/kubernetes-engine/docs/concepts/service
+
+CHAPTER 2.7
+Lab: Deployments and Services
+
+Lab Files in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_Two/Lecture_7_Lab/myapp
+
+
+CHAPTER 3.1
+Putting it all Together: Stateless Application Example
+
+Lab files in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_Three/Lecture_1_Lab/redisdemo
+
+10 Things That Used to Be on Every Website That You Totally Forgot About
+https://www.hover.com/blog/10-things-that-used-to-be-on-every-website-that-you-totally-forgot-about/
+
+CHAPTER 3.4
+Lab: Maintaining a Service with Unhealthy Pods
+
+Lab files in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_Three/Lecture_4_Lab/myapp
+
+CHAPTER 3.5
+Volumes and Persistent Storage
+
+Persistent volumes with Persistent Disks
+https://cloud.google.com/kubernetes-engine/docs/concepts/persistent-volumes
+
+CHAPTER 3.6
+Lab: Volumes and Persistent Storage
+
+Lab files in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_Three/Lecture_6_Lab/mysql-demo
+
+CHAPTER 3.7
+ConfigMaps and Secrets
+
+GKE ConfigMaps
+https://cloud.google.com/kubernetes-engine/docs/concepts/configmap
+
+GKE Secrets
+https://cloud.google.com/kubernetes-engine/docs/concepts/secret
+
+CHAPTER 3.9
+Lab: Deployment Patterns
+
+Lab files in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_Three/Lecture_9_Lab
+
+CHAPTER 3.10
+Autoscaling all the things
+
+GKE Horizontal Pod Autoscaler
+https://cloud.google.com/kubernetes-engine/docs/how-to/scaling-apps
+
+GKE Cluster Autoscaler
+https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-autoscaler
+
+CHAPTER 3.11
+Lab: Autoscaling all the things
+
+Lab files in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_Three/Lecture_11_Lab
+
+
+
+CHAPTER 4.1
+Helm: The Kubernetes Package Manager
+
+Helm Website
+https://helm.sh/
+
+CHAPTER 4.2
+Lab: Deploying Applications with Helm
+
+Lab files in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_Four/Lecture_2_Lab
+
+CHAPTER 4.3
+Advances Ingress Control
+
+NGINX Ingress Controller
+https://kubernetes.github.io/ingress-nginx/
+
+CHAPTER 4.4
+Lab: Routing Traffic with Ingress Controllers
+
+Lab files in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_Four/Lecture_4_Lab/myapp
+
+CHAPTER 4.5
+High Availability Clusters and Workloads
+
+GKE Regional Clusters
+https://cloud.google.com/kubernetes-engine/docs/concepts/regional-clusters
+
+CHAPTER 4.6
+Lab: Global Load Balancing with Multi-Cluster Ingress
+
+Lab files in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_Four/Lecture_6_Lab/manifests
+
+Commands used in this lab
+https://media.acloud.guru/gke-beginner-to-pro/resource/53b4e442-d3af-11e5-8ce7-9ec6347aad41_837cede0-234e-8c13-79b9-1a3dafae51b6/gke-beginner-to-pro-53b04a6d-cb8c-4fa7-957a-6c36d2d9d08c.txt?Expires=1604090820&Signature=AAs5ib/3nC6+U+gGeKsjWcFulCNlP+qj9PI20Hsm9ypN/UTHC+o6nSChxzGMqFHd6xQCb4JDS840K2ZwnjePtPsHuWt93E62bNgKKIMNef/yX8d8PrW/80dL4tidFiyyNxd8yWjCkLWYlB37FNv8VVlPTBZGtOE3m9pOeNVfaabQop1HzwE7xqkDbtg0KQI2+Ce1xPzIk/V6A4ES1Vim88XdNJ2ElaBI5eU/BNPC1x7u8AvIy0BoAz3WVQrEfNpXiAZyIs82e8H6Q4zygOtn7zYusqfjAuIyKp0DxbiGk4KwT1WT5kFcCAFONHiZDizPu2LbTLpIBahEF5RzjVTSRg==&Key-Pair-Id=APKAISLU6JPYU7SF6EUA&_ga=2.19575227.2039012411.1599675383-1543127166.1597030420&_gac=1.137154052.1598370630.EAIaIQobChMIp8uUydq26wIVjqgYCh0mgwq5EAEYASAAEgJ6HvD_BwE
+
+CHAPTER 4.7
+Running a Secure GKE Cluster
+
+GKE Security Overview
+https://cloud.google.com/kubernetes-engine/docs/concepts/security-overview
+
+CHAPTER 4.8
+Enhancing Cluster Nodes with DaemonSets
+
+GKE DaemonSets
+https://cloud.google.com/kubernetes-engine/docs/concepts/daemonset
+
+CHAPTER 4.9
+Stateful Applications and Workloads
+
+GKE StatefulSets
+https://cloud.google.com/kubernetes-engine/docs/concepts/statefulset
+
+CHAPTER 4.10
+Finite Tasks and Init Containers
+
+GKE Jobs
+https://cloud.google.com/kubernetes-engine/docs/how-to/jobs
+
+Kubernetes Init Containers
+https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+
+CHAPTER 4.11
+Lab: Running a Stateful Cassandra Database
+
+Lab file in GitHub
+https://github.com/ACloudGuru-Resources/Course_GKE_Beginner_To_Pro/tree/master/Chapter_Four/Lecture_11_Lab/cassandra
+
+
+
+CHAPTER 5.1
+What Have we Learned So Far?
+
+Monzo Bank case study
+https://monzo.com/blog/2016/09/19/building-a-modern-bank-backend
+
+CERN case study
+https://kubernetes.io/case-studies/cern/
+
+Pokémon GO case study
+https://cloud.google.com/blog/products/gcp/bringing-pokemon-go-to-life-on-google-cloud
+
+CHAPTER 5.2
+Continuous Integration and Deployment
+
+Continuous deployment to Google Kubernetes Engine using Jenkins
+https://cloud.google.com/solutions/continuous-delivery-jenkins-kubernetes-engine
+
+Getting started with GitLab CI/CD and Google Cloud Platform
+https://about.gitlab.com/blog/2018/04/24/getting-started-gitlab-ci-gcp/
+
+Google Cloud Build
+https://cloud.google.com/cloud-build/
+
+CHAPTER 5.3
+Operators: Adding Logic to Deployments
+
+Kubernetes Operator Pattern
+https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
+
+Crunchy Data PostgreSQL Operator
+https://github.com/CrunchyData/postgres-operator
+
+CHAPTER 5.4
+Istio and Service Meshes
+
+Istio website
+https://istio.io/
+
+Istio on GKE
+https://cloud.google.com/istio/docs/istio-on-gke/overview
+
+Kiali website
+https://www.kiali.io/
+
+CHAPTER 5.5
+Serverless on Kubernetes
+
+Knative website
+https://knative.dev/
+
+Google Cloud Run
+https://cloud.google.com/run/
+
+Cloud Run on GKE
+https://cloud.google.com/run/docs/gke/setup
+
+OpenFaaS website
+https://www.openfaas.com/
+
+CHAPTER 5.6
+What's Next for GKE?
+
+Kubernetes release notes
+https://kubernetes.io/docs/setup/release/notes/
+
+GKE Advanced blog posts
+https://cloud.google.com/blog/topics/gke-advanced
+
+Anthos technical overview
+https://cloud.google.com/anthos/docs/concepts/overview
+
+CHAPTER 5.7
+Thank You and Goodbye
+
+Kubernetes Docs
+https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/
