@@ -2249,6 +2249,11 @@ k --kubeconfig conf get ns
 Use worker node kubelet kubeconfig to set labels
 
 ```sh
+root@cks-master:~# cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep admission
+    - --enable-admission-plugins=NodeRestriction
+
+
+
 root@cks-worker:~# k config view
 apiVersion: v1
 clusters: null
