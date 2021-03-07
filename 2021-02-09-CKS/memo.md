@@ -1572,6 +1572,8 @@ cat compare | uniq
 
 ![RBAC 2](images/Section11_ClusterHardening-RBAC/Screenshot_10.png)
 
+##### 49. Practice - Role and Rolebinding
+
 ![RBAC 2](images/Section11_ClusterHardening-RBAC/Screenshot_11.png)
 
 ```sh
@@ -1663,5 +1665,223 @@ no
 
 ```
 
+##### 50 Practice -ClusterRole and ClusterRoleBInding
+
 ![RBAC 2](images/Section11_ClusterHardening-RBAC/Screenshot_12.png)
+
+##### 51 Accounts and Users
+
+##### 52 Practice CertificateSigningRequests
+
+##### 53 Recap
+
+#### Section 12 Cluster Hardening Exercise caution in using ServiceAccounts
+##### 54 Intro
+
+##### 55
+```sh
+# from inside a Pod we can do:
+cat /run/secrets/kubernetes.io/serviceaccount/token
+
+curl https://kubernetes.default -k -H "Authorization: Bearer SA_TOKEN"
+```
+
+##### 56
+https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account
+##### 57
+##### 58 Recap
+
+- SA are resources with token in secret
+- SAs and Pods + mounting
+- Create RBAC with SAs
+
+https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin
+
+https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account
+
+#### Section 13 Cluster Hardening Restrict API Access
+
+##### 59 Intro
+###### Restrict API access
+- Authentication Authorization Admission
+- Connect to the API in different ways
+- Restrict API access in various ways
+
+##### Request workflow
+
+- API requests are always tied to 
+  - A normal user
+  - A ServiceAccount
+  - Are treated as anonymous requests
+- Every request must authenticate
+  - Or be treated as an anonymous user
+
+##### Restrictions
+
+1. Don't allow anonymous access
+2. Close insecure port
+3. Don't expose ApiServer to the outside
+4. Restrict access from Nodes to API(NodeRestriction)
+5. Prevent unauthorized access(RBAC)
+6. Prevent pods from accessing API
+7. Apiserver port behind firewall / allowed ip ranges(cloud provider)
+
+##### Anonymous Access
+
+- kube-apiserver --anonymous-auth=true|false
+- In 1.6+, anonymous access is enabled by default
+  - if authorization mode other than AlwaysAllow
+  - but ABAC and RBAC require explicit authorization for anonymous
+
+##### Anonymous Access
+
+**Enable/Disable anonymous access and test it **
+
+```sh
+#
+cat /etc/kubernetes/manifests/kube-apiserver.yaml
+----------------------------------------------------------------
+    - --authorization-mode=Node,RBAC
+    - --client-ca-file=/etc/kubernetes/pki/ca.crt
+    - --enable-admission-plugins=NodeRestriction
+----------------------------------------------------------------
+root@cks-master:~# curl https://localhost:6443
+----------------------------------------------------------------
+curl: (60) SSL certificate problem: unable to get local issuer certificate
+More details here: https://curl.haxx.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+----------------------------------------------------------------
+
+root@cks-master:~# curl https://localhost:6443 -k
+----------------------------------------------------------------
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {
+
+  },
+  "status": "Failure",
+  "message": "forbidden: User \"system:anonymous\" cannot get path \"/\"",
+  "reason": "Forbidden",
+  "details": {
+
+  },
+  "code": 403
+}
+----------------------------------------------------------------
+root@cks-master:~#vim /etc/kubernetes/manifests/kube-apiserver.yaml
+----------------------------------------------------------------
+    - kube-apiserver
+    - --anonymous-auth=true   # add this line
+    - --advertise-address=10.146.0.2
+    - --allow-privileged=true
+    - --authorization-mode=Node,RBAC
+    - --client-ca-file=/etc/kubernetes/pki/ca.crt
+----------------------------------------------------------------
+k -n kube-system get pod | grep api
+The connection to the server 10.146.0.2:6443 was refused - did you specify the right host or port?
+
+root@cks-master:~#k -n kube-system get pod | grep api
+
+---------------------------------------------------------------------------
+kube-apiserver-cks-master            1/1     Running   0          17s
+---------------------------------------------------------------------------
+root@cks-master:~# curl https://localhost:6443 -k
+---------------------------------------------------------------------------
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {
+
+  },
+  "status": "Failure",
+  "message": "forbidden: User \"system:anonymous\" cannot get path \"/\"",
+  "reason": "Forbidden",
+  "details": {
+
+  },
+  "code": 403
+}
+---------------------------------------------------------------------------
+
+
+root@cks-master:~#vim /etc/kubernetes/manifests/kube-apiserver.yaml
+----------------------------------------------------------------
+    - kube-apiserver
+    - --anonymous-auth=false   # change this line
+----------------------------------------------------------------
+root@cks-master:~# curl https://localhost:6443 -k
+---------------------------------------------------------------------------
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {
+
+  },
+  "status": "Failure",
+  "message": "Unauthorized",
+  "reason": "Unauthorized",
+  "code": 401
+}
+---------------------------------------------------------------------------
+root@cks-master:~#k -n kube-system get pod | grep api
+---------------------------------------------------------------------------
+kube-apiserver-cks-master            1/1     Running   0          2m14s
+---------------------------------------------------------------------------
+```
+
+
+
+#### Section 14 Cluster Hardening Upgrade Kubernetes
+
+##### Intro
+##### Recap
+#### Section 15 Microservice Vunerabilites - Manage Kubernetes Secrets
+##### Intro
+##### Recap
+#### Section 16 Microservice Vunerabilites - Container Runtime Sandboxes
+##### Intro
+##### Recap
+#### Section 17 Microservice Vunerabilites - OS Level Security Domains
+##### Intro
+##### Recap
+#### Section 18 Microservice Vunerabilites - mTLS
+##### Intro
+##### Recap
+#### Section 19 Open Policy Agent(OPA)
+##### Intro
+##### Recap
+#### Section 20 Supply Chain Security - Image Footprint
+##### Intro
+##### Recap
+#### Section 21 Supply Chain Security - Static Analysis
+##### Intro
+##### Recap
+#### Section 22 Supply Chain Security - Image Vulnerability Scanning
+##### Intro
+##### Recap
+#### Section 23 Supply Chain Security - Secure Supply Chain
+##### Intro
+##### Recap
+#### Section 24 Runtime Security - Behavioral Analytics at host and container level
+##### Intro
+##### Recap
+#### Section 25 Runtime Security - Immutability of containers at runtime
+##### Intro
+##### Recap
+#### Section 26 Runtime Security - Auditing
+##### Intro
+##### Recap
+#### Section 27 System Hardening - Kernel Hardening Tools
+##### Intro
+##### Recap
+#### Section 28 System Hardening - Reduce Attack Surface
+##### Intro
+##### Recap
+#### Section 29 CKS Exam Series
+
+#### Section 30 CKS Simulator
 
