@@ -1707,7 +1707,7 @@ https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-accou
 - Connect to the API in different ways
 - Restrict API access in various ways
 
-##### Request workflow
+###### Request workflow
 
 - API requests are always tied to 
   - A normal user
@@ -1716,7 +1716,7 @@ https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-accou
 - Every request must authenticate
   - Or be treated as an anonymous user
 
-##### Restrictions
+###### Restrictions
 
 1. Don't allow anonymous access
 2. Close insecure port
@@ -1726,14 +1726,16 @@ https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-accou
 6. Prevent pods from accessing API
 7. Apiserver port behind firewall / allowed ip ranges(cloud provider)
 
-##### Anonymous Access
+##### 60 Practice Anonymous Access
+
+###### Anonymous Access
 
 - kube-apiserver --anonymous-auth=true|false
 - In 1.6+, anonymous access is enabled by default
   - if authorization mode other than AlwaysAllow
   - but ABAC and RBAC require explicit authorization for anonymous
 
-##### Anonymous Access
+###### Anonymous Access
 
 **Enable/Disable anonymous access and test it **
 
@@ -1833,7 +1835,458 @@ kube-apiserver-cks-master            1/1     Running   0          2m14s
 ---------------------------------------------------------------------------
 ```
 
+##### 61 Practice Insecure Access
 
+Since K8S 1.20 the insecure access is not longer possible 
+
+kube-apiserver --insecure-port=8080
+
+
+
+###### HTTP / HTTPS Access
+
+kubectl(client cert) ===Rquest(https)===>  API Server(server cert)
+
+CA(scope): https,server cert, API Server
+
+
+
+###### Insecure Access
+
+- kube-apiserver --insecure-port=8080
+  - HTTP
+  - Request **bypasses** authentication and authorization modules
+  - Admission controller still enforces
+- Enable insecure access/port and use it
+
+```sh
+# before K8S 1.20
+vim /etc/kuberntes/manifests/kube-apiserver.yaml
+
+#before
+------------------------------------------------------------------------------------------------------------------------
+    - --insecure-port=0
+------------------------------------------------------------------------------------------------------------------------
+#after
+------------------------------------------------------------------------------------------------------------------------
+    - --insecure-port=8080
+------------------------------------------------------------------------------------------------------------------------
+```
+
+##### 62 Practice Manual API Request
+
+###### Send manual API request
+
+**Let's have a look at the kubeconfig certs and perform a manual API query**
+
+```sh
+root@cks-master:~# k config view
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.146.0.2:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: kubernetes-admin
+  name: kubernetes-admin@kubernetes
+current-context: kubernetes-admin@kubernetes
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+
+root@cks-master:~# k config view --raw
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM1ekNDQWMrZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJeE1ESXhNakl4TVRFek1Wb1hEVE14TURJeE1ESXhNVEV6TVZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTk9SCjRyU3gxbzZNZ0k1L0dUQjdaNEVVck85c25OVkUwVzBFenB2aTJiMDdIRUlFSmpOMHl3QWRJby8zUVhleUVVL2cKREFhQnBKbUVBUVo5UkJUUXl2NEdVRGRoNzY3c2xmZzJabnVLczZyV0VaSDdrVXdXWERTYWVMaVA2TjBZc2U1aQpYYVhjOGlkaERLNy9UaDk1WFVheDlrY3piM0hKRFdseTJ0U3huWUZzVlIzSEhuQlBOVCtUSVFWVGsvZHpON3grCnA1QzFNWW5vaXYyTVBSekNkZEdhZkpwZ1ZyWnF6WGlncTk3eENZbXBOVS83WjYwdE1zY3ZtMGFzTTg2YXFiU1UKQ29TZ0lvbjQ3RlVIbEZyV2JWRWZzU2VKVWpRVXRCZ0pxYU1mc2Zpa1hEN3FhWndIeEM1NlZZYjlydThmVEw4SwoxSmZLWElncnNFUklwT2VzRkFzQ0F3RUFBYU5DTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0hRWURWUjBPQkJZRUZMMHl6U3ZuZnl1TE82bXQzL3MzemxrcU15S05NQTBHQ1NxR1NJYjMKRFFFQkN3VUFBNElCQVFBNGR4NFNweUpqNndVdGN2QnBKSXppVGU3dVpwZVVuOUg4TE1QaUhnaGw4a1RZZnVVcgpaZEw2Q3JUb09tdFZMRUR4bFlaSmp0QVlBajF1NzF5dFM0YWJoMTNMNXJXME5IaFFKK2FjS25iRm1zc2wySzhGCm4xNXU3dE1KS1YwS0ZxVlNqK2FZbC8rWHIzTGxjdnpERjdIWDExQkM0amxsUCtTVzB2amRGK2Rudit4bEJDUW4KVm00R1h3c3NsenZ5azVrODR3elI3SkJVZVEwWk53UmQwelFrL1BFam04THJvOTVHTlFxeTdGeVdGcmRXSXZ4NApHTGVEVC9HdkdXdzFPUGJRSldLbll4YURtZ0ZBUzJZRG5sVTNHOTlWZVBmdjdoc1l5ZGxMYzJURVZldFpZYUpzCi85dmIxUWtxaWlONlNXKzBpV1haS25MVFQwem9IRSs0cG1KegotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    server: https://10.146.0.2:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: kubernetes-admin
+  name: kubernetes-admin@kubernetes
+current-context: kubernetes-admin@kubernetes
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURFekNDQWZ1Z0F3SUJBZ0lJUG1welZHYnExMnN3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TVRBeU1USXlNVEV4TXpGYUZ3MHlNakF5TVRJeU1URXhNelZhTURReApGekFWQmdOVkJBb1REbk41YzNSbGJUcHRZWE4wWlhKek1Sa3dGd1lEVlFRREV4QnJkV0psY201bGRHVnpMV0ZrCmJXbHVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXRCUmMwblF2VCtZcGdpN1YKMG9PMUtNcUNZZVU4Q0tUd0ZNQXZhc2ducXI2dS9qV08yMlVrUUxwU2t2MXgvU09wNnFlaU91cGJuM253VHd1bwprR0ZGSW56Z1pWYXBKc0NUUVRPVjJjSmd5Z3hQNGZPYXJHV3djZGVQMHNic0VqWlNCcGs4N1N4dFIwbDEwQ3JOCjdlWUExd1F0L09iOGRoTE9JU1JWa0FoQmxRZzRKTDBFeU55YzBSL0RJWk94QmN0anJibXgwOENwVFIvSjBXL1YKU3ZOVkhTdDQwUUpxc2RVcDFFeUJ3U1JVaXdqdmFWZThGNVpUME9MYXFVcXdSbmxXN1RiYjFJNjZIRk1uRmgvbAp4M1BxNUZ5QWI2ankxdnE2a2l3RE9GWk1TVlVuOVIyS1ZUa2s3bnQ2cE5CNUVwYi9EZ2VhUGdrZVg5YytNMG1LCm5lWXB0d0lEQVFBQm8wZ3dSakFPQmdOVkhROEJBZjhFQkFNQ0JhQXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUgKQXdJd0h3WURWUjBqQkJnd0ZvQVV2VExOSytkL0s0czdxYTNmK3pmT1dTb3pJbzB3RFFZSktvWklodmNOQVFFTApCUUFEZ2dFQkFET0YxN1FkbWdvbjlsMW1jL2QwMU40UU9WQW8rNWpob3BpL2ZoS2dNYWZQVVNVQnN4dHI2bUN1CmZIQVNEeDI1TDVWRmNVNFhoaEhnZkhPU3F2blVVanp6MFB4NTZDQitnaE5xdXdnWmtoMml5WGwxTmRRMDNTdG0KQmVwUDhyVmkrQnhwb1RCYVRsRTVWNUEzVm5xTzJIYWJtNktuTU5jOWM5L2hMdEMwbGhra3lNeEtCS1hsaVkzSAovUlRzUUF0NmxKQ1dDNDV3RWdJTUtOZ1h2ekpqVks2cWdWNUxFSzc5Zll2MkI4d2p1VlFwMWJ3SnpPbHhQN01LCkh6RmhrOHlITlBRWEtKdWh0eUV5THNoMzY2SnpaeUlVMjBzQXQ1Rytjd3JFNmw5MXFZWnVtK1dnUVdLdDg1Sm4KeWIxYUNNY3RwcHZiMktlalRqa3BVM3VwVU9NNEEwWT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb2dJQkFBS0NBUUVBdEJSYzBuUXZUK1lwZ2k3VjBvTzFLTXFDWWVVOENLVHdGTUF2YXNnbnFyNnUvaldPCjIyVWtRTHBTa3YxeC9TT3A2cWVpT3VwYm4zbndUd3Vva0dGRkluemdaVmFwSnNDVFFUT1YyY0pneWd4UDRmT2EKckdXd2NkZVAwc2JzRWpaU0Jwazg3U3h0UjBsMTBDck43ZVlBMXdRdC9PYjhkaExPSVNSVmtBaEJsUWc0SkwwRQp5TnljMFIvRElaT3hCY3RqcmJteDA4Q3BUUi9KMFcvVlN2TlZIU3Q0MFFKcXNkVXAxRXlCd1NSVWl3anZhVmU4CkY1WlQwT0xhcVVxd1JubFc3VGJiMUk2NkhGTW5GaC9seDNQcTVGeUFiNmp5MXZxNmtpd0RPRlpNU1ZVbjlSMksKVlRrazdudDZwTkI1RXBiL0RnZWFQZ2tlWDljK00wbUtuZVlwdHdJREFRQUJBb0lCQUVqeEhwQVlnN21IYnpUTwpKOG8za3ovTWwzZHoxUmRqUitQLzNMVVNFZzgxWWNpU2hTVVZHTlFuSko5cGpheU5yNXZlL3ZXQ1RFNlNvK1pBCndLeUsyZWdZVVFSN1Q5VGttRUVHMWlINGZDQWJVSmdqaG5saVQxQXRrcEk4QlE5emRWSTY2OVRkOC8yMkljU0sKTWhPMDRJNDNvVEVabHhWMGxJNFVHNXhWMjhxemRhaHhKaVdlb0x3Ty91OUhqaUlwSG13NzMrTVZPaUNsa0NnSgorT0F6RGxMemsyWFhzdE9UcWo4NHZvRXpXMmIwVWdWaTRyQXhGRjlpUEduNHJVTUtmV0xoY3E1SWx2RGY5bmo3CjF1SlZVUUNrZ2FrMWJJTXZORU95ektFRy9VSytONTFyS0ZaUURERm1ZeTlWdnNjcnMvMHQreGRkZ1ZKWnRHM3gKQVNXRmFwRUNnWUVBMVRjZmxEL0FWNHI4dFgyVjRMNGdUdFJkdjdTMlhxR0hlNG5PM3kwOGIrb2VqbGYrM3NsagpzeUpqOHpvVUVqbDVCVHR6cWUvbVNpZXc1TFYrV1pEMHpKTXU2aFdlNXFnajM2VUh1NHRrSU0zcHV2QUppMFNQCnRNc0dYM1hpblk0OWFET2Y3N2RkQmE3R2RYdUhpNXdyc2MzWXNLc0J6U2JDbXBVdGlvRmhpbHNDZ1lFQTJEY04KbTlQKzFiV3lkc0RxNnZBTnJDQWFIZjJWMTcwWGE2T00rSkJiME5UOHhPTXVBcmwrUmFoOGx0ZEgxdFBlb3RHMQpVVjVLeXh1WjlhNHBIaTVIR3psM1VESytvYktsdjNBbGRJY01kWWhkRytPVUFpeEJqMndvb0VVdlNYNlg5NmRqCk03bGhDNHJuRUtQTzFvcGJpR3BpVkdUQXJqODBQbE1DbTU2ZjVOVUNnWUFXQm5XNnFNTkR4OVhISWN3RHhXQXQKQkg4U3VLWkdMRVdFbTMzRlREVDhFcUZKYndtakZnYTRrSXJtcTA4N2VyaG5zL2FFellWcWo2TVVYVE5LS1ZGQQplTXZWM3BubGxlVHV5MnQ3RWpFcnVsbTB0K3NrZWRhbWhIcUtEZkYwK1NhYXh3cDBodXFURmJUbW1mWXNrOXRuCnFLNER3Z2FUbkxkcHBKTnB4V2ZBRlFLQmdCNlZPdkdOdlFBUm9WcTIwd1BFVE1yS0I2ZXlWTjJkTzVEWUkzcU4KUU05N01QM1FmSk9hRlVoWkdyWmpZUi83L0FQZjBkdmVrSW5HTDdMV25hNU5NWFdpWFVRVXlXNHB6TlFWVXRiMgp1MFpzc1c3ZWMvTVN1M3REKzBNZ1JoNEpNQW14dlpCMWFrcXRyUjFuYmp4ZWViQUVERUNQdDhsdDJ6L3RrZkxkCkx4UzVBb0dBVG9DVFlxSGFkT1RNRzRaL3NsNm1OSm4yMGdIR2toU2lFQzcxVUV4Z3pYNW1kYXlDMVphZWR0YXkKbUtiVGh2WE56eXd1OThDdnIyNjJGYUlXUjlWcE1yQTUzSXJpd2s4ZjBSSnhoTnptWm9jYXJrNkxkTjEvbUNLaQpYMjB3UVNVV2pZTlZNYTNYcnJOWjhPZjdOR2RWYXRkNUNsOHVNblJZbWVTY05lakljbzQ9Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+
+
+#check the kubw config fiel
+vim .kubw/config
+
+# copy certificate-authority-data
+root@cks-master:~# echo LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM1ekNDQWMrZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJeE1ESXhNakl4TVRFek1Wb1hEVE14TURJeE1ESXhNVEV6TVZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTk9SCjRyU3gxbzZNZ0k1L0dUQjdaNEVVck85c25OVkUwVzBFenB2aTJiMDdIRUlFSmpOMHl3QWRJby8zUVhleUVVL2cKREFhQnBKbUVBUVo5UkJUUXl2NEdVRGRoNzY3c2xmZzJabnVLczZyV0VaSDdrVXdXWERTYWVMaVA2TjBZc2U1aQpYYVhjOGlkaERLNy9UaDk1WFVheDlrY3piM0hKRFdseTJ0U3huWUZzVlIzSEhuQlBOVCtUSVFWVGsvZHpON3grCnA1QzFNWW5vaXYyTVBSekNkZEdhZkpwZ1ZyWnF6WGlncTk3eENZbXBOVS83WjYwdE1zY3ZtMGFzTTg2YXFiU1UKQ29TZ0lvbjQ3RlVIbEZyV2JWRWZzU2VKVWpRVXRCZ0pxYU1mc2Zpa1hEN3FhWndIeEM1NlZZYjlydThmVEw4SwoxSmZLWElncnNFUklwT2VzRkFzQ0F3RUFBYU5DTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0hRWURWUjBPQkJZRUZMMHl6U3ZuZnl1TE82bXQzL3MzemxrcU15S05NQTBHQ1NxR1NJYjMKRFFFQkN3VUFBNElCQVFBNGR4NFNweUpqNndVdGN2QnBKSXppVGU3dVpwZVVuOUg4TE1QaUhnaGw4a1RZZnVVcgpaZEw2Q3JUb09tdFZMRUR4bFlaSmp0QVlBajF1NzF5dFM0YWJoMTNMNXJXME5IaFFKK2FjS25iRm1zc2wySzhGCm4xNXU3dE1KS1YwS0ZxVlNqK2FZbC8rWHIzTGxjdnpERjdIWDExQkM0amxsUCtTVzB2amRGK2Rudit4bEJDUW4KVm00R1h3c3NsenZ5azVrODR3elI3SkJVZVEwWk53UmQwelFrL1BFam04THJvOTVHTlFxeTdGeVdGcmRXSXZ4NApHTGVEVC9HdkdXdzFPUGJRSldLbll4YURtZ0ZBUzJZRG5sVTNHOTlWZVBmdjdoc1l5ZGxMYzJURVZldFpZYUpzCi85dmIxUWtxaWlONlNXKzBpV1haS25MVFQwem9IRSs0cG1KegotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg== | base64 -d
+-----BEGIN CERTIFICATE-----
+MIIC5zCCAc+gAwIBAgIBADANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwprdWJl
+cm5ldGVzMB4XDTIxMDIxMjIxMTEzMVoXDTMxMDIxMDIxMTEzMVowFTETMBEGA1UE
+AxMKa3ViZXJuZXRlczCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANOR
+4rSx1o6MgI5/GTB7Z4EUrO9snNVE0W0Ezpvi2b07HEIEJjN0ywAdIo/3QXeyEU/g
+DAaBpJmEAQZ9RBTQyv4GUDdh767slfg2ZnuKs6rWEZH7kUwWXDSaeLiP6N0Yse5i
+XaXc8idhDK7/Th95XUax9kczb3HJDWly2tSxnYFsVR3HHnBPNT+TIQVTk/dzN7x+
+p5C1MYnoiv2MPRzCddGafJpgVrZqzXigq97xCYmpNU/7Z60tMscvm0asM86aqbSU
+CoSgIon47FUHlFrWbVEfsSeJUjQUtBgJqaMfsfikXD7qaZwHxC56VYb9ru8fTL8K
+1JfKXIgrsERIpOesFAsCAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgKkMA8GA1UdEwEB
+/wQFMAMBAf8wHQYDVR0OBBYEFL0yzSvnfyuLO6mt3/s3zlkqMyKNMA0GCSqGSIb3
+DQEBCwUAA4IBAQA4dx4SpyJj6wUtcvBpJIziTe7uZpeUn9H8LMPiHghl8kTYfuUr
+ZdL6CrToOmtVLEDxlYZJjtAYAj1u71ytS4abh13L5rW0NHhQJ+acKnbFmssl2K8F
+n15u7tMJKV0KFqVSj+aYl/+Xr3LlcvzDF7HX11BC4jllP+SW0vjdF+dnv+xlBCQn
+Vm4GXwsslzvyk5k84wzR7JBUeQ0ZNwRd0zQk/PEjm8Lro95GNQqy7FyWFrdWIvx4
+GLeDT/GvGWw1OPbQJWKnYxaDmgFAS2YDnlU3G99VePfv7hsYydlLc2TEVetZYaJs
+/9vb1QkqiiN6SW+0iWXZKnLTT0zoHE+4pmJz
+-----END CERTIFICATE-----
+# copy certificate-authority-data
+root@cks-master:~# echo LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM1ekNDQWMrZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJeE1ESXhNakl4TVRFek1Wb1hEVE14TURJeE1ESXhNVEV6TVZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTk9SCjRyU3gxbzZNZ0k1L0dUQjdaNEVVck85c25OVkUwVzBFenB2aTJiMDdIRUlFSmpOMHl3QWRJby8zUVhleUVVL2cKREFhQnBKbUVBUVo5UkJUUXl2NEdVRGRoNzY3c2xmZzJabnVLczZyV0VaSDdrVXdXWERTYWVMaVA2TjBZc2U1aQpYYVhjOGlkaERLNy9UaDk1WFVheDlrY3piM0hKRFdseTJ0U3huWUZzVlIzSEhuQlBOVCtUSVFWVGsvZHpON3grCnA1QzFNWW5vaXYyTVBSekNkZEdhZkpwZ1ZyWnF6WGlncTk3eENZbXBOVS83WjYwdE1zY3ZtMGFzTTg2YXFiU1UKQ29TZ0lvbjQ3RlVIbEZyV2JWRWZzU2VKVWpRVXRCZ0pxYU1mc2Zpa1hEN3FhWndIeEM1NlZZYjlydThmVEw4SwoxSmZLWElncnNFUklwT2VzRkFzQ0F3RUFBYU5DTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0hRWURWUjBPQkJZRUZMMHl6U3ZuZnl1TE82bXQzL3MzemxrcU15S05NQTBHQ1NxR1NJYjMKRFFFQkN3VUFBNElCQVFBNGR4NFNweUpqNndVdGN2QnBKSXppVGU3dVpwZVVuOUg4TE1QaUhnaGw4a1RZZnVVcgpaZEw2Q3JUb09tdFZMRUR4bFlaSmp0QVlBajF1NzF5dFM0YWJoMTNMNXJXME5IaFFKK2FjS25iRm1zc2wySzhGCm4xNXU3dE1KS1YwS0ZxVlNqK2FZbC8rWHIzTGxjdnpERjdIWDExQkM0amxsUCtTVzB2amRGK2Rudit4bEJDUW4KVm00R1h3c3NsenZ5azVrODR3elI3SkJVZVEwWk53UmQwelFrL1BFam04THJvOTVHTlFxeTdGeVdGcmRXSXZ4NApHTGVEVC9HdkdXdzFPUGJRSldLbll4YURtZ0ZBUzJZRG5sVTNHOTlWZVBmdjdoc1l5ZGxMYzJURVZldFpZYUpzCi85dmIxUWtxaWlONlNXKzBpV1haS25MVFQwem9IRSs0cG1KegotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg== | base64 -d > ca
+
+#client-certificate-data
+root@cks-master:~# echo LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURFekNDQWZ1Z0F3SUJBZ0lJUG1welZHYnExMnN3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TVRBeU1USXlNVEV4TXpGYUZ3MHlNakF5TVRJeU1URXhNelZhTURReApGekFWQmdOVkJBb1REbk41YzNSbGJUcHRZWE4wWlhKek1Sa3dGd1lEVlFRREV4QnJkV0psY201bGRHVnpMV0ZrCmJXbHVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXRCUmMwblF2VCtZcGdpN1YKMG9PMUtNcUNZZVU4Q0tUd0ZNQXZhc2ducXI2dS9qV08yMlVrUUxwU2t2MXgvU09wNnFlaU91cGJuM253VHd1bwprR0ZGSW56Z1pWYXBKc0NUUVRPVjJjSmd5Z3hQNGZPYXJHV3djZGVQMHNic0VqWlNCcGs4N1N4dFIwbDEwQ3JOCjdlWUExd1F0L09iOGRoTE9JU1JWa0FoQmxRZzRKTDBFeU55YzBSL0RJWk94QmN0anJibXgwOENwVFIvSjBXL1YKU3ZOVkhTdDQwUUpxc2RVcDFFeUJ3U1JVaXdqdmFWZThGNVpUME9MYXFVcXdSbmxXN1RiYjFJNjZIRk1uRmgvbAp4M1BxNUZ5QWI2ankxdnE2a2l3RE9GWk1TVlVuOVIyS1ZUa2s3bnQ2cE5CNUVwYi9EZ2VhUGdrZVg5YytNMG1LCm5lWXB0d0lEQVFBQm8wZ3dSakFPQmdOVkhROEJBZjhFQkFNQ0JhQXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUgKQXdJd0h3WURWUjBqQkJnd0ZvQVV2VExOSytkL0s0czdxYTNmK3pmT1dTb3pJbzB3RFFZSktvWklodmNOQVFFTApCUUFEZ2dFQkFET0YxN1FkbWdvbjlsMW1jL2QwMU40UU9WQW8rNWpob3BpL2ZoS2dNYWZQVVNVQnN4dHI2bUN1CmZIQVNEeDI1TDVWRmNVNFhoaEhnZkhPU3F2blVVanp6MFB4NTZDQitnaE5xdXdnWmtoMml5WGwxTmRRMDNTdG0KQmVwUDhyVmkrQnhwb1RCYVRsRTVWNUEzVm5xTzJIYWJtNktuTU5jOWM5L2hMdEMwbGhra3lNeEtCS1hsaVkzSAovUlRzUUF0NmxKQ1dDNDV3RWdJTUtOZ1h2ekpqVks2cWdWNUxFSzc5Zll2MkI4d2p1VlFwMWJ3SnpPbHhQN01LCkh6RmhrOHlITlBRWEtKdWh0eUV5THNoMzY2SnpaeUlVMjBzQXQ1Rytjd3JFNmw5MXFZWnVtK1dnUVdLdDg1Sm4KeWIxYUNNY3RwcHZiMktlalRqa3BVM3VwVU9NNEEwWT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo= | base64 -d > crt
+
+#client-key-data
+root@cks-master:~# echo LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb2dJQkFBS0NBUUVBdEJSYzBuUXZUK1lwZ2k3VjBvTzFLTXFDWWVVOENLVHdGTUF2YXNnbnFyNnUvaldPCjIyVWtRTHBTa3YxeC9TT3A2cWVpT3VwYm4zbndUd3Vva0dGRkluemdaVmFwSnNDVFFUT1YyY0pneWd4UDRmT2EKckdXd2NkZVAwc2JzRWpaU0Jwazg3U3h0UjBsMTBDck43ZVlBMXdRdC9PYjhkaExPSVNSVmtBaEJsUWc0SkwwRQp5TnljMFIvRElaT3hCY3RqcmJteDA4Q3BUUi9KMFcvVlN2TlZIU3Q0MFFKcXNkVXAxRXlCd1NSVWl3anZhVmU4CkY1WlQwT0xhcVVxd1JubFc3VGJiMUk2NkhGTW5GaC9seDNQcTVGeUFiNmp5MXZxNmtpd0RPRlpNU1ZVbjlSMksKVlRrazdudDZwTkI1RXBiL0RnZWFQZ2tlWDljK00wbUtuZVlwdHdJREFRQUJBb0lCQUVqeEhwQVlnN21IYnpUTwpKOG8za3ovTWwzZHoxUmRqUitQLzNMVVNFZzgxWWNpU2hTVVZHTlFuSko5cGpheU5yNXZlL3ZXQ1RFNlNvK1pBCndLeUsyZWdZVVFSN1Q5VGttRUVHMWlINGZDQWJVSmdqaG5saVQxQXRrcEk4QlE5emRWSTY2OVRkOC8yMkljU0sKTWhPMDRJNDNvVEVabHhWMGxJNFVHNXhWMjhxemRhaHhKaVdlb0x3Ty91OUhqaUlwSG13NzMrTVZPaUNsa0NnSgorT0F6RGxMemsyWFhzdE9UcWo4NHZvRXpXMmIwVWdWaTRyQXhGRjlpUEduNHJVTUtmV0xoY3E1SWx2RGY5bmo3CjF1SlZVUUNrZ2FrMWJJTXZORU95ektFRy9VSytONTFyS0ZaUURERm1ZeTlWdnNjcnMvMHQreGRkZ1ZKWnRHM3gKQVNXRmFwRUNnWUVBMVRjZmxEL0FWNHI4dFgyVjRMNGdUdFJkdjdTMlhxR0hlNG5PM3kwOGIrb2VqbGYrM3NsagpzeUpqOHpvVUVqbDVCVHR6cWUvbVNpZXc1TFYrV1pEMHpKTXU2aFdlNXFnajM2VUh1NHRrSU0zcHV2QUppMFNQCnRNc0dYM1hpblk0OWFET2Y3N2RkQmE3R2RYdUhpNXdyc2MzWXNLc0J6U2JDbXBVdGlvRmhpbHNDZ1lFQTJEY04KbTlQKzFiV3lkc0RxNnZBTnJDQWFIZjJWMTcwWGE2T00rSkJiME5UOHhPTXVBcmwrUmFoOGx0ZEgxdFBlb3RHMQpVVjVLeXh1WjlhNHBIaTVIR3psM1VESytvYktsdjNBbGRJY01kWWhkRytPVUFpeEJqMndvb0VVdlNYNlg5NmRqCk03bGhDNHJuRUtQTzFvcGJpR3BpVkdUQXJqODBQbE1DbTU2ZjVOVUNnWUFXQm5XNnFNTkR4OVhISWN3RHhXQXQKQkg4U3VLWkdMRVdFbTMzRlREVDhFcUZKYndtakZnYTRrSXJtcTA4N2VyaG5zL2FFellWcWo2TVVYVE5LS1ZGQQplTXZWM3BubGxlVHV5MnQ3RWpFcnVsbTB0K3NrZWRhbWhIcUtEZkYwK1NhYXh3cDBodXFURmJUbW1mWXNrOXRuCnFLNER3Z2FUbkxkcHBKTnB4V2ZBRlFLQmdCNlZPdkdOdlFBUm9WcTIwd1BFVE1yS0I2ZXlWTjJkTzVEWUkzcU4KUU05N01QM1FmSk9hRlVoWkdyWmpZUi83L0FQZjBkdmVrSW5HTDdMV25hNU5NWFdpWFVRVXlXNHB6TlFWVXRiMgp1MFpzc1c3ZWMvTVN1M3REKzBNZ1JoNEpNQW14dlpCMWFrcXRyUjFuYmp4ZWViQUVERUNQdDhsdDJ6L3RrZkxkCkx4UzVBb0dBVG9DVFlxSGFkT1RNRzRaL3NsNm1OSm4yMGdIR2toU2lFQzcxVUV4Z3pYNW1kYXlDMVphZWR0YXkKbUtiVGh2WE56eXd1OThDdnIyNjJGYUlXUjlWcE1yQTUzSXJpd2s4ZjBSSnhoTnptWm9jYXJrNkxkTjEvbUNLaQpYMjB3UVNVV2pZTlZNYTNYcnJOWjhPZjdOR2RWYXRkNUNsOHVNblJZbWVTY05lakljbzQ9Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg== | base64 -d > key
+
+root@cks-master:~# k config view
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.146.0.2:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: kubernetes-admin
+  name: kubernetes-admin@kubernetes
+current-context: kubernetes-admin@kubernetes
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+
+# get server url
+root@cks-master:~# k config view
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.146.0.2:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: kubernetes-admin
+  name: kubernetes-admin@kubernetes
+current-context: kubernetes-admin@kubernetes
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+
+root@cks-master:~# curl https://10.146.0.2:6443
+curl: (60) SSL certificate problem: unable to get local issuer certificate
+More details here: https://curl.haxx.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+
+
+
+root@cks-master:~# curl https://10.146.0.2:6443 --cacert ca
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {
+
+  },
+  "status": "Failure",
+  "message": "forbidden: User \"system:anonymous\" cannot get path \"/\"",
+  "reason": "Forbidden",
+  "details": {
+
+  },
+  "code": 403
+}
+
+root@cks-master:~# curl https://10.146.0.2:6443 --cacert ca --cert crt
+curl: (58) unable to set private key file: 'crt' type PEM
+
+# get api info
+root@cks-master:~# curl https://10.146.0.2:6443 --cacert ca --cert crt --key key{
+  "paths": [
+    "/.well-known/openid-configuration",
+    "/api",
+    "/api/v1",
+    "/apis",
+    "/apis/",
+    "/apis/admissionregistration.k8s.io",
+    "/apis/admissionregistration.k8s.io/v1",
+    "/apis/admissionregistration.k8s.io/v1beta1",
+    "/apis/apiextensions.k8s.io",
+    "/apis/apiextensions.k8s.io/v1",
+    "/apis/apiextensions.k8s.io/v1beta1",
+    "/apis/apiregistration.k8s.io",
+    "/apis/apiregistration.k8s.io/v1",
+    "/apis/apiregistration.k8s.io/v1beta1",
+    "/apis/apps",
+    "/apis/apps/v1",
+    "/apis/authentication.k8s.io",
+    "/apis/authentication.k8s.io/v1",
+    "/apis/authentication.k8s.io/v1beta1",
+    "/apis/authorization.k8s.io",
+    "/apis/authorization.k8s.io/v1",
+    "/apis/authorization.k8s.io/v1beta1",
+    "/apis/autoscaling",
+    "/apis/autoscaling/v1",
+    "/apis/autoscaling/v2beta1",
+    "/apis/autoscaling/v2beta2",
+    "/apis/batch",
+    "/apis/batch/v1",
+    "/apis/batch/v1beta1",
+    "/apis/certificates.k8s.io",
+    "/apis/certificates.k8s.io/v1",
+    "/apis/certificates.k8s.io/v1beta1",
+    "/apis/coordination.k8s.io",
+    "/apis/coordination.k8s.io/v1",
+    "/apis/coordination.k8s.io/v1beta1",
+    "/apis/discovery.k8s.io",
+    "/apis/discovery.k8s.io/v1beta1",
+    "/apis/events.k8s.io",
+    "/apis/events.k8s.io/v1",
+    "/apis/events.k8s.io/v1beta1",
+    "/apis/extensions",
+    "/apis/extensions/v1beta1",
+    "/apis/flowcontrol.apiserver.k8s.io",
+    "/apis/flowcontrol.apiserver.k8s.io/v1beta1",
+    "/apis/networking.k8s.io",
+    "/apis/networking.k8s.io/v1",
+    "/apis/networking.k8s.io/v1beta1",
+    "/apis/node.k8s.io",
+    "/apis/node.k8s.io/v1",
+    "/apis/node.k8s.io/v1beta1",
+    "/apis/policy",
+    "/apis/policy/v1beta1",
+    "/apis/rbac.authorization.k8s.io",
+    "/apis/rbac.authorization.k8s.io/v1",
+    "/apis/rbac.authorization.k8s.io/v1beta1",
+    "/apis/scheduling.k8s.io",
+    "/apis/scheduling.k8s.io/v1",
+    "/apis/scheduling.k8s.io/v1beta1",
+    "/apis/storage.k8s.io",
+    "/apis/storage.k8s.io/v1",
+    "/apis/storage.k8s.io/v1beta1",
+    "/healthz",
+    "/healthz/autoregister-completion",
+    "/healthz/etcd",
+    "/healthz/log",
+    "/healthz/ping",
+    "/healthz/poststarthook/aggregator-reload-proxy-client-cert",
+    "/healthz/poststarthook/apiservice-openapi-controller",
+    "/healthz/poststarthook/apiservice-registration-controller",
+    "/healthz/poststarthook/apiservice-status-available-controller",
+    "/healthz/poststarthook/bootstrap-controller",
+    "/healthz/poststarthook/crd-informer-synced",
+    "/healthz/poststarthook/generic-apiserver-start-informers",
+    "/healthz/poststarthook/kube-apiserver-autoregistration",
+    "/healthz/poststarthook/priority-and-fairness-config-consumer",
+    "/healthz/poststarthook/priority-and-fairness-config-producer",
+    "/healthz/poststarthook/priority-and-fairness-filter",
+    "/healthz/poststarthook/rbac/bootstrap-roles",
+    "/healthz/poststarthook/scheduling/bootstrap-system-priority-classes",
+    "/healthz/poststarthook/start-apiextensions-controllers",
+    "/healthz/poststarthook/start-apiextensions-informers",
+    "/healthz/poststarthook/start-cluster-authentication-info-controller",
+    "/healthz/poststarthook/start-kube-aggregator-informers",
+    "/healthz/poststarthook/start-kube-apiserver-admission-initializer",
+    "/livez",
+    "/livez/autoregister-completion",
+    "/livez/etcd",
+    "/livez/log",
+    "/livez/ping",
+    "/livez/poststarthook/aggregator-reload-proxy-client-cert",
+    "/livez/poststarthook/apiservice-openapi-controller",
+    "/livez/poststarthook/apiservice-registration-controller",
+    "/livez/poststarthook/apiservice-status-available-controller",
+    "/livez/poststarthook/bootstrap-controller",
+    "/livez/poststarthook/crd-informer-synced",
+    "/livez/poststarthook/generic-apiserver-start-informers",
+    "/livez/poststarthook/kube-apiserver-autoregistration",
+    "/livez/poststarthook/priority-and-fairness-config-consumer",
+    "/livez/poststarthook/priority-and-fairness-config-producer",
+    "/livez/poststarthook/priority-and-fairness-filter",
+    "/livez/poststarthook/rbac/bootstrap-roles",
+    "/livez/poststarthook/scheduling/bootstrap-system-priority-classes",
+    "/livez/poststarthook/start-apiextensions-controllers",
+    "/livez/poststarthook/start-apiextensions-informers",
+    "/livez/poststarthook/start-cluster-authentication-info-controller",
+    "/livez/poststarthook/start-kube-aggregator-informers",
+    "/livez/poststarthook/start-kube-apiserver-admission-initializer",
+    "/logs",
+    "/metrics",
+    "/openapi/v2",
+    "/openid/v1/jwks",
+    "/readyz",
+    "/readyz/autoregister-completion",
+    "/readyz/etcd",
+    "/readyz/informer-sync",
+    "/readyz/log",
+    "/readyz/ping",
+    "/readyz/poststarthook/aggregator-reload-proxy-client-cert",
+    "/readyz/poststarthook/apiservice-openapi-controller",
+    "/readyz/poststarthook/apiservice-registration-controller",
+    "/readyz/poststarthook/apiservice-status-available-controller",
+    "/readyz/poststarthook/bootstrap-controller",
+    "/readyz/poststarthook/crd-informer-synced",
+    "/readyz/poststarthook/generic-apiserver-start-informers",
+    "/readyz/poststarthook/kube-apiserver-autoregistration",
+    "/readyz/poststarthook/priority-and-fairness-config-consumer",
+    "/readyz/poststarthook/priority-and-fairness-config-producer",
+    "/readyz/poststarthook/priority-and-fairness-filter",
+    "/readyz/poststarthook/rbac/bootstrap-roles",
+    "/readyz/poststarthook/scheduling/bootstrap-system-priority-classes",
+    "/readyz/poststarthook/start-apiextensions-controllers",
+    "/readyz/poststarthook/start-apiextensions-informers",
+    "/readyz/poststarthook/start-cluster-authentication-info-controller",
+    "/readyz/poststarthook/start-kube-aggregator-informers",
+    "/readyz/poststarthook/start-kube-apiserver-admission-initializer",
+    "/readyz/shutdown",
+    "/version"
+  ]
+}
+
+```
+
+##### 63 Practice External Apiserver Access
+
+###### Send API request from outside
+
+**Make Kuberntes API reachable from the outside**
+
+access using kubectl (copy kubeconfig)
+
+
+
+kubectl(client cert) ===Rquest(https)===>  API Server(server cert)
+
+CA(scope): https,server cert, API Server
+
+
+
+```sh
+root@cks-master:~# k get svc | grep kubernetes
+kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP   23d
+
+
+root@cks-master:~# k edit svc kubernetes
+# before
+------------------------
+  type: ClusterIP
+------------------------  
+#after
+------------------------  
+  type: NodePort
+------------------------
+
+root@cks-master:~# k get svc | grep kubernetes
+kubernetes   NodePort    10.96.0.1        <none>        443:31234/TCP   23d
+
+
+# from master node
+k config view --raw > conf
+
+# inspect apiserver cert
+cd /etc/kubernetes/pki
+openssl x509 -in apiserver.crt -text
+
+
+
+
+# copy conf file to local server
+# from local server
+k --kubeconfig conf get ns
+
+#add the ip to hosts
+sudo vim /etc/hosts
+$wokers externalIP kubernetes
+
+#change ExternalIP to kubernetes
+vim conf
+
+k --kubeconfig conf get ns
+
+```
+
+##### 64 NodeRestriction AdmissionController
+
+- Admission Controller
+  - kube-apiserver --enable-admission-plugins=NodeRestriction
+  - Limits the Node labels a kubelet can modify
+- Ensure secure workload isolation via labels
+  - No one can pretend to be a "secure" node and schedule secure pods(why?)
+
+##### 65 Practice Verify NodeRestriction
+
+###### NodeRestriction in action
+
+**Verify the NodeRestriciton works**
+
+Use worker node kubelet kubeconfig to set labels
+
+```sh
+root@cks-worker:~# k config view
+apiVersion: v1
+clusters: null
+contexts: null
+current-context: ""
+kind: Config
+preferences: {}
+users: null
+
+root@cks-worker:~# export KUBECONFIG=/etc/kubernetes/kubelet.conf
+root@cks-worker:~# k get ns
+Error from server (Forbidden): namespaces is forbidden: User "system:node:cks-worker" cannot list resource "namespaces" in API group "" at the cluster scope
+
+
+root@cks-worker:~# k label node cks-master cks/test=yes
+Error from server (Forbidden): nodes "cks-master" is forbidden: node "cks-worker" is not allowed to modify node "cks-master"
+
+root@cks-worker:~# k label node cks-worker cks/test=yes
+node/cks-worker labeled
+
+
+root@cks-worker:~# k label node cks-worker node-restriction.kubernetes.io/test=yes
+Error from server (Forbidden): nodes "cks-worker" is forbidden: is not allowed to modify labels: node-restriction.kubernetes.io/test
+
+```
+
+
+
+##### 66 Recap
+
+- Outside -> API
+- Pod -> API
+- Node -> API
+- Anonymous access
+- Insecure access
+- Certificates
+
+[Controlling Access to the Kubernetes API](https://kubernetes.io/docs/concepts/security/controlling-access)
 
 #### Section 14 Cluster Hardening Upgrade Kubernetes
 
