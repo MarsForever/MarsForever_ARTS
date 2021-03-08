@@ -2295,8 +2295,135 @@ Error from server (Forbidden): nodes "cks-worker" is forbidden: is not allowed t
 
 #### Section 14 Cluster Hardening Upgrade Kubernetes
 
-##### Intro
+##### 67 Intro
+
+###### Update Kubernetes Frequently
+
+- Release Cycles
+- Version differences of components
+- Upgrade
+
+###### Why upgrade frequently
+
+- Support
+- Security fixes
+- Bug fixes
+- Stay up to date for dependencies
+
+###### Kubernetes Release Cycles
+
+major.minor.patch => 1.19.2
+
+- Minor version every 3 months
+- No LTS(Long Term Support)
+
+###### Support
+
+> Maintenance release branches for the most recent three minor releases(1.19,1.18,1.17)
+
+Applicable fixes,including security fixes, may be backported to those three release branches, 
+
+depending on severity and feasibility.
+
+###### How to upgrade a cluster
+
+- First upgrade the master components
+  - apiserver,controller-manager,scheduler
+- Then the worker components
+  - kubelet,kube-proxy
+- Components same minor version as apiserver
+
+###### Possible Version Differences
+
+###### Sequence
+
+| Version |           |           |                    |
+| ------- | --------- | --------- | ------------------ |
+| 1.19    |           |           |                    |
+| 1.18    |           |           |                    |
+| 1.17    | Apiserver | Scheduler | Controller-Manager |
+
+| Version |           |           |                    |
+| ------- | --------- | --------- | ------------------ |
+| 1.19    |           |           |                    |
+| 1.18    |     Apiserver      |           |                    |
+| 1.17    |  | Scheduler | Controller-Manager |
+
+| Version |           |           |                    |
+| ------- | --------- | --------- | ------------------ |
+| 1.19    |           |           |                    |
+| 1.18    |  Apiserver         |    Scheduler       |                    |
+| 1.17    |  |  | Controller-Manager |
+
+
+| Version |           |           |                    |
+| ------- | --------- | --------- | ------------------ |
+| 1.19    |           |           |                    |
+| 1.18    |  Apiserver         |    Scheduler       |  Controller-Manager                  |
+| 1.17    |  |  |  |
+
+
+| Version |           |           |                    |                    |  |
+| ------- | --------- | --------- | ------------------ | ------------------ | ------------------ |
+| 1.19    |           |           |                    |                    | kubectl |
+| 1.18    |  Apiserver         |    Scheduler       |  Controller-Manager                  |                    |                    |
+| 1.17    |  |  |  | Kubelet Kube-Proxy |  |
+
+| Version |           |           |                    |                    |  |
+| ------- | --------- | --------- | ------------------ | ------------------ | ------------------ |
+| 1.19    | Apiserver | Scheduler | Controller-Manager |                    | kubectl |
+| 1.18    |           |           |                    |                    |                    |
+| 1.17    |  |  |  | Kubelet Kube-Proxy |  |
+
+
+| Version |           |           |                    |                    |  |
+| ------- | --------- | --------- | ------------------ | ------------------ | ------------------ |
+| 1.19    | Apiserver | Scheduler | Controller-Manager |                    | kubectl |
+| 1.18    |           |           |                    | Kubelet Kube-Proxy |                    |
+| 1.17    |  |  |  |  |  |
+
+
+
+| Version |           |           |                    |                    |  |
+| ------- | --------- | --------- | ------------------ | ------------------ | ------------------ |
+| 1.19    | Apiserver | Scheduler | Controller-Manager | Kubelet Kube-Proxy | kubectl |
+| 1.18    |           |           |                    |  |                    |
+| 1.17    |  |  |  |  |  |
+##### Version differences - Rule of thumb
+
+**Components same minor version as apiserver or one below**
+
+###### How to upgrade a node
+
+1. kubectl drain(排出)
+   - Safety evict all pods from node
+   - Mark node as SchedulingDisabled(kubectl cordon(包围隔离))
+2. Do the upgrade
+3. kubectl uncordon
+   - Unmark（去掉标记） node as SchedulingDisabled
+
+###### How to make your application survive(幸存) an upgrade
+
+- Pod gracePeriod / Terminating state
+- Pod Lifecycle Events
+- PodDisruptionBudget(破坏预算)
+
+##### 68. Practice Create outdated cluster
+
+```sh
+# master
+bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/previous/install_master.sh)
+
+# worker
+bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/previous/install_worker.sh)
+
+
+```
+
+
+
 ##### Recap
+
 #### Section 15 Microservice Vunerabilites - Manage Kubernetes Secrets
 ##### Intro
 ##### Recap
@@ -2341,5 +2468,10 @@ Error from server (Forbidden): nodes "cks-worker" is forbidden: is not allowed t
 ##### Recap
 #### Section 29 CKS Exam Series
 
+##### 
+
 #### Section 30 CKS Simulator
 
+##### 166 Intro
+
+##### 168 Rating and feedback
