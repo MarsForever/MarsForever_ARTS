@@ -2297,7 +2297,7 @@ Error from server (Forbidden): nodes "cks-worker" is forbidden: is not allowed t
 
 ##### 67 Intro
 
-###### Update Kubernetes Frequently
+###### Why Update Kubernetes Frequently
 
 - Release Cycles
 - Version differences of components
@@ -2410,6 +2410,12 @@ depending on severity and feasibility.
 
 ##### 68. Practice Create outdated cluster
 
+###### Create an outdated cluster
+
+**Install an earlier version of k8s in our cluster**
+
+
+
 ```sh
 # master
 bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/previous/install_master.sh)
@@ -2417,15 +2423,393 @@ bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environmen
 # worker
 bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/previous/install_worker.sh)
 
+#copy to worker and excute
+kubeadm join 10.146.0.2:6443 --token $token     --discovery-token-ca-cert-hash $sha256
 
+
+root@cks-master:~# kubectl get nodes
+NAME         STATUS   ROLES    AGE   VERSION
+cks-master   Ready    master   95s   v1.19.7
+cks-worker   Ready    <none>   14s   v1.19.7
+
+```
+
+##### 69 Practice Upgrade master node
+
+###### Upgrade a cluster
+
+**Upgrade the master to one minor version up**
+
+```sh
+# get error
+root@cks-master:~# k drain cks-master
+node/cks-master cordoned
+error: unable to drain node "cks-master", aborting command...
+
+There are pending nodes to be drained:
+ cks-master
+error: cannot delete DaemonSet-managed Pods (use --ignore-daemonsets to ignore): kube-system/kube-proxy-hkg42, kube-system/weave-net-d56rj
+
+
+root@cks-master:~# k drain cks-master --ignore-daemonsets
+node/cks-master already cordoned
+WARNING: ignoring DaemonSet-managed Pods: kube-system/kube-proxy-hkg42, kube-system/weave-net-d56rj
+evicting pod kube-system/coredns-f9fd979d6-f7sc6
+evicting pod kube-system/coredns-f9fd979d6-4p45l
+pod/coredns-f9fd979d6-f7sc6 evicted
+pod/coredns-f9fd979d6-4p45l evicted
+node/cks-master evicted
+
+
+root@cks-master:~# k get node
+NAME         STATUS                     ROLES    AGE     VERSION
+cks-master   Ready,SchedulingDisabled   master   6m47s   v1.19.7
+cks-worker   Ready                      <none>   5m26s   v1.19.7
+
+
+root@cks-master:~# apt-cache show kubeadm  | grep 1.20
+Version: 1.20.4-00
+Filename: pool/kubeadm_1.20.4-00_amd64_27807dfe9734d69677bc6a0a8daf84042d51ee42a984f9181d3c91cc037d19ce.deb
+Version: 1.20.2-00
+Filename: pool/kubeadm_1.20.2-00_amd64_38fa4593055ef1161d4cb322437eedda95186fb850819421b8cf75f3a943dc51.deb
+Version: 1.20.1-00
+Filename: pool/kubeadm_1.20.1-00_amd64_7cd8d4021bb251862b755ed9c240091a532b89e6c796d58c3fdea7c9a72b878f.deb
+Version: 1.20.0-00
+Filename: pool/kubeadm_1.20.0-00_amd64_18afc5e3855cf5aaef0dbdfd1b3304f9e8e571b3c4e43b5dc97c439d62a3321a.deb
+Size: 8152068
+Filename: pool/kubeadm_1.5.7-00_amd64_2759fc99e5b23e44c92b44c506ed9cc1c2087780786bfa97c715da02da84c55d.deb
+SHA256: 2759fc99e5b23e44c92b44c506ed9cc1c2087780786bfa97c715da02da84c55d
+
+root@cks-master:~# apt-get install kubeadm=1.20.2-00 kubelet=1.20.2-00 kubectl=1.20.2-00
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following packages will be upgraded:
+  kubeadm kubectl kubelet
+3 upgraded, 0 newly installed, 0 to remove and 14 not upgraded.
+Need to get 0 B/34.5 MB of archives.
+After this operation, 1517 kB of additional disk space will be used.
+(Reading database ... 106960 files and directories currently installed.)
+Preparing to unpack .../kubelet_1.20.2-00_amd64.deb ...
+Unpacking kubelet (1.20.2-00) over (1.19.7-00) ...
+Preparing to unpack .../kubectl_1.20.2-00_amd64.deb ...
+Unpacking kubectl (1.20.2-00) over (1.19.7-00) ...
+Preparing to unpack .../kubeadm_1.20.2-00_amd64.deb ...
+Unpacking kubeadm (1.20.2-00) over (1.19.7-00) ...
+Setting up kubelet (1.20.2-00) ...
+Setting up kubectl (1.20.2-00) ...
+Setting up kubeadm (1.20.2-00) ...
+
+
+root@cks-master:~# kubeadm upgrade plan
+[upgrade/config] Making sure the configuration is correct:
+[upgrade/config] Reading configuration from the cluster...
+[upgrade/config] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+[preflight] Running pre-flight checks.
+[upgrade] Running cluster health checks
+[upgrade] Fetching available versions to upgrade to
+[upgrade/versions] Cluster version: v1.19.7
+[upgrade/versions] kubeadm version: v1.20.2
+[upgrade/versions] Latest stable version: v1.20.4
+[upgrade/versions] Latest stable version: v1.20.4
+[upgrade/versions] Latest version in the v1.19 series: v1.19.8
+[upgrade/versions] Latest version in the v1.19 series: v1.19.8
+
+Components that must be upgraded manually after you have upgraded the control plane with 'kubeadm upgrade apply':
+COMPONENT   CURRENT       AVAILABLE
+kubelet     1 x v1.19.7   v1.19.8
+            1 x v1.20.2   v1.19.8
+
+Upgrade to the latest version in the v1.19 series:
+
+COMPONENT                 CURRENT    AVAILABLE
+kube-apiserver            v1.19.7    v1.19.8
+kube-controller-manager   v1.19.7    v1.19.8
+kube-scheduler            v1.19.7    v1.19.8
+kube-proxy                v1.19.7    v1.19.8
+CoreDNS                   1.7.0      1.7.0
+etcd                      3.4.13-0   3.4.13-0
+
+You can now apply the upgrade by executing the following command:
+
+        kubeadm upgrade apply v1.19.8
+
+_____________________________________________________________________
+
+Components that must be upgraded manually after you have upgraded the control plane with 'kubeadm upgrade apply':
+COMPONENT   CURRENT       AVAILABLE
+kubelet     1 x v1.19.7   v1.20.4
+            1 x v1.20.2   v1.20.4
+
+Upgrade to the latest stable version:
+
+COMPONENT                 CURRENT    AVAILABLE
+kube-apiserver            v1.19.7    v1.20.4
+kube-controller-manager   v1.19.7    v1.20.4
+kube-scheduler            v1.19.7    v1.20.4
+kube-proxy                v1.19.7    v1.20.4
+CoreDNS                   1.7.0      1.7.0
+etcd                      3.4.13-0   3.4.13-0
+
+You can now apply the upgrade by executing the following command:
+
+        kubeadm upgrade apply v1.20.4
+
+Note: Before you can perform this upgrade, you have to update kubeadm to v1.20.4.
+
+_____________________________________________________________________
+
+
+The table below shows the current state of component configs as understood by this version of kubeadm.
+Configs that have a "yes" mark in the "MANUAL UPGRADE REQUIRED" column require manual config upgrade or
+resetting to kubeadm defaults before a successful upgrade can be performed. The version to manually
+upgrade to is denoted in the "PREFERRED VERSION" column.
+
+API GROUP                 CURRENT VERSION   PREFERRED VERSION   MANUAL UPGRADE REQUIRED
+kubeproxy.config.k8s.io   v1alpha1          v1alpha1            no
+kubelet.config.k8s.io     v1beta1           v1beta1             no
+_____________________________________________________________________
+
+
+root@cks-master:~#kubeadm upgrade apply v1.20.2
+[upgrade/config] Making sure the configuration is correct:
+[upgrade/config] Reading configuration from the cluster...
+[upgrade/config] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+[preflight] Running pre-flight checks.
+[upgrade] Running cluster health checks
+[upgrade/version] You have chosen to change the cluster version to "v1.20.2"
+[upgrade/versions] Cluster version: v1.19.7
+[upgrade/versions] kubeadm version: v1.20.2
+[upgrade/confirm] Are you sure you want to proceed with the upgrade? [y/N]: y
+[upgrade/prepull] Pulling images required for setting up a Kubernetes cluster
+[upgrade/prepull] This might take a minute or two, depending on the speed of your internet connection
+[upgrade/prepull] You can also perform this action in beforehand using 'kubeadm config images pull'
+[upgrade/apply] Upgrading your Static Pod-hosted control plane to version "v1.20.2"...
+Static pod: kube-apiserver-cks-master hash: 061027db0e88e3657f1ab490806403c1
+Static pod: kube-controller-manager-cks-master hash: 1c77e9039eeb896c6eb9619eb25efa58
+Static pod: kube-scheduler-cks-master hash: 57b58b3eb5589cb745c50233392349fb
+[upgrade/etcd] Upgrading to TLS for etcd
+Static pod: etcd-cks-master hash: c970a064d0fe1e6f97b36ff70f3c431e
+[upgrade/staticpods] Preparing for "etcd" upgrade
+[upgrade/staticpods] Renewing etcd-server certificate
+[upgrade/staticpods] Renewing etcd-peer certificate
+[upgrade/staticpods] Renewing etcd-healthcheck-client certificate
+[upgrade/staticpods] Moved new manifest to "/etc/kubernetes/manifests/etcd.yaml" and backed up old manifest to "/etc/kubernetes/tmp/kubeadm-backup-manifests-2021-03-09-23-22-23/etcd.yaml"
+[upgrade/staticpods] Waiting for the kubelet to restart the component
+[upgrade/staticpods] This might take a minute or longer depending on the component/version gap (timeout 5m0s)
+Static pod: etcd-cks-master hash: c970a064d0fe1e6f97b36ff70f3c431e
+Static pod: etcd-cks-master hash: c970a064d0fe1e6f97b36ff70f3c431e
+Static pod: etcd-cks-master hash: 6f9ca4ac97cad368cd838eebb7e01a6f
+[apiclient] Found 1 Pods for label selector component=etcd
+[upgrade/staticpods] Component "etcd" upgraded successfully!
+[upgrade/etcd] Waiting for etcd to become available
+[upgrade/staticpods] Writing new Static Pod manifests to "/etc/kubernetes/tmp/kubeadm-upgraded-manifests174344580"
+[upgrade/staticpods] Preparing for "kube-apiserver" upgrade
+[upgrade/staticpods] Renewing apiserver certificate
+[upgrade/staticpods] Renewing apiserver-kubelet-client certificate
+[upgrade/staticpods] Renewing front-proxy-client certificate
+[upgrade/staticpods] Renewing apiserver-etcd-client certificate
+[upgrade/staticpods] Moved new manifest to "/etc/kubernetes/manifests/kube-apiserver.yaml" and backed up old manifest to "/etc/kubernetes/tmp/kubeadm-backup-manifests-2021-03-09-23-22-23/kube-apiserver.yaml"
+[upgrade/staticpods] Waiting for the kubelet to restart the component
+[upgrade/staticpods] This might take a minute or longer depending on the component/version gap (timeout 5m0s)
+Static pod: kube-apiserver-cks-master hash: 061027db0e88e3657f1ab490806403c1
+Static pod: kube-apiserver-cks-master hash: f6c58610040386ba7cf06646b052f201
+[apiclient] Found 1 Pods for label selector component=kube-apiserver
+[upgrade/staticpods] Component "kube-apiserver" upgraded successfully!
+[upgrade/staticpods] Preparing for "kube-controller-manager" upgrade
+[upgrade/staticpods] Renewing controller-manager.conf certificate
+[upgrade/staticpods] Moved new manifest to "/etc/kubernetes/manifests/kube-controller-manager.yaml" and backed up old manifest to "/etc/kubernetes/tmp/kubeadm-backup-manifests-2021-03-09-23-22-23/kube-controller-manager.yaml"
+[upgrade/staticpods] Waiting for the kubelet to restart the component
+[upgrade/staticpods] This might take a minute or longer depending on the component/version gap (timeout 5m0s)
+Static pod: kube-controller-manager-cks-master hash: 1c77e9039eeb896c6eb9619eb25efa58
+Static pod: kube-controller-manager-cks-master hash: 1a3810fb74d35de2490ad0c288bb67f6
+[apiclient] Found 1 Pods for label selector component=kube-controller-manager
+[upgrade/staticpods] Component "kube-controller-manager" upgraded successfully!
+[upgrade/staticpods] Preparing for "kube-scheduler" upgrade
+[upgrade/staticpods] Renewing scheduler.conf certificate
+[upgrade/staticpods] Moved new manifest to "/etc/kubernetes/manifests/kube-scheduler.yaml" and backed up old manifest to "/etc/kubernetes/tmp/kubeadm-backup-manifests-2021-03-09-23-22-23/kube-scheduler.yaml"
+[upgrade/staticpods] Waiting for the kubelet to restart the component
+[upgrade/staticpods] This might take a minute or longer depending on the component/version gap (timeout 5m0s)
+Static pod: kube-scheduler-cks-master hash: 57b58b3eb5589cb745c50233392349fb
+Static pod: kube-scheduler-cks-master hash: 69cd289b4ed80ced4f95a59ff60fa102
+[apiclient] Found 1 Pods for label selector component=kube-scheduler
+[upgrade/staticpods] Component "kube-scheduler" upgraded successfully!
+[upgrade/postupgrade] Applying label node-role.kubernetes.io/control-plane='' to Nodes with label node-role.kubernetes.io/master='' (deprecated)
+[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
+[kubelet] Creating a ConfigMap "kubelet-config-1.20" in namespace kube-system with the configuration for the kubelets in the cluster
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to get nodes
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstrap-token] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+[upgrade/successful] SUCCESS! Your cluster was upgraded to "v1.20.2". Enjoy!
+
+[upgrade/kubelet] Now that your control plane is upgraded, please proceed with upgrading your kubelets if you haven't already done so.
+
+root@cks-master:~# k get node
+NAME         STATUS                     ROLES                  AGE   VERSION
+cks-master   Ready,SchedulingDisabled   control-plane,master   17m   v1.20.2
+cks-worker   Ready                      <none>                 15m   v1.19.7
+
+# unable cordon(取消隔离)
+root@cks-master:~# k  uncordon cks-master
+node/cks-master uncordoned
+
+
+root@cks-master:~# k get node
+NAME         STATUS   ROLES                  AGE   VERSION
+cks-master   Ready    control-plane,master   19m   v1.20.2
+cks-worker   Ready    <none>                 18m   v1.19.7
 ```
 
 
 
-##### Recap
+##### 70 Practice Upgrade worker node
+
+**cks-master**
+
+```sh
+root@cks-master:~# k drain cks-worker
+node/cks-worker cordoned
+error: unable to drain node "cks-worker", aborting command...
+
+There are pending nodes to be drained:
+ cks-worker
+error: cannot delete DaemonSet-managed Pods (use --ignore-daemonsets to ignore): kube-system/kube-proxy-rmqgx, kube-system/weave-net-nngrx
+
+root@cks-master:~# k drain cks-worker  --ignore-daemonsets
+node/cks-worker already cordoned
+WARNING: ignoring DaemonSet-managed Pods: kube-system/kube-proxy-rmqgx, kube-system/weave-net-nngrx
+evicting pod kube-system/coredns-74ff55c5b-lvdbz
+evicting pod kube-system/coredns-74ff55c5b-6b88q
+pod/coredns-74ff55c5b-6b88q evicted
+pod/coredns-74ff55c5b-lvdbz evicted
+node/cks-worker evicted
+
+
+root@cks-master:~# k get node
+NAME         STATUS                     ROLES                  AGE   VERSION
+cks-master   Ready                      control-plane,master   22m   v1.20.2
+cks-worker   Ready,SchedulingDisabled   <none>                 21m   v1.19.7
+
+```
+
+**cks-worker**
+
+```sh
+root@cks-worker:~# kubeadm version
+kubeadm version: &version.Info{Major:"1", Minor:"19", GitVersion:"v1.19.7", GitCommit:"1dd5338295409edcfff11505e7bb246f0d325d15", GitTreeState:"clean", BuildDate:"2021-01-13T13:21:39Z", GoVersion:"go1.15.5", Compiler:"gc", Platform:"linux/amd64"}
+
+root@cks-worker:~# apt-get install kubeadm=1.20.2-00
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following packages will be upgraded:
+  kubeadm
+1 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+Need to get 0 B/7706 kB of archives.
+After this operation, 160 kB of additional disk space will be used.
+(Reading database ... 106960 files and directories currently installed.)
+Preparing to unpack .../kubeadm_1.20.2-00_amd64.deb ...
+Unpacking kubeadm (1.20.2-00) over (1.19.7-00) ...
+Setting up kubeadm (1.20.2-00) ...
+
+
+
+root@cks-worker:~# apt-cache show kubeadm  | grep 1.20.2
+Version: 1.20.2-00
+Filename: pool/kubeadm_1.20.2-00_amd64_38fa4593055ef1161d4cb322437eedda95186fb850819421b8cf75f3a943dc51.deb
+
+
+root@cks-worker:~# kubeadm version
+kubeadm version: &version.Info{Major:"1", Minor:"20", GitVersion:"v1.20.2", GitCommit:"faecb196815e248d3ecfb03c680a4507229c2a56", GitTreeState:"clean", BuildDate:"2021-01-13T13:25:59Z", GoVersion:"go1.15.5", Compiler:"gc", Platform:"linux/amd64"}
+
+
+root@cks-worker:~# kubeadm upgrade node
+[upgrade] Reading configuration from the cluster...
+[upgrade] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+[preflight] Running pre-flight checks
+[preflight] Skipping prepull. Not a control plane node.
+[upgrade] Skipping phase. Not a control plane node.
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[upgrade] The configuration for this node was successfully updated!
+[upgrade] Now you should go ahead and upgrade the kubelet package using your package manager.
+
+
+root@cks-worker:~# apt-get install kubelet=1.20.2-00 kubectl=1.20.2-00
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following packages will be upgraded:
+  kubectl kubelet
+2 upgraded, 0 newly installed, 0 to remove and 15 not upgraded.
+Need to get 0 B/26.8 MB of archives.
+After this operation, 1357 kB of additional disk space will be used.
+(Reading database ... 106960 files and directories currently installed.)
+Preparing to unpack .../kubectl_1.20.2-00_amd64.deb ...
+Unpacking kubectl (1.20.2-00) over (1.19.7-00) ...
+Preparing to unpack .../kubelet_1.20.2-00_amd64.deb ...
+Unpacking kubelet (1.20.2-00) over (1.19.7-00) ...
+Setting up kubelet (1.20.2-00) ...
+Setting up kubectl (1.20.2-00) ...
+
+
+root@cks-worker:~# kubelet --version
+Kubernetes v1.20.2
+
+root@cks-worker:~# kubectl version
+Client Version: version.Info{Major:"1", Minor:"20", GitVersion:"v1.20.2", GitCommit:"faecb196815e248d3ecfb03c680a4507229c2a56", GitTreeState:"clean", BuildDate:"2021-01-13T13:28:09Z", GoVersion:"go1.15.5", Compiler:"gc", Platform:"linux/amd64"}
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+
+root@cks-master:~# k get node
+NAME         STATUS                     ROLES                  AGE   VERSION
+cks-master   Ready                      control-plane,master   30m   v1.20.2
+cks-worker   Ready,SchedulingDisabled   <none>                 29m   v1.20.2
+
+
+root@cks-master:~# k uncordon cks-worker
+node/cks-worker uncordoned
+
+root@cks-master:~# k get node
+NAME         STATUS   ROLES                  AGE   VERSION
+cks-master   Ready    control-plane,master   31m   v1.20.2
+cks-worker   Ready    <none>                 29m   v1.20.2
+
+```
+
+###### Upgrade a cluster
+
+**Upgrade the worker to match with master**
+
+##### 71 Recap
+
+**kubeadm upgrade**
+https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade
+
+**k8s versions**
+https://kubernetes.io/docs/setup/release/version-skew-policy
 
 #### Section 15 Microservice Vunerabilites - Manage Kubernetes Secrets
-##### Intro
+##### 72. Intro
+
+- Overview
+- Create Secure Secret Scenario
+- Hack some Secrets
+
+##### Introduction
+
+**Secret**
+
+- Passwords
+- API keys
+- Credentials
+- Information needed by an application
+
+
+
 ##### Recap
 #### Section 16 Microservice Vunerabilites - Container Runtime Sandboxes
 ##### Intro
