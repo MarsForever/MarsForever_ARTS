@@ -2808,9 +2808,161 @@ https://kubernetes.io/docs/setup/release/version-skew-policy
 - Credentials
 - Information needed by an application
 
+###### Introduction Secrets
+
+![](.\images\Section15\Screenshot_1.png)
+
+![](.\images\Section15\Screenshot_2.png)
+
+Introduction K8S Secretes
+
+![](.\images\Section15\Screenshot_3.png)
+
+
+
+##### 73. Create Simple Secret Scenario
+
+###### Simple Secret Scenario
+
+![](.\images\Section15\Screenshot_4.png)
+
+```sh
+root@cks-master:~# k create secret generic secret1 --from-literal user=admin
+secret/secret1 created
+
+
+root@cks-master:~# k create secret generic secret2 --from-literal pass=123abc
+secret/secret2 created
+
+
+root@cks-master:~# k run pod --image=nginx -oyaml --dry-run=client
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - image: nginx
+    name: pod
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+*1
+*2
+
+root@cks-master:~# vim pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - image: nginx
+    name: pod
+    resources: {}
+    env:
+      - name: PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: secret2
+            key: pass
+    volumeMounts:
+    - name: secret1
+      mountPath: "/etc/secret1"
+      readOnly: true
+  volumes:
+  - name: secret1
+    secret:
+      secretName: secret1
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+root@cks-master:~# k -f pod.yaml create
+pod/pod created
+root@cks-master:~# k get pod
+NAME   READY   STATUS              RESTARTS   AGE
+pod    0/1     ContainerCreating   0          4s
+root@cks-master:~# k get pod
+NAME   READY   STATUS    RESTARTS   AGE
+pod    1/1     Running   0          9s
+
+root@cks-master:~# k exec pod -- env | grep PASS
+PASSWORD=123abc
+
+root@cks-master:~# k exec pod -- mount | grep secret1
+tmpfs on /etc/secret1 type tmpfs (ro,relatime)
+
+
+root@cks-master:~# k exec pod -- find /etc/secret1
+/etc/secret1
+/etc/secret1/..data
+/etc/secret1/user
+/etc/secret1/..2021_03_10_23_26_20.879551704
+/etc/secret1/..2021_03_10_23_26_20.879551704/use
+
+root@cks-master:~# k exec pod -- cat /etc/secret1/user
+adminr
+```
+
+[*1](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-files-from-a-pod)
+
+```sh
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+  - name: mypod
+    image: redis
+    volumeMounts:
+    - name: foo
+      mountPath: "/etc/foo"
+      readOnly: true
+  volumes:
+  - name: foo
+    secret:
+      secretName: mysecret
+```
+
+[*2](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables)
+
+```sh
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-env-pod
+spec:
+  containers:
+  - name: mycontainer
+    image: redis
+    env:
+      - name: SECRET_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: mysecret
+            key: username
+      - name: SECRET_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: mysecret
+            key: password
+  restartPolicy: Never
+```
+
 
 
 ##### Recap
+
 #### Section 16 Microservice Vunerabilites - Container Runtime Sandboxes
 ##### Intro
 ##### Recap
