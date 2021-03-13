@@ -2959,6 +2959,365 @@ spec:
   restartPolicy: Never
 ```
 
+##### 74. Practice - Hack Secrets in Docker
+
+Secrets and docker
+
+![](.\images\Section15\Screenshot_5.png)
+
+```sh
+root@cks-master:~# k get pod
+NAME   READY   STATUS    RESTARTS   AGE
+pod    1/1     Running   1          23h
+
+# get the password
+root@cks-worker:~# docker ps | grep nginx
+d22f3301ee10        nginx                  "/docker-entrypoint.…"   13 minutes ago      Up 13 minutes                           k8s_pod_pod_default_e4de83c9-33c6-405d-a07f-6222e0da74fb_1
+root@cks-worker:~# docker inspect d22f3301ee10
+[
+    {
+        "Id": "d22f3301ee100eb972cc3da360238f8fcd987a1b3f1c1ad887659ac3ee3406af",
+        "Created": "2021-03-11T22:35:22.073987855Z",
+        "Path": "/docker-entrypoint.sh",
+        "Args": [
+            "nginx",
+            "-g",
+            "daemon off;"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 4917,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2021-03-11T22:35:22.761475008Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:018aec2b4f302b08b4c7274b72bede1fe56ee1f2bcaa06492e3f464e05f1a9a8",
+        "ResolvConfPath": "/var/lib/docker/containers/f53d30c1346108d955b1249b7475efa7b27657ce72127299932fbcbd5b6df465/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/f53d30c1346108d955b1249b7475efa7b27657ce72127299932fbcbd5b6df465/hostname",
+        "HostsPath": "/var/lib/kubelet/pods/e4de83c9-33c6-405d-a07f-6222e0da74fb/etc-hosts",
+        "LogPath": "/var/lib/docker/containers/d22f3301ee100eb972cc3da360238f8fcd987a1b3f1c1ad887659ac3ee3406af/d22f3301ee100eb972cc3da360238f8fcd987a1b3f1c1ad887659ac3ee3406af-json.log",
+        "Name": "/k8s_pod_pod_default_e4de83c9-33c6-405d-a07f-6222e0da74fb_1",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "docker-default",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "/var/lib/kubelet/pods/e4de83c9-33c6-405d-a07f-6222e0da74fb/volumes/kubernetes.io~secret/secret1:/etc/secret1:ro",
+                "/var/lib/kubelet/pods/e4de83c9-33c6-405d-a07f-6222e0da74fb/volumes/kubernetes.io~secret/default-token-twdg9:/var/run/secrets/kubernetes.io/serviceaccount:ro",
+                "/var/lib/kubelet/pods/e4de83c9-33c6-405d-a07f-6222e0da74fb/etc-hosts:/etc/hosts",
+                "/var/lib/kubelet/pods/e4de83c9-33c6-405d-a07f-6222e0da74fb/containers/pod/456fcbd6:/dev/termination-log"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "container:f53d30c1346108d955b1249b7475efa7b27657ce72127299932fbcbd5b6df465",
+            "PortBindings": null,
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "CapAdd": null,
+            "CapDrop": null,
+            "Capabilities": null,
+            "Dns": null,
+            "DnsOptions": null,
+            "DnsSearch": null,
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "container:f53d30c1346108d955b1249b7475efa7b27657ce72127299932fbcbd5b6df465",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 1000,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": [
+                "seccomp=unconfined"
+            ],
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "Isolation": "",
+            "CpuShares": 2,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "kubepods-besteffort-pode4de83c9_33c6_405d_a07f_6222e0da74fb.slice",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 100000,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "KernelMemory": 0,
+            "KernelMemoryTCP": 0,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": false,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/asound",
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/73379f394014a7e41c5aade53913c3aa55d335884ee57d4b0ff5ebd3a49a0658-init/diff:/var/lib/docker/overlay2/f8b80781ff34b860377540a924b9f966a4086dabf23fb9d92a52e23696fdd423/diff:/var/lib/docker/overlay2/b90eb53458a074f7b404a6a3720886439296e57aff1587e8bd21b549109d0d51/diff:/var/lib/docker/overlay2/ed7c61f17f6404f4be564fe313f691a5a7722726631f6ad4788872205ba3532d/diff:/var/lib/docker/overlay2/7d07bc8b69a87b5514b2efdf23d82d78bf2800806c839f30d5be3b03306cb75e/diff:/var/lib/docker/overlay2/ba51ab1c3cdb1ecebfb7afe6784c67b1682faa097511406bd54391a0720c4458/diff:/var/lib/docker/overlay2/ab81512a9bd8e92779ac490254ce02e81a10d519ea111aaa76388e189cbef64e/diff",
+                "MergedDir": "/var/lib/docker/overlay2/73379f394014a7e41c5aade53913c3aa55d335884ee57d4b0ff5ebd3a49a0658/merged",
+                "UpperDir": "/var/lib/docker/overlay2/73379f394014a7e41c5aade53913c3aa55d335884ee57d4b0ff5ebd3a49a0658/diff",
+                "WorkDir": "/var/lib/docker/overlay2/73379f394014a7e41c5aade53913c3aa55d335884ee57d4b0ff5ebd3a49a0658/work"
+            },
+            "Name": "overlay2"
+        },
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/var/lib/kubelet/pods/e4de83c9-33c6-405d-a07f-6222e0da74fb/volumes/kubernetes.io~secret/secret1",
+                "Destination": "/etc/secret1",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/var/lib/kubelet/pods/e4de83c9-33c6-405d-a07f-6222e0da74fb/volumes/kubernetes.io~secret/default-token-twdg9",
+                "Destination": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/var/lib/kubelet/pods/e4de83c9-33c6-405d-a07f-6222e0da74fb/etc-hosts",
+                "Destination": "/etc/hosts",
+                "Mode": "",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/var/lib/kubelet/pods/e4de83c9-33c6-405d-a07f-6222e0da74fb/containers/pod/456fcbd6",
+                "Destination": "/dev/termination-log",
+                "Mode": "",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+        "Config": {
+            "Hostname": "pod",
+            "Domainname": "",
+            "User": "0",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "ExposedPorts": {
+                "80/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PASSWORD=123abc",
+                "KUBERNETES_SERVICE_PORT=443",
+                "KUBERNETES_SERVICE_PORT_HTTPS=443",
+                "KUBERNETES_PORT=tcp://10.96.0.1:443",
+                "KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443",
+                "KUBERNETES_PORT_443_TCP_PROTO=tcp",
+                "KUBERNETES_PORT_443_TCP_PORT=443",
+                "KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1",
+                "KUBERNETES_SERVICE_HOST=10.96.0.1",
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "NGINX_VERSION=1.19.8",
+                "NJS_VERSION=0.5.2",
+                "PKG_RELEASE=1~buster"
+            ],
+            "Cmd": [
+                "nginx",
+                "-g",
+                "daemon off;"
+            ],
+            "Healthcheck": {
+                "Test": [
+                    "NONE"
+                ]
+            },
+            "Image": "nginx@sha256:d5b6b094a614448aa0c48498936f25073dc270e12f5fcad5dc11e7f053e73026",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": [
+                "/docker-entrypoint.sh"
+            ],
+            "OnBuild": null,
+            "Labels": {
+                "annotation.io.kubernetes.container.hash": "9818bb8d",
+                "annotation.io.kubernetes.container.restartCount": "1",
+                "annotation.io.kubernetes.container.terminationMessagePath": "/dev/termination-log",
+                "annotation.io.kubernetes.container.terminationMessagePolicy": "File",
+                "annotation.io.kubernetes.pod.terminationGracePeriod": "30",
+                "io.kubernetes.container.logpath": "/var/log/pods/default_pod_e4de83c9-33c6-405d-a07f-6222e0da74fb/pod/1.log",
+                "io.kubernetes.container.name": "pod",
+                "io.kubernetes.docker.type": "container",
+                "io.kubernetes.pod.name": "pod",
+                "io.kubernetes.pod.namespace": "default",
+                "io.kubernetes.pod.uid": "e4de83c9-33c6-405d-a07f-6222e0da74fb",
+                "io.kubernetes.sandbox.id": "f53d30c1346108d955b1249b7475efa7b27657ce72127299932fbcbd5b6df465",
+                "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>"
+            },
+            "StopSignal": "SIGQUIT"
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {},
+            "SandboxKey": "",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "",
+            "Gateway": "",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "",
+            "IPPrefixLen": 0,
+            "IPv6Gateway": "",
+            "MacAddress": "",
+            "Networks": {}
+        }
+    }
+]
+
+#get the user name
+root@cks-worker:~# docker cp d22f3301ee10:/etc/secret1 secret1
+root@cks-worker:~# cat secret1/user
+admin
+```
+
+##### 75.Practice Hack Secrets in ETCD
+
+###### Secrets and etcd
+
+![](.\images\Section15\Screenshot_6.png)
+
+```sh
+root@cks-master:~# ETCDCTL_API=3 etcdctl endpoint health
+127.0.0.1:2379 is unhealthy: failed to commit proposal: context deadline exceeded
+Error:  unhealthy cluster
+
+
+
+
+# access secret int etcd
+root@cks-master:~# cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep etcd    - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
+    - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
+    - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
+    - --etcd-servers=https://127.0.0.1:2379
+
+
+root@cks-master:~# ETCDCTL_API=3 etcdctl --cert /etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt endpoint health
+127.0.0.1:2379 is healthy: successfully committed proposal: took = 1.132134ms
+
+# --endpoints "https://127.0.0.1:2379" not necessary because we’re on same node
+
+# get username and password
+root@cks-master:~# ETCDCTL_API=3 etcdctl --cert /etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/secret1
+/registry/secrets/default/secret1
+k8s
+
+v1Secret▒
+▒
+secret1default"*$c61cd235-6133-4487-8e56-772648f27d802▒▒▒▒z▒_
+kubectl-createUpdatev▒▒▒▒FieldsV1:-
++{"f:data":{".":{},"f:user":{}},"f:type":{}}
+useradminOpaque"
+root@cks-master:~# ETCDCTL_API=3 etcdctl --cert /etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/secret2
+/registry/secrets/default/secret2
+k8s
+
+v1Secret▒
+▒
+secret2default"*$b314de1d-4b59-42ec-b9ee-8d185944ca602▒▒▒▒z▒_
+kubectl-createUpdatev▒▒▒▒FieldsV1:-
++{"f:data":{".":{},"f:pass":{}},"f:type":{}}
+pass123abcOpaque"
+
+```
+
+
+
+###### Encrypt etcd
+
+
+
+![](.\images\Section15\Screenshot_7.png)
+
+![](.\images\Section15\Screenshot_8.png)
+
+###### Encrypt (all Secrets) in etcd
+
+![](.\images\Section15\Screenshot_9.png)
+
+```sh
+kubectl get secrets --all-namespaces -o json | kubectl replace -f -
+```
+
+![](.\images\Section15\Screenshot_10.png)
+
+
+```sh
+kubectl get secrets --all-namespaces -o json | kubectl replace -f -
+```
 
 
 ##### Recap
