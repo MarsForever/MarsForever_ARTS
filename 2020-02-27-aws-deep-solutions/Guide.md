@@ -38,7 +38,7 @@ https://d1.awsstatic.com/International/ja_JP/Whitepapers/AWS_Well-Architected_Fr
 
 [【SAA-C02版】AWS 認定ソリューションアーキテクト アソシエイト模擬試験問題集（6回分390問）](https://www.udemy.com/course/aws-knan/)
 
-#### 実践実際練習
+#### 実践練習
 
 [Labs - Learning Path - AWS Solutions Architect Associate](https://play.whizlabs.com/site/quest_details?id=35)
 
