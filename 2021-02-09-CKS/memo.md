@@ -3294,7 +3294,7 @@ pass123abcOpaque"
 
 ```
 
-
+###### 76. ETCD Encryption
 
 ###### Encrypt etcd
 
@@ -3319,6 +3319,332 @@ kubectl get secrets --all-namespaces -o json | kubectl replace -f -
 kubectl get secrets --all-namespaces -o json | kubectl replace -f -
 ```
 
+##### 77. Practice Encrypt ETCD
+
+###### Encrypt etcd
+
+**Encrypt Secrets in ETCD at rest and test it**
+
+> Encrypt all existing secrets using **aescbc** and a password of our choice
+
+```sh
+marsforever@cks-master:~$ sudo -i
+root@cks-master:~# cd /etc/kubernetes/
+root@cks-master:/etc/kubernetes# mkdir etcd
+root@cks-master:/etc/kubernetes# cd etcd/
+#※1
+root@cks-master:/etc/kubernetes/etcd# vim ec.yaml
+
+#add the string to ec.yaml's secret
+root@cks-master:/etc/kubernetes/etcd# echo -n password | base64
+cGFzc3dvcmQ=
+
+root@cks-master:/etc/kubernetes/etcd# cat ec.yaml
+apiVersion: apiserver.config.k8s.io/v1
+kind: EncryptionConfiguration
+resources:
+  - resources:
+    - secrets
+    providers:
+    - aescbc:
+        keys:
+        - name: key1
+          secret: cGFzc3dvcmQ=
+    - identity: {}
+
+
+```
+
+######  ※1 encrypt etcd docs page contains also example on how to read etcd secret
+https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/#encrypting-your-data
+
+
+
+```sh
+root@cks-master:/etc/kubernetes/etcd# cd ..
+root@cks-master:/etc/kubernetes# cd manifests/
+root@cks-master:/etc/kubernetes/manifests# vim kube-apiserver.yaml
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+#add the new line    
+    - --encryption-provider-config=/etc/kubernetes/etcd/ec.yaml
+#add the new lines
+#mount the path
+    - mountPath: /etc/kubernetes/etcd
+      name: etcd
+      readOnly: true    
+#add the new lines
+#set the folder
+  - hostPath:
+      path: /etc/kubernetes/etcd
+      type: DirectoryOrCreate
+    name: etcd
+
+root@cks-master:/etc/kubernetes/manifests# cd /var/log/pods
+root@cks-master:/var/log/pods# tail -f kube-system_kube-apiserver-cks-master_b2f2c7bbaa5a0c135c9ebc4de2eac4ad/kube-apiserver/4.log
+{"log":"Flag --insecure-port has been deprecated, This flag has no effect now and will be removed in v1.24.\n","stream":"stderr","time":"2021-03-13T03:44:50.913649642Z"}
+{"log":"I0313 03:44:50.913659       1 server.go:632] external host was not specified, using 10.146.0.2\n","stream":"stderr","time":"2021-03-13T03:44:50.913789379Z"}
+{"log":"I0313 03:44:50.914290       1 server.go:182] Version: v1.20.2\n","stream":"stderr","time":"2021-03-13T03:44:50.914394666Z"}
+{"log":"Error: error while parsing encryption provider configuration file \"/etc/kubernetes/etcd/ec.yaml\": error while parsing file: resources[0].providers[0].aescbc.keys[0].secret: Invalid value: \"REDACTED\": secret is not of the expected length, got 8, expected one of [16 24 32]\n","stream":"stderr","time":"2021-03-13T03:44:51.375760488Z"}
+
+root@cks-master:/var/log/pods# cd /etc/kubernetes/etcd/
+root@cks-master:/etc/kubernetes/etcd# vim ec.yaml
+root@cks-master:/etc/kubernetes/etcd# echo -n passwordpassword | base64
+cGFzc3dvcmRwYXNzd29yZA==
+
+root@cks-master:/etc/kubernetes/etcd# cd /var/log/pods/
+root@cks-master:/var/log/pods# tail -f kube-system_kube-apiserver-cks-master_b2f2c7bbaa5a0c135c9ebc4de2eac4ad/kube-apiserver/5.log
+{"log":"Flag --insecure-port has been deprecated, This flag has no effect now and will be removed in v1.24.\n","stream":"stderr","time":"2021-03-13T03:46:21.962286244Z"}
+{"log":"I0313 03:46:21.962567       1 server.go:632] external host was not specified, using 10.146.0.2\n","stream":"stderr","time":"2021-03-13T03:46:21.962910321Z"}
+{"log":"I0313 03:46:21.963460       1 server.go:182] Version: v1.20.2\n","stream":"stderr","time":"2021-03-13T03:46:21.963551658Z"}
+{"log":"Error: error while parsing encryption provider configuration file \"/etc/kubernetes/etcd/ec.yaml\": error while parsing file: resources[0].providers[0].aescbc.keys[0].secret: Invalid value: \"REDACTED\": secret is not of the expected length, got 8, expected one of [16 24 32]\n","stream":"stderr","time":"2021-03-13T03:46:22.364017822Z"}
+
+#Restart kube api server
+root@cks-master:/var/log/pods# cd -
+/etc/kubernetes/etcd
+root@cks-master:/etc/kubernetes/etcd# cd ../manifests/
+root@cks-master:/etc/kubernetes/manifests# mv kube-apiserver.yaml ..
+# check the apiserver is stopped
+root@cks-master:/etc/kubernetes/manifests# ps aux | grep apiserver
+root     26261  0.0  0.0  14860  1004 pts/0    S+   03:50   0:00 grep --color=auto apiserver
+root@cks-master:/etc/kubernetes/manifests# mv ../kube-apiserver.yaml .
+root@cks-master:/etc/kubernetes/manifests# ls
+etcd.yaml            kube-controller-manager.yaml
+kube-apiserver.yaml  kube-scheduler.yaml
+root@cks-master:/etc/kubernetes/manifests# ps aux | grep apiserver
+root     26786 76.2  7.9 1097096 321824 ?      Ssl  03:52   0:06 kube-apiserver --encryption-provider-config=/etc/kubernetes/etcd/ec.yaml --advertise-address=10.146.0.2 --allow-privileged=true --authorization-mode=Node,RBAC --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-issuer=https://kubernetes.default.svc.cluster.local --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-account-signing-key-file=/etc/kubernetes/pki/sa.key --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+root     26851  0.0  0.0  14860  1092 pts/0    R+   03:52   0:00 grep --color=auto apiserver
+
+root@cks-master:/etc/kubernetes/manifests# k get secret
+NAME                  TYPE                                  DATA   AGE
+default-token-twdg9   kubernetes.io/service-account-token   3      3d4h
+secret1               Opaque                                1      2d4h
+secret2               Opaque                                1      2d4h
+
+root@cks-master:/etc/kubernetes/manifests#k get secret default-token-twdg9 -oyaml
+apiVersion: v1
+data:
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM1ekNDQWMrZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwcmRXSmwKY201bGRHVnpNQjRYRFRJeE1ETXdPVEl6TURZek5Gb1hEVE14TURNd056SXpNRFl6TkZvd0ZURVRNQkVHQTFVRQpBeE1LYTNWaVpYSnVaWFJsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBT1QvCkR4T0VzdmxNTThCVk8zU3lCc2hVcHpyTkRjU25qOHRrUXhQN3lNSldKeW9mMEltQXR3bU5xWlJKYUd4NTB4VEgKdHl5eHNGVWRiems0RTZJbEpmSHJzMllhRVhOdk1ZSDNrZlErWHdIVFNNaTlXNkNheWNQd0NaVlV3QUJyY3lpMgpybXowMEpoTlZuMnZaTFJYSUtTaTlFNTJsaGI1cEdUdUFTVXdGU0FGMWltZGY4ZSt1ejhHUWhJSTE1bUFMcGJYCmw1clJYUERiR05XSHhCaCtXWUY3aEROemtpQXJyNjZ4VE5TV1RORUhPK0xuNGlSRWpQYW1LS1FnSnQrNTNKOHEKTTI4bmR2QnBrUnRtelhjRXlZTzdXdG9RWkpiUHN2TmNCZUN3M2toRWFQQU9zZmwvaytSWlhmSVd1eHFIK2xuMgpSRTJDTVlZL1lXVitXTHNtTU1FQ0F3RUFBYU5DTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCCi93UUZNQU1CQWY4d0hRWURWUjBPQkJZRUZDeWdiM0hEc3I2bkxCa2hucXZGWmlBZkRYVmRNQTBHQ1NxR1NJYjMKRFFFQkN3VUFBNElCQVFBK1VYS2RoWGgvTDE0STlqVlV4RDlBTTg3NzllMWdvZlgvcnVsY3loa1haYXc3cWtuZQpUellWOFJDc3p6U3hQYjl1c1pxSjZJenFVQ3pFUDYrVmYrM0JSM1BLQWZacDU5c1M1ZTJUSThSYTAxanpxcWcvClJwb081TjFoRGUwVnpOaDI0ZkhQTTMrUHUwTWZ3VUJJUU9CWHRBUXZyd2dUbWNEenV6QzdNcUlic2pjUkw3VjUKREdqcG1rZm14VkRKN1l4UnUyT2FLWTNicE50TTRMYVlkb0JoQWRXWXl5WU1ZME1mMXN2ODJwMUlIRVhYTWFTWQptVnlGVlZHZDBBZTFzNSt2OE05TmdpV3FVdUUzaFoxalJsNTI2ZHgxSlpqbVlkZTl3WkZwMmVmVjFMWExOcUJmCmNaMlJjSEh4TnQ4clArVlBoVERiTzlOVjZxUVpQejdvYkk3ZAotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  namespace: ZGVmYXVsdA==
+  token: ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklsSnBOemxEYmtsTFFUWldhMnBDYTJWak5pMVZhbkExVDIwNGN5MWlRbkp6VWsxeGVtbDJXbFZRYUZVaWZRLmV5SnBjM01pT2lKcmRXSmxjbTVsZEdWekwzTmxjblpwWTJWaFkyTnZkVzUwSWl3aWEzVmlaWEp1WlhSbGN5NXBieTl6WlhKMmFXTmxZV05qYjNWdWRDOXVZVzFsYzNCaFkyVWlPaUprWldaaGRXeDBJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5elpXTnlaWFF1Ym1GdFpTSTZJbVJsWm1GMWJIUXRkRzlyWlc0dGRIZGtaemtpTENKcmRXSmxjbTVsZEdWekxtbHZMM05sY25acFkyVmhZMk52ZFc1MEwzTmxjblpwWTJVdFlXTmpiM1Z1ZEM1dVlXMWxJam9pWkdWbVlYVnNkQ0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVnlkbWxqWlMxaFkyTnZkVzUwTG5WcFpDSTZJakUzTkRaaU1qUTRMVEZpWXpVdE5EVXlOeTFpTldGbUxUSTRPRGhoTm1FNVlUZzJaQ0lzSW5OMVlpSTZJbk41YzNSbGJUcHpaWEoyYVdObFlXTmpiM1Z1ZERwa1pXWmhkV3gwT21SbFptRjFiSFFpZlEudmFoVDFBS3g4RlVoMXJBOG4tTk96TEd6UXFhU1JuMFRBNC1zSzBzZXdydGs4SjhRNFBDbmlqV01KT0RaSTl0ajJlV2dJd284R2JPa1YtanNSeEl5MFV4WFNYb3hhOTl5WFlyZnJEdjFSS1V5UXowUVJlTGh4UnBUS0FnTGpLcU95b1pNQ1hlbWM5Z21mSUNzQ3JjVzE5Q3o4NlFyN2pvazhSNVhPRGFKb256SWowTTNhSFJ3U3FyVDFJTElmdFpLdk9NUXBlRHhCZVQ4aXU1N0piZXFEb1pSR09PbFh2SFZwUzdsel95dTcwU2ZadUNwc29NVURjLXJvYTdZdk5EZDBJb3E5U05mazZvRGotU0FRMk5SUy1ETUpobW5BWWl3bV85NFI5amFFcXEzMzV5allYdHNWTFJSMHFjRGs3ZzNLSklOZHRZTnBuam5mWXNQMGdnQjRn
+kind: Secret
+metadata:
+  annotations:
+    kubernetes.io/service-account.name: default
+    kubernetes.io/service-account.uid: 1746b248-1bc5-4527-b5af-2888a6a9a86d
+  creationTimestamp: "2021-03-09T23:07:01Z"
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        .: {}
+        f:ca.crt: {}
+        f:namespace: {}
+        f:token: {}
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:kubernetes.io/service-account.name: {}
+          f:kubernetes.io/service-account.uid: {}
+      f:type: {}
+    manager: kube-controller-manager
+    operation: Update
+    time: "2021-03-09T23:07:01Z"
+  name: default-token-twdg9
+  namespace: default
+  resourceVersion: "353"
+  uid: 47c8f77f-02aa-4b69-9444-19818b562105
+type: kubernetes.io/service-account-token
+
+```
+
+
+
+--encryption-provider-config
+
+https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/#configuration-and-determining-whether-encryption-at-rest-is-already-enabled
+
+
+
+###### read secret from etcd
+
+https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/#verifying-that-data-is-encrypted
+
+ETCDCTL_API=3 etcdctl --cert /etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/very-secure
+
+
+
+```sh
+root@cks-master:/etc/kubernetes/manifests# ETCDCTL_API=3 etcdctl --cert /etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/default-token-twdg9
+/registry/secrets/default/default-token-twdg9
+k8s
+
+v1Secret▒
+▒
+default-token-twdg9default"*$47c8f77f-02aa-4b69-9444-19818b5621052▒▒▒▒b-
+"kubernetes.io/service-account.namedefaultbI
+!kubernetes.io/service-account.uid$1746b248-1bc5-4527-b5af-2888a6a9a86dz▒▒
+kube-controller-managerUpdatev▒▒▒▒FieldsV1:▒
+▒{"f:data":{".":{},"f:ca.crt":{},"f:namespace":{},"f:token":{}},"f:metadata":{"f:annotations":{".":{},"f:kubernetes.io/service-account.name":{},"f:kubernetes.io/service-account.uid":{}}},"f:type":{}}▒
+ca.crt-----BEGIN CERTIFICATE-----
+MIIC5zCCAc+gAwIBAgIBADANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwprdWJl
+cm5ldGVzMB4XDTIxMDMwOTIzMDYzNFoXDTMxMDMwNzIzMDYzNFowFTETMBEGA1UE
+AxMKa3ViZXJuZXRlczCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOT/
+DxOEsvlMM8BVO3SyBshUpzrNDcSnj8tkQxP7yMJWJyof0ImAtwmNqZRJaGx50xTH
+tyyxsFUdbzk4E6IlJfHrs2YaEXNvMYH3kfQ+XwHTSMi9W6CaycPwCZVUwABrcyi2
+rmz00JhNVn2vZLRXIKSi9E52lhb5pGTuASUwFSAF1imdf8e+uz8GQhII15mALpbX
+l5rRXPDbGNWHxBh+WYF7hDNzkiArr66xTNSWTNEHO+Ln4iREjPamKKQgJt+53J8q
+M28ndvBpkRtmzXcEyYO7WtoQZJbPsvNcBeCw3khEaPAOsfl/k+RZXfIWuxqH+ln2
+RE2CMYY/YWV+WLsmMMECAwEAAaNCMEAwDgYDVR0PAQH/BAQDAgKkMA8GA1UdEwEB
+/wQFMAMBAf8wHQYDVR0OBBYEFCygb3HDsr6nLBkhnqvFZiAfDXVdMA0GCSqGSIb3
+DQEBCwUAA4IBAQA+UXKdhXh/L14I9jVUxD9AM8779e1gofX/rulcyhkXZaw7qkne
+TzYV8RCszzSxPb9usZqJ6IzqUCzEP6+Vf+3BR3PKAfZp59sS5e2TI8Ra01jzqqg/
+RpoO5N1hDe0VzNh24fHPM3+Pu0MfwUBIQOBXtAQvrwgTmcDzuzC7MqIbsjcRL7V5
+DGjpmkfmxVDJ7YxRu2OaKY3bpNtM4LaYdoBhAdWYyyYMY0Mf1sv82p1IHEXXMaSY
+mVyFVVGd0Ae1s5+v8M9NgiWqUuE3hZ1jRl526dx1JZjmYde9wZFp2efV1LXLNqBf
+cZ2RcHHxNt8rP+VPhTDbO9NV6qQZPz7obI7d
+-----END CERTIFICATE-----
+
+        namespacedefault▒
+
+token▒eyJhbGciOiJSUzI1NiIsImtpZCI6IlJpNzlDbklLQTZWa2pCa2VjNi1VanA1T204cy1iQnJzUk1xeml2WlVQaFUifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tdHdkZzkiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjE3NDZiMjQ4LTFiYzUtNDUyNy1iNWFmLTI4ODhhNmE5YTg2ZCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.vahT1AKx8FUh1rA8n-NOzLGzQqaSRn0TA4-sK0sewrtk8J8Q4PCnijWMJODZI9tj2eWgIwo8GbOkV-jsRxIy0UxXSXoxa99yXYrfrDv1RKUyQz0QReLhxRpTKAgLjKqOyoZMCXemc9gmfICsCrcW19Cz86Qr7jok8R5XODaJonzIj0M3aHRwSqrT1ILIftZKvOMQpeDxBeT8iu57JbeqDoZRGOOlXvHVpS7lz_yu70SfZuCpsoMUDc-roa7YvNDd0Ioq9SNfk6oDj-SAQ2NRS-DMJhmnAYiwm_94R9jaEqq335yjYXtsVLRR0qcDk7g3KJINdtYNpnjnfYsP0ggB4g#kubernetes.io/service-account-token"
+```
+
+###### get secret very-secure
+
+```sh
+root@cks-master:/etc/kubernetes/etcd# k create secret generic very-secure --from-literal cc=1234
+secret/very-secure created
+
+root@cks-master: cd /etc/kubernetes/etcd
+
+root@cks-master:/etc/kubernetes/etcd# ETCDCTL_API=3 etcdctl --cert /etc/kubernetes/pki/apiserver-etcd-client.crt --key /etc/kubernetes/pki/apiserver-etcd-client.key --cacert /etc/kubernetes/pki/etcd/ca.crt get /registry/secrets/default/very-secure
+/registry/secrets/default/very-secure
+k8s:enc:aescbc:v1:key1:▒oT▒▒▒fݬ{▒▒▒`▒[▒d0˯▒▒▒/f▒F▒�6K▒[K▒M▒!%▒▒▒▒▒▒1j▒(▒I▒~▒p▒▒▒▒g▒|▒+▒▒▒Tc▒vP▒Ҫ2▒nцK!▒+▒Z▒{▒
+▒▒+p▒▒1gM▒▒▒▒▒z▒▒▒D▒V,▒5▒/▒▒▒▒ak▒▒P▒)▒▒▒B:N▒▒▒▒▒▒n▒Q▒▒▒▒▒=dN▒▒P`d▒Xg)▒▒▒^▒▒▒▒`▒▒
+
+root@cks-master:~# k get secret very-secure -oyaml
+apiVersion: v1
+data:
+  cc: MTIzNA==
+kind: Secret
+metadata:
+  creationTimestamp: "2021-03-13T04:15:23Z"
+  managedFields:
+  - apiVersion: v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:data:
+        .: {}
+        f:cc: {}
+      f:type: {}
+    manager: kubectl-create
+    operation: Update
+    time: "2021-03-13T04:15:23Z"
+  name: very-secure
+  namespace: default
+  resourceVersion: "19693"
+  uid: da8b81ed-ea22-4413-a3cd-ae45c561b4de
+
+
+root@cks-master:~# echo MTIzNA== | base64 -d
+1234
+
+#The tool  cut will split input into fields using space as the delimiter ( -d"" ). We then only select the 9th field using  -f 2
+#sed -n 1p select the 1st line 
+#tr -d '' delete the space
+k get secret very-secure -oyaml | grep cc | cut -f 2 -d ":" | sed -n 1p | tr -d ' ' | base64 -d
+1234
+
+root@cks-master:~# k delete secret default-token-twdg9
+secret "default-token-twdg9" deleted
+
+# the contoller will recreate the secret
+root@cks-master:~# k get secret
+NAME                  TYPE                                  DATA   AGE
+default-token-wlb7k   kubernetes.io/service-account-token   3      3s
+secret1               Opaque                                1      8d
+secret2               Opaque                                1      8d
+very-secure           Opaque                                1      5d19h
+
+#Check the secret is there
+root@cks-master:/etc/kubernetes/etcd# k get secret -oyaml | grep very-secure
+    name: very-secure
+
+#check the secret of the kube-system
+k get -n kube-system secret
+
+NAME                                             TYPE                                  DATA   AGE
+attachdetach-controller-token-5d5j5              kubernetes.io/service-account-token   3      9d
+bootstrap-signer-token-5rfwh                     kubernetes.io/service-account-token   3      9d
+bootstrap-token-5l9c78                           bootstrap.kubernetes.io/token         5      9d
+certificate-controller-token-c5p2q               kubernetes.io/service-account-token   3      9d
+clusterrole-aggregation-controller-token-bjtg2   kubernetes.io/service-account-token   3      9d
+coredns-token-tl9fd                              kubernetes.io/service-account-token   3      9d
+cronjob-controller-token-q6p5n                   kubernetes.io/service-account-token   3      9d
+daemon-set-controller-token-4x4rm                kubernetes.io/service-account-token   3      9d
+default-token-krzvk                              kubernetes.io/service-account-token   3      9d
+deployment-controller-token-dw4zf                kubernetes.io/service-account-token   3      9d
+disruption-controller-token-8v8zt                kubernetes.io/service-account-token   3      9d
+endpoint-controller-token-zfcl6                  kubernetes.io/service-account-token   3      9d
+endpointslice-controller-token-xh6j4             kubernetes.io/service-account-token   3      9d
+endpointslicemirroring-controller-token-577mv    kubernetes.io/service-account-token   3      9d
+expand-controller-token-xmht8                    kubernetes.io/service-account-token   3      9d
+generic-garbage-collector-token-m4c2b            kubernetes.io/service-account-token   3      9d
+horizontal-pod-autoscaler-token-x9lkt            kubernetes.io/service-account-token   3      9d
+job-controller-token-ntsvh                       kubernetes.io/service-account-token   3      9d
+kube-proxy-token-2vhzq                           kubernetes.io/service-account-token   3      9d
+namespace-controller-token-mhh59                 kubernetes.io/service-account-token   3      9d
+node-controller-token-hswlq                      kubernetes.io/service-account-token   3      9d
+persistent-volume-binder-token-b6k4d             kubernetes.io/service-account-token   3      9d
+pod-garbage-collector-token-jmtrz                kubernetes.io/service-account-token   3      9d
+pv-protection-controller-token-kd4kn             kubernetes.io/service-account-token   3      9d
+pvc-protection-controller-token-dhd5f            kubernetes.io/service-account-token   3      9d
+replicaset-controller-token-ht4pf                kubernetes.io/service-account-token   3      9d
+replication-controller-token-wgnlj               kubernetes.io/service-account-token   3      9d
+resourcequota-controller-token-s2vmj             kubernetes.io/service-account-token   3      9d
+root-ca-cert-publisher-token-vn5g4               kubernetes.io/service-account-token   3      9d
+service-account-controller-token-xl6l2           kubernetes.io/service-account-token   3      9d
+service-controller-token-9c8hd                   kubernetes.io/service-account-token   3      9d
+statefulset-controller-token-zj8js               kubernetes.io/service-account-token   3      9d
+token-cleaner-token-r8zt8                        kubernetes.io/service-account-token   3      9d
+ttl-controller-token-8hjk2                       kubernetes.io/service-account-token   3      9d
+weave-net-token-vd9ld                            kubernetes.io/service-account-token   3      9d
+
+
+#Restart kube api server
+root@cks-master:/var/log/pods# cd -
+/etc/kubernetes/etcd
+root@cks-master:/etc/kubernetes/etcd# cd ../manifests/
+root@cks-master:/etc/kubernetes/manifests# mv kube-apiserver.yaml ..
+# check the apiserver is stopped
+root@cks-master:/etc/kubernetes/manifests# ps aux | grep apiserver
+root     26261  0.0  0.0  14860  1004 pts/0    S+   03:50   0:00 grep --color=auto apiserver
+root@cks-master:/etc/kubernetes/manifests# mv ../kube-apiserver.yaml .
+#Check the aipserver is working
+root@cks-master:/etc/kubernetes/etcd# ps aux | grep apiserver
+
+root      3198  6.3  8.7 1097608 351244 ?      Ssl  23:05   2:36 kube-apiserver --encryption-provider-config=/etc/kubernetes/etcd/ec.yaml --advertise-address=10.146.0.2 --allow-privileged=true --authorization-mode=Node,RBAC --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-issuer=https://kubernetes.default.svc.cluster.local --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-account-signing-key-file=/etc/kubernetes/pki/sa.key --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+root     18586  0.0  0.0  14860  1040 pts/0    S+   23:46   0:00 grep --color=auto apiserver
+
+
+k get secret -A -oyaml | kubectl replace -f -
+```
+
+
+
+#### Question 
+
+cd /etc/kubernetes/etcd
+
+ec.yaml identity for what
+
+
+
+docker secret and etcd secret hacking is solved?
 
 ##### Recap
 
