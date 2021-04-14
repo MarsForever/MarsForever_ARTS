@@ -331,5 +331,130 @@ while true; do date; sleep
 
 ### Mock Exam 2
 
+### No.01
+
+> Create a deployment called *my-webapp* with image: *nginx*, label *tier:frontend* and *2* replicas. Expose the deployment as a NodePort service with name *front-end-service*, port:*80* and NodePort:*30083*
+
+*Weight: 8*
+
+- Deployment my-webapp created?
+- image:nginx
+- Replicas= 2?
+- service front-end -service created ?
+- service Type created correctly?
+- Correct node Port used?
+
+### No.02
+
+> Add a taint to the node *node01* of the cluster. Use the specification below:
+>
+> key: *app_type*,value: *alpha* and effect:  *NoSchedule*
+>
+> Create a pod called *alpha*, image: *redis* with toleration to node01
+
+*Weight: 12*
+
+- node01 with the correct taint?
+- Pod alpha has the correct toleration?
+
+### No.03
+
+> Apply a label *app_type=beta* to node node02. Create a new deployment called *beta-apps* with image: *nginx* and replica:3.
+>
+> Set Node Affinity to the deployment to place the PODs on node02 only.
+
+> NodeAffinity:requiredDuringSchedulingIgnoredDuringExecution
+
+*Weight: 15*
+
+- node02 has the correct labels?
+- Deployment beta-apps:NodeAffinity set to requiredDuringSchedulingIgnoredDuringExecution?
+- Deployment beta-apps has correct key for NodeAffinity?
+- Deployment beta-apps has correct Value for NodeAffinity?
+- Deployment beta-apps has pods running only on node02?
+- Deployment beta-apps has 3 pods running?
+
+### No.04
+
+> Create a new Ingress Resource for the service: *my-video-service* to be made available at the URL: *http://ckad-mock-exam-solution.com:30093/video*.
+
+> Create an ingress resource with *host: ckad-mock-exam-solution.com* *path:/video*
+>
+> Once set up, curl test of the URL from the nodes should be successful / *HTTP 200*
+
+*Weight: 12*
+
+- Ingress resource configured correct and accessible via http://ckad-mock-exam-solution.com:30093/video
+
+### No. 05
+
+> We have deployed a new pod called *pod-with-rprobe*. This Pod has an initial delay before it is Ready. Update the newly created pod *pod-with-rprobe* with a *readinessProbe* using the given spec
+
+- httpGet path: /ready
+- httpGet port:8080
+
+*Weight: 12*
 
 
+
+### No.06
+
+> Create a job called *whalesay* with image *docker/whalesay* and command *"cowsay I am going to ace CKAD!"*.
+>
+> completions: *10*
+>
+> backoffLimit: *6*
+>
+> restartPolicy: *Never*
+
+
+
+> This simple job runs the popular cowsya game that was modified by docker...
+
+*Weight: 15*
+
+- Job "whalesay" uses correct image?
+
+- Job "whalesay" configured with completions = 10 ?
+
+- Job "whalesay" with backoffLimit = 6
+
+- Job runs the command "cowsay I am going to use ace CKAD!?"
+
+- Job "whalesay" completed successfully?
+
+  
+
+### No.07
+
+> Create a pod called *multi-pod* with two containers.
+>
+> Container 1: name: jupiter,image:nginx
+>
+> Container 2: europa, image: busybox
+>
+> command: sleep 4800
+
+> Environment Variables: Container 1: type: planet
+>
+> Container 2 : type:moon
+
+- Pod Name: multi-pod
+- Container 1: jupiter
+- Container 2: europa
+- Container europa commands set correctly?
+- Container 1 Environment Value Set
+- Container 2 Environment Value Set
+
+
+
+### No.08
+
+> Create a PersistentVolume called *custom-volume* with size: 50 MiB reclaim policy:retain,Access Modes: ReadWriteMany and hostPath: /opt/data
+
+*Weight: 14*
+
+- PV custom-volume created?
+- custom-volume uses the correct access mode?
+- PV custom-volume has the correct storage capacity?
+- PV custom-volume has the correct host path?
