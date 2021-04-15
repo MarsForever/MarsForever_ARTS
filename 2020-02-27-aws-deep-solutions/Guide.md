@@ -2,6 +2,8 @@
 AWS 認定 Associate level を大体一ヶ月で取った話
 https://qiita.com/yutachaos/items/2b0b8d9bfe76a597953c
 
+
+
 2.awsアカウント作成方法，想动手的话，自己可以注册一个账号。一年内部分是免费的。
 https://aws.amazon.com/jp/register-flow/
 

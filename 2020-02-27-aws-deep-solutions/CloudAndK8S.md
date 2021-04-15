@@ -55,6 +55,22 @@ https://thinkit.co.jp/article/16830
 
 
 
+CKA
+
+管理
+
+
+
+CKAD
+
+开发者
+
+
+
+CKS
+
+安全
+
 ## AWS GCP Azureの位置付け
 
 > 
@@ -108,12 +124,14 @@ https://cloud.google.com/certification
 
 [米国防総省はなぜ「AWS」ではなく「Azure」を選んだのか　100億ドルのJEDI契約](https://techtarget.itmedia.co.jp/tt/news/1911/26/news08.html)
 
+### AWS services
+
 ### Analytics
 
 |                               | AWS                                | Azure                                  | GCP                       |
 | :---------------------------- | :--------------------------------- | :------------------------------------- | :------------------------ |
 | データレイクへのクエリ        | Amazon Athena                      | Azure Data Lake Analytics              | Google BigQuery           |
-| 検索                          | Amazon CloudSearch                 | Azure Cognitive Search                 | -                         |
+| 検索                          | Amazon CloudSearchs                | Azure Cognitive Search                 | -                         |
 | Hadoopクラスターの展開        | Amazon EMR                         | HD Insight/Azure Databricks            | CloudDataproc             |
 | Elasticsearchクラスターの展開 | Amazon Elasticsearch Service       | Elasticsearch Service on Elastic Cloud | Elastic Cloud on GCP      |
 | ストリーミング処理            | Amazon Kinesis                     | Azure Event Hubs                       | Cloud Dataflow            |
@@ -465,11 +483,15 @@ https://www.globalknowledge.com/us-en/resources/resource-library/articles/how-to
 
 
 
-### kubernetes 給与はいくら?
+### 
 
 >  60万(基本、最低SAA)から130万以上(基本設計から構築まですべて任せる)
 
 
+
+
+
+kubernetes 給与はいくら?
 
 ＜予定年収＞500万円～1,200万円(残業手当：有)
 
