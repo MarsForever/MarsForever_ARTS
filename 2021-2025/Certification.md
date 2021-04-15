@@ -3,13 +3,21 @@
 
 
 ### 2021
-#### kubernetes
-##### ckad
-##### cks
-#### aws
-##### aws sap
+1. kubernetes
+   1. ckad
+   2. cks
+2. aws
+   1. aws sap
+3. IPA
+   1. 基本情報技術者
 
+### 2022
 
+1. IPA
+   1. 応用情報
+   2. PM
+2. AWS
+   1. すべて取得
 
 
 
