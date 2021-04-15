@@ -13,3 +13,10 @@
 - 課題管理
 - 関係者への情報連携
 - 振り返り
+
+
+
+
+
+[「プロジェクトマネージャ試験（レベル4）」シラバス（Ver.6.0）](https://www.jitec.ipa.go.jp/1_13download/syllabus_pm_ver6_0.pdf)
+
