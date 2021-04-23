@@ -12,6 +12,81 @@
 
 - Proceed to next question to begin the lab!
 
+#### 
+
+#### No.1
+
+> Create a Persistent Volume called `log-volume`. It should make use of a `storage class` name `manual`. It should use `RWX` as the access mode and have a size of `1Gi`. The volume should use the hostPath `/opt/volume/nginx`
+
+> Next, create a PVC called `log-claim` requesting a minimum of `200Mi` of storage. This PVC should bind to `log-volume`.
+
+> Mount this in a pod called `logger` at the location `/var/www/nginx`. This pod should use the image `nginx:alpine`.
+
+*Weight: 20* 
+
+#### No.1 Answer 
+
+kubectl carete -f 01-pv.yaml
+
+```sh
+# 01-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: log-volume
+  namespace: default
+spec:
+  storageClassName: "manual" # Empty string must be explicitly set otherwise default StorageClass will be set
+  hostPath:
+    path:  /opt/volume/nginx
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 1Gi
+```
+
+kubectl create -f 01-pvc.yaml
+
+```sh
+#01-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: log-claim
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Mi
+```
+
+kubectl apply -f 01-pod.yaml 
+
+```sh
+#01-pod.yaml 
+pod/logger created
+controlplane $ cat 01-pod.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: logger
+  namespace: default
+spec:
+  containers:
+  - name: pv-recycler
+    image: "nginx:alpine"
+    volumeMounts:
+      - mountPath: "/var/ww/nginx"
+        name: app-storage
+  volumes:
+    - name: app-storage
+      persistentVolumeClaim:
+        claimName: log-claim
+```
+
+
+
 #### No.2
 
 > We have deployed a new pod called *secure-pod* and a service called *sercure-service*. Incoming or Outgoing connections to this pod are not working. Troubleshoot why this is happening.
@@ -24,6 +99,10 @@
 - Connectivity working?
 
 *Weight: 20*
+
+#### 
+
+#### No.2 Answer
 
 
 
