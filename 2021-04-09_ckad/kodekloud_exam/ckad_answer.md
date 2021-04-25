@@ -1,6 +1,6 @@
 ### Lighting Lab1
 
-#### No.1
+#### Description
 
 > Welcome to the *KodeKloud CKAD Lightning Lab - Part 1!*
 >
@@ -11,8 +11,6 @@
 > Good Luck!!!
 
 - Proceed to next question to begin the lab!
-
-#### 
 
 #### No.1
 
@@ -59,14 +57,13 @@ spec:
   resources:
     requests:
       storage: 200Mi
+  storageClassName: "manual"
 ```
 
 kubectl apply -f 01-pod.yaml 
 
 ```sh
 #01-pod.yaml 
-pod/logger created
-controlplane $ cat 01-pod.yaml 
 apiVersion: v1
 kind: Pod
 metadata:
@@ -100,11 +97,123 @@ spec:
 
 *Weight: 20*
 
-#### 
-
 #### No.2 Answer
 
+##### check pod and service
 
+ ```sh
+alias kubectl=k
+k get pod,svc 
+ NAME                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes       ClusterIP   10.96.0.1        <none>        443/TCP   23m
+service/secure-service   ClusterIP   10.104.199.138   <none>        80/TCP    4m19s
+
+NAME               READY   STATUS    RESTARTS   AGE
+pod/logger         1/1     Running   0          10m
+pod/secure-pod     1/1     Running   0          4m19s
+pod/webapp-color   1/1     Running   0          15m
+ ```
+
+login to container webapp-color 
+
+check secure-service 80
+
+```sh
+k exec -it webapp-color -- sh
+
+/opt # nc -z -v -w 1 secure-service 80
+nc: secure-service (10.104.199.138:80): Operation timed out
+```
+
+Check networkpolicy
+
+```sh
+k get netpol
+NAME           POD-SELECTOR   AGE
+default-deny   <none>         12m
+
+k describe netpol default-deny 
+Name:         default-deny
+Namespace:    default
+Created on:   2021-04-24 12:54:38 +0000 UTC
+Labels:       <none>
+Annotations:  <none>
+Spec:
+  PodSelector:     <none> (Allowing the specific traffic to all pods in this namespace)
+  Allowing ingress traffic:
+    <none> (Selected pods are isolated for ingress connectivity)
+  Not affecting egress traffic
+  Policy Types: Ingress
+```
+
+Check pod `secure-pod`'s label
+
+```sh
+k get pod --show-labels
+NAME           READY   STATUS    RESTARTS   AGE   LABELS
+logger         1/1     Running   0          26m   <none>
+secure-pod     1/1     Running   0          20m   run=secure-pod
+webapp-color   1/1     Running   0          31m   name=webapp-color
+```
+
+
+create new network policy
+
+```sh
+k get netpol default-deny -o yaml > 02-netpol.yaml
+controlplane $ vim 02-netpol.yaml
+```
+
+```sh
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  creationTimestamp: "2021-04-24T12:54:38Z"
+  generation: 1
+  managedFields:
+  - apiVersion: networking.k8s.io/v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:spec:
+        f:policyTypes: {}
+    manager: kubectl-create
+    operation: Update
+    time: "2021-04-24T12:54:38Z"
+  name: allow-webapp
+  namespace: default
+  resourceVersion: "3473"
+  selfLink: /apis/networking.k8s.io/v1/namespaces/default/networkpolicies/default-deny
+  uid: 2ad753dd-f752-4eb7-93a2-2ae68ed346d0
+spec:
+  podSelector: #{}
+  # add labels start
+    matchLabels: 
+      run: secure-pod
+  # add labels end    
+  policyTypes:
+  - Ingress
+  # add ingress start
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels: 
+          name: webapp-color
+    ports:
+    - protocol: TCP
+      port: 80
+  # add ingress end
+```
+
+login to container webapp-color 
+
+check secure-service 80 again
+
+```sh
+k exec -it webapp-color -- sh
+
+opt # nc -z -v -w 1 secure-service 80
+secure-service (10.104.199.138:80) open
+```
 
 #### No.3
 
