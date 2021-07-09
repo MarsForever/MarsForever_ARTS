@@ -1,6 +1,5 @@
 ### Lighting Lab1
-
-#### No.1
+#### Description
 
 > Welcome to the *KodeKloud CKAD Lightning Lab - Part 1!*
 >
@@ -11,6 +10,16 @@
 > Good Luck!!!
 
 - Proceed to next question to begin the lab!
+
+#### No.1
+
+> Create a Persistent Volume called `log-volume`. It should make use of a `storage class` name `manual`. It should use `RWX` as the access mode and have a size of `1Gi`. The volume should use the hostPath `/opt/volume/nginx`
+
+> Next, create a PVC called `log-claim` requesting a minimum of `200Mi` of storage. This PVC should bind to `log-volume`.
+
+> Mount this in a pod called `logger` at the location `/var/www/nginx`. This pod should use the image `nginx:alpine`.
+
+*Weight: 20* 
 
 #### No.2
 
@@ -28,19 +37,6 @@
 
 
 #### No.3
-
-> We have deployed a new pod called *secure-pod* and a service called *secure-service*. Incoming or Outgoing connections to this pod are not working.
-
-> Troubleshoot why this is happening.
-
-> Make sure that incoming connection from the pod *webapp-color* are successful.
-
-> Important:Don't delete any current objects deployed.
-
-- Important:Don't Alter Existing Objects!
-- Connectivity working?
-
-#### No.4
 
 > Create a pod called *time-check* in the *dvl1987* namespace.This pod should run a container called *timer-check* that users the *busybox* image.
 
@@ -60,7 +56,7 @@ while true; do date; sleep
 
 *Weight: 20*
 
-#### No.5
+#### No.4
 
 > Create a new deployment called *nginx-deploy*, with one single container called *nginx*,image *nginx:1.16* and *4* replicas. The deployment should use *RollingUpdate* strategy with *maxSurge=1*, and *maxUnavailable=2*. Next upgrade the deployment to version *1.17* using rolling update.
 
@@ -73,7 +69,7 @@ while true; do date; sleep
 
 *weight:20*
 
-#### No.6
+#### No.5
 
 > Create a *redis* deployment with the following parameters: Name of the deployment should be *redis* using the *redis:alpine* image.It should have *1* replica. Thecontainer should request for *2* CPU.It should use the label *app=redis*.
 >
