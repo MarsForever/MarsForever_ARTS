@@ -3,12 +3,38 @@ https://www.youtube.com/watch?v=wqsUfvRyYpw
 
 
 
+### Section 2
 
+### 7. Practice - Configure "gcloud" command
+#### Create instance From GUI
+Virtual machines => VM instances => Create Instance
+```
+VM:
+ name: cks-master | cks-worker
+ Region: asia-northeast1(Tokyo) any near you
+ Machine: e2-medium(2vCPU,4GB)
+ Boot Disk: Ubuntu 18.04LTS(50GB)
+```
+#### Create instance From CUI
+```sh
+# CREATE cks-master VM using gcloud command
+# not necessary if created using the browser interface
+gcloud compute instances create cks-master --zone=europe-west3-c \
+--machine-type=e2-medium \
+--image=ubuntu-1804-bionic-v20201014 \
+--image-project=ubuntu-os-cloud \
+--boot-disk-size=50GB
 
-### Section 2-5 Cluster Specification 
+# CREATE cks-worker VM using gcloud command
+# not necessary if created using the browser interface
+gcloud compute instances create cks-worker --zone=europe-west3-c \
+--machine-type=e2-medium \
+--image=ubuntu-1804-bionic-v20201014 \
+--image-project=ubuntu-os-cloud \
+--boot-disk-size=50GB
+```
 
-
-
+#### Login to instance
 ```sh
 gcloud projects list
 gcloud config set project PROJECT_ID
@@ -16,6 +42,7 @@ gcloud config get-value project
 gcloud compute ssh cks-master
 gcloud compute ssh cks-worker
 ```
+
 
 #### cks-master
 
@@ -28,11 +55,29 @@ sudo -i
 bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/latest/install_worker.sh)
 
 
-#### run the printed kubeadm-join-command from the master on the worker
-
-
-2-9 firewall rules for NodePorts
+#### add worker to Cluster
+```
+run the printed kubeadm-join-command from the master on the worker
+```
+#### 2-9 firewall rules for NodePorts
 gcloud compute firewall-rules create nodeports --allow tcp:30000-40000
+
+#### 10.Notice
+Always to stop Instances to save credits
+```
+# start instance
+gcloud compute instances start cks-master
+gcloud compute instances start cks-worker
+
+# access instance
+gcloud compute ssh cks-master
+gcloud compute ssh cks-worker
+
+# stop instance
+gcloud compute instances stop cks-master
+gcloud compute instances stop cks-worker
+```
+
 
 ### Section 3
 
@@ -3647,13 +3692,453 @@ ec.yaml identity for what
 docker secret and etcd secret hacking is solved?
 
 ##### Recap
+##### Why do we even have ConfigMap and Secrets?
+- ConfigMaps file can keep file
+- Secrets is more secure way
+
+![](.\images\Section15\Screenshot_11.png)
+
+- Tools
+  - HashiCorp
+  - Vault
+
+##### K8s Secret Risks
+
+![](.\images\Section15\Screenshot_12.png)
+
+![](.\images\Section15\Screenshot_13.png)
+
+Recap
+
+- What are Secrets?
+- Deploying & Use Secrets
+- Hacking Secrets(etcd & Docker)
+- How Secrets are stored (encrypted)
 
 #### Section 16 Microservice Vunerabilites - Container Runtime Sandboxes
-##### Intro
+
+##### 78.Intro
+
+- Technical Overview
+  - Containers are not contained
+    - a container doesn't mean it's more protected
+  - Containers / Docker
+    - ![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_1.png)
+    - Sandbox
+      - Playground when implementing an API
+      - Simulated Testing environgment
+      - Development server
+      - **Security layer to  reduce attack surface**
+    - Containers and system calls
+      - ![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_2.png)
+      - Sandbox comes not for free
+        - More resources needed
+        - Might be better for smaller containers
+        - Not good for syscall heavy workloads
+        - No direct access to hardware
+- Break out of container
+- gVisor Kata Containers
+##### 79. Practice - Container calls Linux Kernel
+```sh
+root@cks-master:~# k run pod --image=nginx
+pod/pod created
+
+root@cks-master:~# k exec pod -it -- bash
+
+#show system information
+root@pod:/# uname -r
+5.4.0-1051-gcp
+
+#trace system calls and signals
+root@cks-master:~# strace uname -r
+
+```
+[Dirty Cow ](https://en.wikipedia.org/wiki/Dirty_COW)
+
+Computers and devices that still use the older kernels remain vulnerable.
+
+##### 80. Open Container Initiative OCI
+
+OCI
+
+- Open Container Initiative
+
+- Linux Foundation project to design open standards for virtualization
+
+- Specification
+
+  - runtime,image,distribution
+
+- Runtime
+
+  - runc(container runtime that implements their specification)
+
+  ![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_3.png)
+
+![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_4.png)
+
+![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_5.png)
+
+##### 81. Practice - Crictl
+
+crictl and containerd
+
+- crictl: Provides a CLI for CRI-compatible container runtimes
+
+
+
+```sh
+# show containers
+docker ps
+crictl ps
+#get nginx image
+crictl pull nginx
+Image is up to date for nginx@sha256:853b221d3341add7aaadf5f81dd088ea943ab9c918766e295321294b035f3f3e
+
+#show pods
+crictl pods
+```
+
+##### 82. Sandbox Runtime Katacontainers
+
+![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_6.png)
+
+Kata containers
+
+- Strong separation layer
+- Runs every container in its own private VM(Hypervisor based)
+- QEMU as default
+  - needs virtualisation,like nested virtualisation in cloud
+
+##### 83. Sandbox Runtime gVisor
+
+user-space kernel for containers
+
+- Another layer of spearation
+- NOT hypervisor/VM based
+- Simulator kernel syscalls with limited functionality
+- Runtime called runsc
+
+![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_7.png)
+
+##### 84.Practice - Create and use RuntimeClasses
+
+```sh
+vim runsc.yaml
+-----
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: gvisor
+handler: runsc
+-----
+root@cks-master:~# k -f rc.yaml create
+runtimeclass.node.k8s.io/gvisor created
+
+```
+
+
+
+```sh
+k run gvisor --image=nginx -oyaml --dry-run=client > pod.yaml
+root@cks-master:~# vim pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: gvisor
+  name: gvisor
+spec:
+  runtimeClassName: test
+  containers:
+  - image: nginx
+    name: gvisor
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+root@cks-master:~# k -f pod.yaml create
+Error from server (Forbidden): error when creating "pod.yaml": pods "gvisor" is forbidden: pod rejected: RuntimeClass "test" not found
+
+root@cks-master:~# vim pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: gvisor
+  name: gvisor
+spec:
+  runtimeClassName: gvisor
+  containers:
+  - image: nginx
+    name: gvisor
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+root@cks-master:~# k -f pod.yaml create
+pod/gvisor created
+
+
+
+root@cks-master:~# k get pod -w
+NAME     READY   STATUS              RESTARTS   AGE
+gvisor   0/1     ContainerCreating   0          30s
+pod      1/1     Running             0          126m
+
+```
+
+
+
+##### 85.Practice - Install and use gVisor
+
+
+
+![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_8.png)
+
+```sh
+root@cks-worker:~#sudo -i
+root@cks-worker:~#bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/microservice-vulnerabilities/container-runtimes/gvisor/install_gvisor.sh)
+# use containerd
+root@cks-worker:~# cat /etc/default/kubelet
+KUBELET_EXTRA_ARGS="--container-runtime remote --container-runtime-endpoint unix:///run/containerd/containerd.sock"
+#check kubelet
+root@cks-worker:~# service kubelet status
+```
+
+cks-worker is using containerd
+
+```sh
+root@cks-master:~# k get node -owide
+NAME         STATUS   ROLES                  AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION   CONTAINER-RUNTIME
+cks-master   Ready    control-plane,master   34h   v1.21.0   10.146.0.2    <none>        Ubuntu 18.04.5 LTS   5.4.0-1051-gcp   docker://20.10.7
+cks-worker   Ready    <none>                 34h   v1.21.0   10.146.0.3    <none>        Ubuntu 18.04.5 LTS   5.4.0-1051-gcp   containerd://1.5.2
+
+# gvisor using containerd
+root@cks-master:~# k get pod
+NAME     READY   STATUS    RESTARTS   AGE
+gvisor   1/1     Running   0          10m
+pod      1/1     Running   0          136m
+
+root@cks-master:~# k exec -it gvisor -- bash
+root@gvisor:/# uname -r
+4.4.0
+root@gvisor:/# dmesg
+[    0.000000] Starting gVisor...
+[    0.260793] Searching for needles in stacks...
+[    0.737771] Digging up root...
+[    1.161314] Conjuring /dev/null black hole...
+[    1.467524] Moving files to filing cabinet...
+[    1.670183] Forking spaghetti code...
+[    1.765726] Checking naughty and nice process list...
+[    1.861117] Daemonizing children...
+[    2.041006] Feeding the init monster...
+[    2.383943] Rewriting operating system in Javascript...
+[    2.744631] Preparing for the zombie uprising...
+[    3.014470] Ready!
+```
+
+
+
 ##### Recap
+
+- Container Sandboxes
+- containerd
+- kata-containers(vm)
+- gvisor/runsc(kernel)
+- k8s Runtimes
+
+###### References
+
+- Container Runtime Landscape
+https://www.youtube.com/watch?v=RyXL1zOa8Bw
+- Gvisor
+https://www.youtube.com/watch?v=kxUZ4lVFuVo
+- Kata Containers
+https://www.youtube.com/watch?v=4gmLXyMeYWI
+
+
+
 #### Section 17 Microservice Vunerabilites - OS Level Security Domains
-##### Intro
-##### Recap
+##### 87. Intro and Security Contexts
+Security Contexts
+**Define privilege and access control for Pod/Container**
+
+- userID and GroupID
+- Run privilged or unprivileged
+
+![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_9.png)
+
+
+
+![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_10.png)
+
+PodSecurityContext v1 core
+
+https://v1-18.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.18/
+
+![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_11.png)
+
+##### 88. Practice - Set Container User and Group
+** Change the user and gourp under which the conatiner processes are running
+
+```sh
+k run pod --image=busybox --command -oyaml --dry-run=client > pod.yaml -- sh -c 'sleep 1d'
+
+root@cks-master:~# k -f pod.yaml create
+pod/pod created
+
+root@cks-master:~# k exec -it pod -- sh
+/ # id
+uid=0(root) gid=0(root) groups=10(wheel)
+```
+add security context
+```sh
+vim pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+```
+https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+
+recreate pod
+
+```sh
+k -f pod.yaml delete --force --grace-period=0
+
+
+root@cks-master:~# k -f pod.yaml create
+pod/pod created
+
+root@cks-master:~# k exec -it pod -- sh
+/ $ id
+uid=1000 gid=3000
+/ $ touch test
+touch: test: Permission denied
+/ $ cd /tmp/
+/tmp $ touch test
+/tmp $ ls -lh test
+-rw-r--r--    1 1000     3000           0 Sep 20 06:58 test
+
+```
+##### 89.　Non-Root
+
+**Force container to run as non-root**
+
+```sh
+vim pod.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext:
+      runAsNonRoot: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+k -f pod.yaml delete --force --grace-period=0
+
+root@cks-master:~# k -f pod.yaml apply
+pod/pod created
+
+comment out security
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+#  securityContext:
+#    runAsUser: 1000
+#    runAsGroup: 3000
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext:
+      runAsNonRoot: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+k delete pod pod --force --grace-period=0
+k apply -f pod.yaml
+# because securitycontext is root
+root@cks-master:~# k get pod
+NAME     READY   STATUS                       RESTARTS   AGE
+gvisor   1/1     Running                      1          39h
+pod      0/1     CreateContainerConfigError   0          5s
+
+root@cks-master:~# k describe pod pod
+
+  Warning  Failed     50s (x8 over 2m17s)  kubelet            Error: container has runAsNonRoot and image will run as root (pod: "pod_default(a0aa01b2-231b-4d21-abff-751052622d6a)", container: pod)
+
+```
+
+##### 90. Privileged Containers
+
+- By default Docker containers run "unprivileged"
+- possible to run as privileged to 
+  - Access all devices
+  - Run Docker daemon inside container
+    - docker run --privilileged
+
+**Privileged means that container user 0(root) is directly mapped to host user 0 (root)**
+
+##### 91.
+##### 92.
+##### 93.
+##### 94.
+##### 95.
+##### 96. Recap
 #### Section 18 Microservice Vunerabilites - mTLS
 ##### Intro
 ##### Recap
