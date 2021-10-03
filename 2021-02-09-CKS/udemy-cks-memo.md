@@ -3971,17 +3971,17 @@ Security Contexts
 - userID and GroupID
 - Run privilged or unprivileged
 
-![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_9.png)
+![](.\images\Section17\Screenshot_1.png)
 
 
 
-![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_10.png)
+![](.\images\Section17\Screenshot_2.png)
 
 PodSecurityContext v1 core
 
 https://v1-18.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.18/
 
-![](.\images\Section16_MicroserviceVulnerabilities-ContainerRuntimeSandboxes\Screenshot_11.png)
+![](.\images\Section17\Screenshot_3.png)
 
 ##### 88. Practice - Set Container User and Group
 ** Change the user and gourp under which the conatiner processes are running
@@ -4133,18 +4133,1097 @@ root@cks-master:~# k describe pod pod
 
 **Privileged means that container user 0(root) is directly mapped to host user 0 (root)**
 
-##### 91.
-##### 92.
-##### 93.
-##### 94.
-##### 95.
+###### Privileged Containers in Kubernetes
+
+By default in kubernetes container are not running privileged
+
+```sh
+spec:
+  containers:
+    securityContext:
+      privileged: true
+```
+
+##### 91.Practice - Create Privileged Container
+
+**Enabled privileged and test using sysctl**
+
+```sh
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  securityContext:
+   runAsUser: 1000
+   runAsGroup: 3000
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext:
+      runAsNonRoot: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:~# k delete pod pod --force --grace-period=0
+warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "pod" force deleted
+
+root@cks-master:~# k apply -f pod.yaml
+pod/pod created
+
+root@cks-master:~# k exec -it pod -- sh
+/ $ sysctl kernel.hostname=attacker
+sysctl: error setting key 'kernel.hostname': Read-only file system
+
+```
+
+
+
+```sh
+commentout securitycontext
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    #securityContext:
+    #  runAsNonRoot: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+#recreate pod
+k delete pod pod --force --grace-period=0 
+k -f pod.yaml create
+
+root@cks-master:~# k exec -it pod -- sh
+/ $ sysctl kernel.hostname=attacker
+sysctl: error setting key 'kernel.hostname': Read-only file system
+
+```
+Change security context to  the privileged 
+```sh
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext:
+      privileged: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+recreate pod
+
+k delete pod pod --force --grace-period=0
+k -f pod.yaml create
+
+
+root@cks-master:~# k exec -it pod -- sh
+/ # sysctl kernel.hostname=attacker
+kernel.hostname = attacker
+/ # id
+uid=0(root) gid=0(root) groups=10(wheel)
+
+```
+
+##### 92. PrivilegeEscalation
+
+> AllowPrivilegeEscalation controls whether a process can gain more privileges than its parent process
+
+![](.\images\Section17\Screenshot_4.png)
+
+Privileged
+
+> means that container user 0(root) is directly mapped to host user 0(root)
+
+PrivilegeEscalation
+
+>Controls where the process can gain more privileges than its parent process
+
+##### 93. Practice - Disable PriviledgeEscalation
+
+```sh
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext:
+      allowPrivilegedEscalation: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:~# k exec -it pod -- sh
+/ # cat /proc/1/s
+sched         sessionid     smaps         stack         statm         syscall
+schedstat     setgroups     smaps_rollup  stat          status
+/ # cat /proc/1/sta
+stack   stat    statm   status
+/ # cat /proc/1/status | grep No
+NoNewPrivs:     0
+```
+
+recreate pod.yaml
+
+```sh
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:~# k delete pod pod --force --grace-period=0
+warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "pod" force deleted
+root@cks-master:~# k -f pod.yaml create
+pod/pod created
+
+root@cks-master:~# k exec -it pod -- sh
+/ # cat /proc/1/status | grep NoNew
+NoNewPrivs:     1
+
+```
+
+##### 94.PodSecurityPolicies
+
+- Cluster-level resource
+- Controls under which security conditions a Pod has to run
+
+![](.\images\Section17\Screenshot_5.png)
+
+![](.\images\Section17\Screenshot_5.png)
+
+
+
+![](.\images\Section17\Screenshot_6.png)
+
+##### 95.Pod Security Policies
+
+> Create a PodSecurityPolicy to always enforce no allowPrivilegeEscalation
+
+
+
+```sh
+vim /etc/kubernetes/manifests/kube-apiserver.yaml
+---    
+    - --enable-admission-plugins=NodeRestriction,PodSecurityPolicy
+---
+```
+
+```sh
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: default
+spec:
+  allowPrivilegeEscalation: false
+  privileged: false  # Don't allow privileged pods!
+  # The rest fills in some required fields.
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  volumes:
+  - '*'
+---
+root@cks-master:~# k -f psp.yaml create
+Warning: policy/v1beta1 PodSecurityPolicy is deprecated in v1.21+, unavailable in v1.25+
+podsecuritypolicy.policy/default created
+
+```
+
+https://kubernetes.io/docs/concepts/policy/pod-security-policy/#create-a-policy-and-a-pod
+
+can't not create pod with deploy
+
+```sh
+root@cks-master:~# k create deploy nginx --image=nginx
+deployment.apps/nginx created
+root@cks-master:~# k get deploy nginx
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   0/1     0            0           5s
+root@cks-master:~# k get deploy nginx -w
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   0/1     0            0           9s
+
+```
+
+can create pod 
+
+```sh
+Croot@cks-master:~# k run nginx --image=nginx
+pod/nginx created
+root@cks-master:~# k get pod
+NAME     READY   STATUS              RESTARTS   AGE
+gvisor   1/1     Running             1          40h
+nginx    0/1     ContainerCreating   0          2s
+pod      1/1     Running             0          25m
+```
+
+create role and rolebinding
+
+```sh
+root@cks-master:~# k create role psp-access --verb=use --resource=podsecuritypolicies
+role.rbac.authorization.k8s.io/psp-access created
+root@cks-master:~# k create rolebinding psp-access --role=psp-access --serviceaccount=default:default
+rolebinding.rbac.authorization.k8s.io/psp-access created
+```
+
+recreate nginx deploy
+
+```sh
+root@cks-master:~# k delete deploy nginx
+deployment.apps "nginx" deleted
+root@cks-master:~# k create deploy nginx --image=nginx
+deployment.apps/nginx created
+root@cks-master:~# k get deploy nginx
+NAME    READY   UP-TO-DATE   AVAILABLE   AGE
+nginx   1/1     1            1           21s
+```
+
+
+
+`allowPrivilegeEscalation: true` and can't create pod
+
+```sh
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:~# k -f pod.yaml create
+Error from server (Forbidden): error when creating "pod.yaml": pods "pod" is forbidden: PodSecurityPolicy: unable to admit pod: [spec.containers[0].securityContext.allowPrivilegeEscalation: Invalid value: true: Allowing privilege escalation for containers is not allowed]
+
+```
+
+`allowPrivilegeEscalation: false` and can create pod
+
+```sh
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: pod
+  name: pod
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - sleep 1d
+    image: busybox
+    name: pod
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+
+root@cks-master:~# k get pod
+NAME                     READY   STATUS    RESTARTS   AGE
+gvisor                   1/1     Running   1          41h
+nginx                    1/1     Running   0          9m7s
+nginx-6799fc88d8-4kfdc   1/1     Running   0          4m44s
+pod                      1/1     Running   0          53s
+
+```
+
+> Create a PodSecurityPolicy to always enforce no allowPrivilegeEscalation
+
 ##### 96. Recap
+
+![](.\images\Section17\Screenshot_8.png)
+
+![](.\images\Section17\Screenshot_9.png)
+
 #### Section 18 Microservice Vunerabilites - mTLS
-##### Intro
-##### Recap
+
+##### 97.Intro
+
+- mTLS/Pod to Pod Communication
+  - mTLS -Mutual TLS
+    - Mutual authntication
+    - Two-way(bilateral) authentication
+    - Two parties authenticating each other at the same time
+- Service Meshes
+- Scenarios
+
+![](.\images\Section18\Screenshot_10.png)
+
+
+
+![](.\images\Section18\Screenshot_11.png)
+
+
+
+![](.\images\Section18\Screenshot_12.png)
+
+
+
+![](.\images\Section18\Screenshot_14.png)
+
+
+
+![](.\images\Section18\Screenshot_15.png)
+
+
+
+##### 98.Practice - Create sidecar proxy
+
+Create a proxy sidecar which with NET_ADMIN capacity
+
+```sh
+
+root@cks-master:~# k run app --image=bash --command -oyaml --dry-run=client > app.yaml -- sh -c 'ping google.com'
+root@cks-master:~# vim app.yaml
+root@cks-master:~# k -f app.yaml create
+pod/app created
+root@cks-master:~# k get pod
+NAME                     READY   STATUS    RESTARTS   AGE
+app                      1/1     Running   0          11s
+nginx-6799fc88d8-7fdq7   1/1     Running   0          4d7h
+root@cks-master:~# k logs -f app
+PING google.com (172.217.27.78): 56 data bytes
+64 bytes from 172.217.27.78: seq=0 ttl=121 time=2.116 ms
+64 bytes from 172.217.27.78: seq=1 ttl=121 time=1.866 ms
+64 bytes from 172.217.27.78: seq=2 ttl=121 time=1.780 ms
+64 bytes from 172.217.27.78: seq=3 ttl=121 time=1.918 ms
+64 bytes from 172.217.27.78: seq=4 ttl=121 time=1.725 ms
+64 bytes from 172.217.27.78: seq=5 ttl=121 time=1.788 ms
+64 bytes from 172.217.27.78: seq=6 ttl=121 time=1.905 ms
+64 bytes from 172.217.27.78: seq=7 ttl=121 time=1.957 ms
+64 bytes from 172.217.27.78: seq=8 ttl=121 time=1.944 ms
+64 bytes from 172.217.27.78: seq=9 ttl=121 time=1.951 ms
+64 bytes from 172.217.27.78: seq=10 ttl=121 time=1.813 ms
+64 bytes from 172.217.27.78: seq=11 ttl=121 time=1.821 ms
+64 bytes from 172.217.27.78: seq=12 ttl=121 time=2.008 ms
+64 bytes from 172.217.27.78: seq=13 ttl=121 time=1.967 ms
+64 bytes from 172.217.27.78: seq=14 ttl=121 time=1.659 ms
+```
+
+```sh
+root@cks-master:~# vim app.yaml
+root@cks-master:~# cat app.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: app
+  name: app
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - ping google.com
+    image: bash
+    name: app
+    resources: {}
+  - name: proxy
+    image: ubuntu
+    command:
+    - sh
+    - -c
+    - 'apt-get update && apt-get install iptables -y && iptables -L && sleep 1d'
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+root@cks-master:~# k -f app.yaml delete --force --grace-period 0
+warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "app" force deleted
+root@cks-master:~# k -f app.yaml create
+pod/app created
+#show two apps
+root@cks-master:~# k get pod
+NAME                     READY   STATUS    RESTARTS   AGE
+app                      2/2     Running   1          25s
+nginx-6799fc88d8-7fdq7   1/1     Running   0          4d7h
+
+```
+
+add "NET_ADMIN"
+
+```sh
+root@cks-master:~# vim app.yaml
+root@cks-master:~# cat app.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: app
+  name: app
+spec:
+  containers:
+  - command:
+    - sh
+    - -c
+    - ping google.com
+    image: bash
+    name: app
+    resources: {}
+  - name: proxy
+    image: ubuntu
+    command:
+    - sh
+    - -c
+    - 'apt-get update && apt-get install iptables -y && iptables -L && sleep 1d'
+    securityContext:
+      capabilities:
+        add: ["NET_ADMIN"]
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:~# k -f app.yaml create
+pod/app created
+
+#show logs
+root@cks-master:~# k logs app -c proxy
+Get:1 http://security.ubuntu.com/ubuntu focal-security InRelease [114 kB]
+Get:2 http://archive.ubuntu.com/ubuntu focal InRelease [265 kB]
+Get:3 http://security.ubuntu.com/ubuntu focal-security/multiverse amd64 Packages [30.1 kB]
+Get:4 http://security.ubuntu.com/ubuntu focal-security/universe amd64 Packages [791 kB]
+Get:5 http://security.ubuntu.com/ubuntu focal-security/restricted amd64 Packages [543 kB]
+Get:6 http://security.ubuntu.com/ubuntu focal-security/main amd64 Packages [1092 kB]
+Get:7 http://archive.ubuntu.com/ubuntu focal-updates InRelease [114 kB]
+Get:8 http://archive.ubuntu.com/ubuntu focal-backports InRelease [101 kB]
+Get:9 http://archive.ubuntu.com/ubuntu focal/multiverse amd64 Packages [177 kB]
+Get:10 http://archive.ubuntu.com/ubuntu focal/restricted amd64 Packages [33.4 kB]
+Get:11 http://archive.ubuntu.com/ubuntu focal/main amd64 Packages [1275 kB]
+Get:12 http://archive.ubuntu.com/ubuntu focal/universe amd64 Packages [11.3 MB]
+Get:13 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 Packages [1071 kB]
+Get:14 http://archive.ubuntu.com/ubuntu focal-updates/restricted amd64 Packages [590 kB]
+Get:15 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 Packages [1537 kB]
+Get:16 http://archive.ubuntu.com/ubuntu focal-updates/multiverse amd64 Packages [33.3 kB]
+Get:17 http://archive.ubuntu.com/ubuntu focal-backports/main amd64 Packages [2668 B]
+Get:18 http://archive.ubuntu.com/ubuntu focal-backports/universe amd64 Packages [6310 B]
+Fetched 19.1 MB in 13s (1525 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  libip4tc2 libip6tc2 libmnl0 libnetfilter-conntrack3 libnfnetlink0 libnftnl11
+  libxtables12 netbase
+Suggested packages:
+  firewalld kmod nftables
+The following NEW packages will be installed:
+  iptables libip4tc2 libip6tc2 libmnl0 libnetfilter-conntrack3 libnfnetlink0
+  libnftnl11 libxtables12 netbase
+0 upgraded, 9 newly installed, 0 to remove and 5 not upgraded.
+Need to get 595 kB of archives.
+After this operation, 3490 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu focal/main amd64 libip4tc2 amd64 1.8.4-3ubuntu2 [18.8 kB]
+Get:2 http://archive.ubuntu.com/ubuntu focal/main amd64 libmnl0 amd64 1.0.4-2 [12.3 kB]
+Get:3 http://archive.ubuntu.com/ubuntu focal/main amd64 libxtables12 amd64 1.8.4-3ubuntu2 [28.4 kB]
+Get:4 http://archive.ubuntu.com/ubuntu focal/main amd64 netbase all 6.1 [13.1 kB]
+Get:5 http://archive.ubuntu.com/ubuntu focal/main amd64 libip6tc2 amd64 1.8.4-3ubuntu2 [19.2 kB]
+Get:6 http://archive.ubuntu.com/ubuntu focal/main amd64 libnfnetlink0 amd64 1.0.1-3build1 [13.8 kB]
+Get:7 http://archive.ubuntu.com/ubuntu focal/main amd64 libnetfilter-conntrack3 amd64 1.0.7-2 [41.4 kB]
+Get:8 http://archive.ubuntu.com/ubuntu focal/main amd64 libnftnl11 amd64 1.1.5-1 [57.8 kB]
+Get:9 http://archive.ubuntu.com/ubuntu focal/main amd64 iptables amd64 1.8.4-3ubuntu2 [390 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 595 kB in 3s (171 kB/s)
+Selecting previously unselected package libip4tc2:amd64.
+(Reading database ... 4127 files and directories currently installed.)
+Preparing to unpack .../0-libip4tc2_1.8.4-3ubuntu2_amd64.deb ...
+Unpacking libip4tc2:amd64 (1.8.4-3ubuntu2) ...
+Selecting previously unselected package libmnl0:amd64.
+Preparing to unpack .../1-libmnl0_1.0.4-2_amd64.deb ...
+Unpacking libmnl0:amd64 (1.0.4-2) ...
+Selecting previously unselected package libxtables12:amd64.
+Preparing to unpack .../2-libxtables12_1.8.4-3ubuntu2_amd64.deb ...
+Unpacking libxtables12:amd64 (1.8.4-3ubuntu2) ...
+Selecting previously unselected package netbase.
+Preparing to unpack .../3-netbase_6.1_all.deb ...
+Unpacking netbase (6.1) ...
+Selecting previously unselected package libip6tc2:amd64.
+Preparing to unpack .../4-libip6tc2_1.8.4-3ubuntu2_amd64.deb ...
+Unpacking libip6tc2:amd64 (1.8.4-3ubuntu2) ...
+Selecting previously unselected package libnfnetlink0:amd64.
+Preparing to unpack .../5-libnfnetlink0_1.0.1-3build1_amd64.deb ...
+Unpacking libnfnetlink0:amd64 (1.0.1-3build1) ...
+Selecting previously unselected package libnetfilter-conntrack3:amd64.
+Preparing to unpack .../6-libnetfilter-conntrack3_1.0.7-2_amd64.deb ...
+Unpacking libnetfilter-conntrack3:amd64 (1.0.7-2) ...
+Selecting previously unselected package libnftnl11:amd64.
+Preparing to unpack .../7-libnftnl11_1.1.5-1_amd64.deb ...
+Unpacking libnftnl11:amd64 (1.1.5-1) ...
+Selecting previously unselected package iptables.
+Preparing to unpack .../8-iptables_1.8.4-3ubuntu2_amd64.deb ...
+Unpacking iptables (1.8.4-3ubuntu2) ...
+Setting up libip4tc2:amd64 (1.8.4-3ubuntu2) ...
+Setting up libip6tc2:amd64 (1.8.4-3ubuntu2) ...
+Setting up libmnl0:amd64 (1.0.4-2) ...
+Setting up libxtables12:amd64 (1.8.4-3ubuntu2) ...
+Setting up libnfnetlink0:amd64 (1.0.1-3build1) ...
+Setting up netbase (6.1) ...
+Setting up libnftnl11:amd64 (1.1.5-1) ...
+Setting up libnetfilter-conntrack3:amd64 (1.0.7-2) ...
+Setting up iptables (1.8.4-3ubuntu2) ...
+update-alternatives: using /usr/sbin/iptables-legacy to provide /usr/sbin/iptables (iptables) in auto mode
+update-alternatives: using /usr/sbin/ip6tables-legacy to provide /usr/sbin/ip6tables (ip6tables) in auto mode
+update-alternatives: using /usr/sbin/arptables-nft to provide /usr/sbin/arptables (arptables) in auto mode
+update-alternatives: using /usr/sbin/ebtables-nft to provide /usr/sbin/ebtables (ebtables) in auto mode
+Processing triggers for libc-bin (2.31-0ubuntu9.2) ...
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination
+ACCEPT     all  --  10.32.0.0/12         base-address.mcast.net/4
+DROP       all  --  anywhere             base-address.mcast.net/4
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+
+```
+
+https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+
+##### 99.Recap
+
+- mTLS
+- Pod to Pod Communication
+- Create sidecar proxy
+- NET_ADMIN capacity
+
 #### Section 19 Open Policy Agent(OPA)
-##### Intro
-##### Recap
+##### 100. Cluster Reset
+
+> Every new section works with a fresh cluster
+
+##### 101. Introduction
+
+### Open Policy Agent
+
+- Introduction to OPA and Gatekeeper
+- Enforce Labels
+- Enforce Pod Replica Count
+
+![](.\images\Section19\Screenshot_1.png)
+
+
+
+![](.\images\Section19\Screenshot_2.png)
+
+![](.\images\Section19\Screenshot_3.png)
+
+![](.\images\Section19\Screenshot_4.png)
+
+
+
+![](.\images\Section19\Screenshot_6.png)
+
+##### 102. Practice - Install OPA
+
+ - Install OPA Gatekeeper
+
+```sh
+#check the admission-plugins
+vim /etc/kubernetes/manifests/kube-apiserver.yaml
+---
+    - --enable-admission-plugins=NodeRestriction
+---
+#create gatekeeper-system namespace
+kubectl create -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/opa/gatekeeper.yaml
+---
+namespace/gatekeeper-system created
+Warning: apiextensions.k8s.io/v1beta1 CustomResourceDefinition is deprecated in v1.16+, unavailable in v1.22+; use apiextensions.k8s.io/v1 CustomResourceDefinition
+customresourcedefinition.apiextensions.k8s.io/configs.config.gatekeeper.sh created
+customresourcedefinition.apiextensions.k8s.io/constraintpodstatuses.status.gatekeeper.sh created
+customresourcedefinition.apiextensions.k8s.io/constrainttemplatepodstatuses.status.gatekeeper.sh created
+customresourcedefinition.apiextensions.k8s.io/constrainttemplates.templates.gatekeeper.sh created
+serviceaccount/gatekeeper-admin created
+role.rbac.authorization.k8s.io/gatekeeper-manager-role created
+clusterrole.rbac.authorization.k8s.io/gatekeeper-manager-role created
+rolebinding.rbac.authorization.k8s.io/gatekeeper-manager-rolebinding created
+clusterrolebinding.rbac.authorization.k8s.io/gatekeeper-manager-rolebinding created
+secret/gatekeeper-webhook-server-cert created
+service/gatekeeper-webhook-service created
+deployment.apps/gatekeeper-audit created
+deployment.apps/gatekeeper-controller-manager created
+Warning: admissionregistration.k8s.io/v1beta1 ValidatingWebhookConfiguration is deprecated in v1.16+, unavailable in v1.22+; use admissionregistration.k8s.io/v1 ValidatingWebhookConfiguration
+validatingwebhookconfiguration.admissionregistration.k8s.io/gatekeeper-validating-webhook-configuration created
+---
+---
+oot@cks-master:~# k get ns
+NAME                STATUS   AGE
+default             Active   15d
+gatekeeper-system   Active   17s
+kube-node-lease     Active   15d
+kube-public         Active   15d
+kube-system         Active   15d
+---
+
+root@cks-master:~# k -n gatekeeper-system get pod,svc
+NAME                                                 READY   STATUS    RESTARTS   AGE
+pod/gatekeeper-audit-6ffc8f5544-nt5mg                1/1     Running   0          99s
+pod/gatekeeper-controller-manager-6f9c99b4d7-mwghg   1/1     Running   0          99s
+
+NAME                                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/gatekeeper-webhook-service   ClusterIP   10.96.117.31   <none>        443/TCP   99s
+
+```
+
+##### 103. Practice - Deny All Policy
+
+```sh
+
+root@cks-master:~# k get crd
+NAME                                                 CREATED AT
+configs.config.gatekeeper.sh                         2021-10-02T16:33:24Z
+constraintpodstatuses.status.gatekeeper.sh           2021-10-02T16:33:24Z
+constrainttemplatepodstatuses.status.gatekeeper.sh   2021-10-02T16:33:24Z
+constrainttemplates.templates.gatekeeper.sh          2021-10-02T16:33:24Z
+# there is not constrainttemplates ,so can't get the resource
+root@cks-master:~# k get constrainttemplates
+No resources found
+
+
+root@cks-master:~# vim templates.yaml
+https://github.com/killer-sh/cks-course-environment/blob/master/course-content/opa/deny-all/alwaysdeny_template.yaml
+root@cks-master:~# k -f templates.yaml create
+constrainttemplate.templates.gatekeeper.sh/k8salwaysdeny created
+
+
+root@cks-master:~# k get K8sAlwaysDeny
+No resources found
+
+
+root@cks-master:~# vim constraint.yaml
+https://github.com/killer-sh/cks-course-environment/blob/master/course-content/opa/deny-all/all_pod_always_deny.yaml
+root@cks-master:~# k -f constraint.yaml create
+k8salwaysdeny.constraints.gatekeeper.sh/pod-always-deny created
+
+
+root@cks-master:~# k get K8sAlwaysDeny
+NAME              AGE
+pod-always-deny   41s
+
+#can't create a pod
+root@cks-master:~# k run pod --image=nginx
+Error from server ([denied by pod-always-deny] ACCESS DENIED!): admission webhook "validation.gatekeeper.sh" denied the request: [denied by pod-always-deny] ACCESS DENIED!
+
+```
+
+
+
+##### 104. Practice - Enforce Namespace Labels
+
+- All namespaces created need to have the label 'cks'
+
+  ```sh
+  # create template
+  vim template.yaml 
+  
+  https://github.com/killer-sh/cks-course-environment/blob/master/course-content/opa/namespace-labels/k8srequiredlabels_template.yaml
+  
+  root@cks-master:~# k -f template.yaml create
+  constrainttemplate.templates.gatekeeper.sh/k8srequiredlabels created
+  ```
+
+  ```sh
+  # create constraints
+  vim constraints.yaml
+  https://github.com/killer-sh/cks-course-environment/blob/master/course-content/opa/namespace-labels/all_ns_must_have_cks.yaml
+  
+  root@cks-master:~# k -f constraints.yaml create
+  k8srequiredlabels.constraints.gatekeeper.sh/ns-must-have-cks created
+  
+  ```
+
+  ```sh
+  # show Custom Resources 
+  root@cks-master:~# k get crd
+  NAME                                                 CREATED AT
+  configs.config.gatekeeper.sh                         2021-10-02T16:33:24Z
+  constraintpodstatuses.status.gatekeeper.sh           2021-10-02T16:33:24Z
+  constrainttemplatepodstatuses.status.gatekeeper.sh   2021-10-02T16:33:24Z
+  constrainttemplates.templates.gatekeeper.sh          2021-10-02T16:33:24Z
+  k8salwaysdeny.constraints.gatekeeper.sh              2021-10-02T16:46:17Z
+  k8srequiredlabels.constraints.gatekeeper.sh          2021-10-03T05:27:47Z
+  root@cks-master:~# k get k8srequiredlabels
+  NAME               AGE
+  ns-must-have-cks   49s
+  root@cks-master:~# k describe k8srequiredlabels ns-must-have-cks
+  Name:         ns-must-have-cks
+  Namespace:
+  Labels:       <none>
+  Annotations:  <none>
+  API Version:  constraints.gatekeeper.sh/v1beta1
+  Kind:         K8sRequiredLabels
+  Metadata:
+    Creation Timestamp:  2021-10-03T05:40:43Z
+    Generation:          1
+    Managed Fields:
+      API Version:  constraints.gatekeeper.sh/v1beta1
+      Fields Type:  FieldsV1
+      fieldsV1:
+        f:spec:
+          .:
+          f:match:
+            .:
+            f:kinds:
+          f:parameters:
+            .:
+            f:labels:
+      Manager:      kubectl-create
+      Operation:    Update
+      Time:         2021-10-03T05:40:43Z
+      API Version:  constraints.gatekeeper.sh/v1beta1
+      Fields Type:  FieldsV1
+      fieldsV1:
+        f:status:
+          .:
+          f:auditTimestamp:
+          f:byPod:
+          f:totalViolations:
+          f:violations:
+      Manager:         gatekeeper
+      Operation:       Update
+      Time:            2021-10-03T05:41:29Z
+    Resource Version:  38159
+    UID:               779ad3d3-0f58-480a-8d0d-0cc584e57a90
+  Spec:
+    Match:
+      Kinds:
+        API Groups:
+  
+        Kinds:
+          Namespace
+    Parameters:
+      Labels:
+        cks
+  Status:
+    Audit Timestamp:  2021-10-03T05:43:33Z
+    By Pod:
+      Constraint UID:       779ad3d3-0f58-480a-8d0d-0cc584e57a90
+      Enforced:             true
+      Id:                   gatekeeper-audit-6ffc8f5544-nt5mg
+      Observed Generation:  1
+      Operations:
+        audit
+        status
+      Constraint UID:       779ad3d3-0f58-480a-8d0d-0cc584e57a90
+      Enforced:             true
+      Id:                   gatekeeper-controller-manager-6f9c99b4d7-mwghg
+      Observed Generation:  1
+      Operations:
+        webhook
+    Total Violations:  5
+    Violations:
+      Enforcement Action:  deny
+      Kind:                Namespace
+      Message:             you must provide labels: {"cks"}
+      Name:                default
+      Enforcement Action:  deny
+      Kind:                Namespace
+      Message:             you must provide labels: {"cks"}
+      Name:                gatekeeper-system
+      Enforcement Action:  deny
+      Kind:                Namespace
+      Message:             you must provide labels: {"cks"}
+      Name:                kube-node-lease
+      Enforcement Action:  deny
+      Kind:                Namespace
+      Message:             you must provide labels: {"cks"}
+      Name:                kube-public
+      Enforcement Action:  deny
+      Kind:                Namespace
+      Message:             you must provide labels: {"cks"}
+      Name:                kube-system
+  Events:                  <none>
+  ```
+
+  
+
+  ```sh
+  # add labels to namespace default
+  # Total Violations:  5 to 4
+  k edit ns default
+  
+  ---
+    labels:
+      cks: amazing
+  ---
+  root@cks-master:~# k describe k8srequiredlabels ns-must-have-cks
+  Name:         ns-must-have-cks
+  Namespace:
+  Labels:       <none>
+  Annotations:  <none>
+  API Version:  constraints.gatekeeper.sh/v1beta1
+  Kind:         K8sRequiredLabels
+  Metadata:
+    Creation Timestamp:  2021-10-03T05:40:43Z
+    Generation:          1
+    Managed Fields:
+      API Version:  constraints.gatekeeper.sh/v1beta1
+      Fields Type:  FieldsV1
+      fieldsV1:
+        f:spec:
+          .:
+          f:match:
+            .:
+            f:kinds:
+          f:parameters:
+            .:
+            f:labels:
+      Manager:      kubectl-create
+      Operation:    Update
+      Time:         2021-10-03T05:40:43Z
+      API Version:  constraints.gatekeeper.sh/v1beta1
+      Fields Type:  FieldsV1
+      fieldsV1:
+        f:status:
+          .:
+          f:auditTimestamp:
+          f:byPod:
+          f:totalViolations:
+          f:violations:
+      Manager:         gatekeeper
+      Operation:       Update
+      Time:            2021-10-03T05:41:29Z
+    Resource Version:  38579
+    UID:               779ad3d3-0f58-480a-8d0d-0cc584e57a90
+  Spec:
+    Match:
+      Kinds:
+        API Groups:
+  
+        Kinds:
+          Namespace
+    Parameters:
+      Labels:
+        cks
+  Status:
+    Audit Timestamp:  2021-10-03T05:48:51Z
+    By Pod:
+      Constraint UID:       779ad3d3-0f58-480a-8d0d-0cc584e57a90
+      Enforced:             true
+      Id:                   gatekeeper-audit-6ffc8f5544-nt5mg
+      Observed Generation:  1
+      Operations:
+        audit
+        status
+      Constraint UID:       779ad3d3-0f58-480a-8d0d-0cc584e57a90
+      Enforced:             true
+      Id:                   gatekeeper-controller-manager-6f9c99b4d7-mwghg
+      Observed Generation:  1
+      Operations:
+        webhook
+    Total Violations:  4
+    Violations:
+      Enforcement Action:  deny
+      Kind:                Namespace
+      Message:             you must provide labels: {"cks"}
+      Name:                gatekeeper-system
+      Enforcement Action:  deny
+      Kind:                Namespace
+      Message:             you must provide labels: {"cks"}
+      Name:                kube-node-lease
+      Enforcement Action:  deny
+      Kind:                Namespace
+      Message:             you must provide labels: {"cks"}
+      Name:                kube-public
+      Enforcement Action:  deny
+      Kind:                Namespace
+      Message:             you must provide labels: {"cks"}
+      Name:                kube-system
+  Events:                  <none>
+  
+  ```
+
+  ```sh
+  #can't create ns without label cks
+  
+  root@cks-master:~# k create ns test
+  Error from server ([denied by ns-must-have-cks] you must provide labels: {"cks"}): admission webhook "validation.gatekeeper.sh" denied the request: [denied by ns-must-have-cks] you must provide labels: {"cks"}
+  
+  ```
+
+##### 105. Practice - Enforce Deployment replica count
+
+```sh
+# delete constraint and template
+root@cks-master:~# k -f constraints.yaml delete
+k8srequiredlabels.constraints.gatekeeper.sh "ns-must-have-cks" deleted
+root@cks-master:~# k -f template.yaml delete
+constrainttemplate.templates.gatekeeper.sh "k8srequiredlabels" deleted
+root@cks-master:~# rm *.yaml
+```
+
+```sh
+# create template
+vim template.yaml
+https://github.com/killer-sh/cks-course-environment/blob/master/course-content/opa/deployment-replica-count/k8sminreplicacount_template.yaml
+
+root@cks-master:~# k -f template.yaml create
+constrainttemplate.templates.gatekeeper.sh/k8sminreplicacount created
+
+root@cks-master:~# k get crd
+NAME                                                 CREATED AT
+configs.config.gatekeeper.sh                         2021-10-02T16:33:24Z
+constraintpodstatuses.status.gatekeeper.sh           2021-10-02T16:33:24Z
+constrainttemplatepodstatuses.status.gatekeeper.sh   2021-10-02T16:33:24Z
+constrainttemplates.templates.gatekeeper.sh          2021-10-02T16:33:24Z
+k8salwaysdeny.constraints.gatekeeper.sh              2021-10-02T16:46:17Z
+k8sminreplicacount.constraints.gatekeeper.sh         2021-10-03T06:40:44Z
+```
+
+```sh
+# create constraints
+root@cks-master:~# k -f constraint.yaml create
+k8sminreplicacount.constraints.gatekeeper.sh/deployment-must-have-min-replicas created
+root@cks-master:~# k get k8sminreplicacount
+NAME                                AGE
+deployment-must-have-min-replicas   52s
+```
+
+```sh
+# can't create deploy
+root@cks-master:~# k create deploy test --image=nginx
+error: failed to create deployment: admission webhook "validation.gatekeeper.sh" denied the request: [denied by deployment-must-have-min-replicas] you must provide 1 more replicas
+
+
+root@cks-master:~# k create deploy test --image=nginx -oyaml --dry-run=client > deploy.yaml
+
+#change replica 1 to 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: test
+  name: test
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: test
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+---
+
+root@cks-master:~# k -f deploy.yaml create
+deployment.apps/test created
+
+```
+
+
+
+##### 106 Practice - The Rego Playground and more examples
+
+- Reference url
+  - https://play.openpolicyagent.org
+  - https://github.com/BouweCeunen/gatekeeper-policies
+
+##### 107.Recap
+
+https://www.youtube.com/watch?v=RDWndems-sk
+
 #### Section 20 Supply Chain Security - Image Footprint
 ##### Intro
 ##### Recap
