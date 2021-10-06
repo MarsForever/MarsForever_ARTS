@@ -5730,6 +5730,7 @@ https://man7.org/linux/man-pages/man2/syscalls.2.html
 
 - Audit Logs - Introduction
   - ![](.\images\Section26\Screenshot_1.png)
+  - ![](.\images\Section26\Screenshot_2.png)
 
 ##### Recap
 #### Section 27 System Hardening - Kernel Hardening Tools
