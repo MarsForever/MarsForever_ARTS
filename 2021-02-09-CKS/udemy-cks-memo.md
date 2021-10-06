@@ -5222,28 +5222,515 @@ deployment.apps/test created
 
 ##### 107.Recap
 
-https://www.youtube.com/watch?v=RDWndems-sk
+- OPA overview
+- Used Gatekepper's CRDs
+- created templates and constraints
+- Rego
+- Reference url
+  - https://www.youtube.com/watch?v=RDWndems-sk
 
 #### Section 20 Supply Chain Security - Image Footprint
-##### Intro
-##### Recap
+##### 108.Intro
+
+- Image footprint
+  - Containers and Docker
+  - Reduce Image Footprint [Multi Stage]
+  - Secure Images
+
+![](.\images\Section20\Screenshot_1.png)
+
+![](.\images\Section20\Screenshot_2.png)
+
+##### 109. Practice - Reduce Image Footprint with Multi-Stage
+
+```sh
+# reference url
+#https://github.com/killer-sh/cks-course-environment/tree/master/course-content/supply-chain-security/image-footprint
+
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/supply-chain-security/image-footprint/Dockerfile
+
+wget https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/supply-chain-security/image-footprint/app.go
+
+chmod +x Dockerfile app.go
+
+
+# build docker container
+docker build -t app .
+root@cks-master:~# docker run app
+user: root id: 0
+user: root id: 0
+
+root@cks-master:~# docker image list | grep app
+app                                  latest     2157eb70e068   25 minutes ago   694MB
+
+```
+
+
+
+```sh
+vim Dockerfile
+---
+#stage 0
+FROM ubuntu
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y golang-go
+COPY app.go .
+RUN CGO_ENABLED=0 go build app.go
+
+# stage 1
+FROM alpine
+# copy from stage 0
+COPY --from=0 /app .
+CMD ["./app"]
+---
+docker build -t app .
+root@cks-master:~# docker run app
+user: root id: 0
+user: root id: 0
+# the image size is very small
+root@cks-master:~docker image list | grep app
+app                                  latest     8f2e91e2df15   About a minute ago   7.73MB
+```
+
+##### 110. Practice - Secure and harden Image
+
+1. Use specific package versions
+
+```sh
+cat Dockerfile
+---
+#stage 0
+FROM ubuntu
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y golang-go
+COPY app.go .
+RUN CGO_ENABLED=0 go build app.go
+
+# stage 1
+FROM alpine:3.12.1
+# copy from stage 0
+COPY --from=0 /app .
+CMD ["./app"]
+---
+root@cks-master:~# docker build -t app .
+root@cks-master:~# docker run app
+user: root id: 0
+user: root id: 0
+user: root id: 0
+```
+
+2. Don't run as root
+
+```sh
+---modified---
+# stage 1
+FROM alpine:3.12.1
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup -h /home/appuser
+# copy from stage 0
+COPY --from=0 /app /home/appuser/
+USER appuser
+CMD ["/home/appuser/app"]   
+---modified---
+docker build -t app .
+docker run app
+user: appuser id: 100
+user: appuser id: 100
+
+```
+
+3.  Make filesystem read only
+
+```sh
+---modified---
+# stage 1
+FROM alpine:3.12.1
+RUN chmod a-w /etc
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup -h /home/appuser
+# copy from stage 0
+COPY --from=0 /app /home/appuser/
+USER appuser
+CMD ["/home/appuser/app"]
+---modified---
+docker build -t app .
+# run app in the back ground
+docker run -d app
+bf89ce4d7907d5fa421726041ddd709b3f58460917253147fd47465be5b5dd5a
+docker exec -it bf89ce4d7907d5fa421726041ddd709b3f58460917253147fd47465be5b5dd5a sh
+
+# etc don't have writing privileges 
+# but is not to /etc/*
+/ $ ls -lh
+total 60K
+drwxr-xr-x    2 root     root        4.0K Oct 21  2020 bin
+drwxr-xr-x    5 root     root         340 Oct  3 08:26 dev
+dr-xr-xr-x    1 root     root        4.0K Oct  3 08:26 etc
+drwxr-xr-x    1 root     root        4.0K Oct  3 08:25 home
+drwxr-xr-x    7 root     root        4.0K Oct 21  2020 lib
+drwxr-xr-x    5 root     root        4.0K Oct 21  2020 media
+drwxr-xr-x    2 root     root        4.0K Oct 21  2020 mnt
+drwxr-xr-x    2 root     root        4.0K Oct 21  2020 opt
+dr-xr-xr-x  218 root     root           0 Oct  3 08:26 proc
+drwx------    2 root     root        4.0K Oct 21  2020 root
+drwxr-xr-x    2 root     root        4.0K Oct 21  2020 run
+drwxr-xr-x    2 root     root        4.0K Oct 21  2020 sbin
+drwxr-xr-x    2 root     root        4.0K Oct 21  2020 srv
+dr-xr-xr-x   13 root     root           0 Oct  3 08:26 sys
+drwxrwxrwt    2 root     root        4.0K Oct 21  2020 tmp
+drwxr-xr-x    7 root     root        4.0K Oct 21  2020 usr
+drwxr-xr-x   12 root     root        4.0K Oct 21  2020 var
+```
+
+4. remove shell access
+
+```sh
+vim Dockerfile
+---modified---
+# stage 1
+FROM alpine:3.12.1
+RUN chmod a-w /etc
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup -h /home/appuser
+RUN rm -rf /bin/*
+# copy from stage 0
+COPY --from=0 /app /home/appuser/
+USER appuser
+CMD ["/home/appuser/app"]
+---modified---
+docker build -t app .
+root@cks-master:~# docker run app
+user: appuser id: 100
+user: appuser id: 100
+#can't use shell to login the docker container
+root@cks-master:~# docker run -d app
+f5dfc110fe8338f19aeaf9b95f7efb0fb660cc659d2fbe684858e68bff526a90
+root@cks-master:~# docker exec -it f5dfc110fe8338f19aeaf9b95f7efb0fb660cc659d2fbe684858e68bff526a90 sh
+OCI runtime exec failed: exec failed: container_linux.go:380: starting container process caused: exec: "sh": executable file not found in $PATH: unknown
+
+```
+
+
+
+##### 111.Recap
+
+- reference 
+  - https://docs.docker.com/develop/develop-images/dockerfile_best-practices
+- Reduce image footprint
+- Use multi stage build
+- Secure images wiht restrictions
+
 #### Section 21 Supply Chain Security - Static Analysis
-##### Intro
-##### Recap
+##### 112.Intro
+
+- Static Analysis
+
+  - Looks at source code ant text files
+
+  - Check against rules
+
+  - Enforce rules
+
+  - Static Analysis Rules
+
+    - always define resource requests and limits
+    - Pods should never user the default ServiceAccount
+      - Depend on use case and  company or project
+      - Generally: don't store sensitive data plain in K8s/Docker file
+
+  - Static Analysis in CI/CD
+
+    ![](.\images\Section21\Screenshot_1.png)
+
+- Manual approach
+
+  - Manual Check
+    - not hard coding
+
+- Tools for kubernetes and scenarios
+
+##### 113. Kubesec
+
+- Security risk analysis for Kubernetes resources
+- Opernsource
+- Opinionated ! Fixed set of rules(Security Best Practices)
+- Run as:
+  - Binary
+  - Docker container
+  - Kubectl plguin
+  - Admission Controller(kubesec-webhook)
+  - https://kubesec.io/
+
+##### 114. Practice - Kubesec
+
+- Using the kubesec public docker image
+
+```sh
+k run nginx --image nginx -oyaml --dry-run=client > pod.yaml
+docker run -i kubesec/kubesec:512c5e0 scan /dev/stdin < pod.yaml
+
+```
+
+https://github.com/controlplaneio/kubesec
+
+##### OPA Conftest
+
+- OPA=Open Policy Agent
+- Unit test framework for Kubernetes configurations
+- Uses Rego Language
+
+![](.\images\Section21\Screenshot_2.png)
+
+##### 116. Practice -OPA conftest for K8s YAML
+
+- OPA conftest K8s Deployment
+  - Use conftest to check a k8s example
+  - 
+
+```sh
+git clone https://github.com/killer-sh/cks-course-environment.git
+
+cd cks-course-environment/course-content/supply-chain-security/static-analysis/conftest/kubernetes
+
+./run.sh
+
+```
+
+
+
+
+
+```sh
+# modified the blow and run ./run.sh again
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: test
+  name: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: test
+    spec:
+##add
+	securityContext:
+        runAsNonRoot: true
+      containers:
+##add
+        - image: httpd
+          name: httpd
+          resources: {}
+status: {}
+```
+
+##### 117. Practice - OPA Conftest for Dockerfile
+
+- Use conftest to run a Dockerfile example
+
+```sh
+root@cks-master:~/cks-course-environment/course-content/supply-chain-security/static-analysis/conftest/kubernetes# cd ..
+
+ ls
+docker  kubernetes
+ l
+Dockerfile  policy/  run.sh*
+
+```
+
+
+
+```sh
+#modified ubuntu => alpine
+FROM alpine
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y golang-go
+COPY app.go .
+RUN go build app.go
+CMD ["./app"]
+
+cat policy/commands.rego
+# from https://www.conftest.dev
+
+package commands
+#delete apt
+denylist = [
+  "apk",
+  "pip",
+  "curl",
+  "wget",
+]
+
+deny[msg] {
+  input[i].Cmd == "run"
+  val := input[i].Value
+  contains(val[_], denylist[_])
+
+  msg = sprintf("unallowed commands found %s", [val])
+}
+
+```
+
+##### 118.Recap
+
+- Static Analysis
+- Manual Approach
+- Kubesec
+- OPA Conftest
+
+Docs: "Rego - Policy Language"
+
 #### Section 22 Supply Chain Security - Image Vulnerability Scanning
-##### Intro
-##### Recap
+##### 119.Intro
+
+- Image Vulnerabilities
+
+  - Web servers or other apps can contain vulnerabilities(Buffer overflows)
+
+  - Targets
+
+    - Remotely accessible application in container
+    - Local application inside container
+
+  - Results
+
+    - Privilege escalation
+    - Information leaks
+    - DDOS
+  
+- Containers - Layers - Dependencies
+
+  - Layer1(ubuntu=14)
+  - Layer4(nginx=x.x)
+  - Layer6(curl=x.x)
+
+- Known Image Vulnerabilities
+
+  - Databases
+    - https://cve.mitre.org
+    - https://nvd.nist.gov 	
+  - Vulnerabilities can be discovered in our own image and dependencies
+    - Check during build
+    - Check at runtime
+  - Check for Known Image Vulnerabilities
+  
+  ![](.\images\Section22\Screenshot_1.png)
+  
+  
+  
+  - Known Image Vulnerabilities - Admission Controllers
+  
+  
+  
+  
+  
+  ![](.\images\Section22\Screenshot_2.png)
+
+
+
+##### 120. Clair and Trivy
+
+- Clair
+  - Open source project
+  - static analysis of vulnerabilities in application containers
+  - Ingests vulnerability metadata from a configured set of sources
+  - Provides API
+- Trivy
+  - Open source project
+  - "A Simple and comprehensive Vulnerability Scanner for Containers and other Artifcacts, Suitable for CI."
+  - Simple,Easy and fast
+
+##### 121. Practice - Use Trivy to scan images
+
+##### 122.Recap
+
 #### Section 23 Supply Chain Security - Secure Supply Chain
-##### Intro
+##### 123. Intro
+
+- Supply Chain
+
+![](.\images\Section23\Screenshot_1.png)
+
+- K8s and Container Registries
+
+![](.\images\Section23\Screenshot_2.png)
+
+- Validate and whitelist Images and Registries
+
+##### 124. Practice - Image Digest
+
+##### 125. Practice - Whitelist Registries with OPA
+
+##### 126. ImagePolicyWebhook
+![](.\images\Section23\Screenshot_3.png)
+
+![](.\images\Section23\Screenshot_4.png)
+
+
+
+
+
+##### 127. Practice - ImagePolicyWebhook
+
+
+
 ##### Recap
+
 #### Section 24 Runtime Security - Behavioral Analytics at host and container level
-##### Intro
+##### 129. Intro
+
+- Kernel vs User Space
+
+![](.\images\Section24\Screenshot_1.png)
+
+https://man7.org/linux/man-pages/man2/syscalls.2.html
+
+![](.\images\Section24\Screenshot_2.png)
+
+
+
 ##### Recap
 #### Section 25 Runtime Security - Immutability of containers at runtime
-##### Intro
+##### 138. Intro
+
+- Immutability
+  - Container won't be modified during its lifetime
+
+![](.\images\Section25\Screenshot_1.png)
+
+![](.\images\Section25\Screenshot_2.png)
+
+
+
+##### 139. Ways to enforce immutability
+
+![](.\images\Section25\Screenshot_3.png)
+
+![](.\images\Section25\Screenshot_4.png)
+
+![](.\images\Section25\Screenshot_5.png)
+
+
+
+- Enforce Read-Only Root Filesystem
+  - Enforce Read-Only root filesystem using *SecurityContexts* and *PodSecurityPolicies*
+- Move logic to InitContainer?
+
+![](.\images\Section25\Screenshot_6.png)
+
 ##### Recap
+
 #### Section 26 Runtime Security - Auditing
-##### Intro
+##### 143.Intro
+
+- Audit Logs - Introduction
+  - ![](.\images\Section26\Screenshot_1.png)
+
 ##### Recap
 #### Section 27 System Hardening - Kernel Hardening Tools
 ##### Intro
