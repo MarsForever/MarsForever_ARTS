@@ -6,7 +6,7 @@
 - Enforce Labels
 - Enforce Pod Replica Count
 
-![](.\images\Section19\Screenshot_1.png)
+![Request workflow](.\images\Section19\Screenshot_1.png)
 
 
 
