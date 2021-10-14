@@ -5650,7 +5650,61 @@ Docs: "Rego - Policy Language"
 
 ##### 121. Practice - Use Trivy to scan images
 
+- Use trivy to check some public images and our kube-apiserver image
+  - It can scan the local image ?
+
+```sh
+#https://github.com/aquasecurity/trivy#docker
+#show the results
+docker run ghcr.io/aquasecurity/trivy:latest image nginx:latest
+
+#check nginx image
+docker run ghcr.io/aquasecurity/trivy:latest image nginx
+#get the critical info
+root@cks-master:~# docker run ghcr.io/aquasecurity/trivy:latest image nginx | grep CRITICAL
+1.85 MiB / 24.20 MiB [---->__________________________________________________________] 7.66% ? p/s ?4.25 MiB / 24.20 MiB [---------->___________________________________________________] 17.57% ? p/s ?6.46 MiB / 24.20 MiB [---------------->_____________________________________________] 26.69% ? p/s ?9.09 MiB / 24.20 MiB [------------------>______________________________] 37.57% 12.06 MiB p/s ETA 1s11.95 MiB / 24.20 MiB [----------------------->________________________] 49.37% 12.06 MiB p/s ETA 1s14.95 MiB / 24.20 MiB [----------------------------->__________________] 61.77% 12.06 MiB p/s ETA 0s18.22 MiB / 24.20 MiB [------------------------------------>___________] 75.28% 12.26 MiB p/s ETA 0s21.88 MiB / 24.20 MiB [------------------------------------------->____] 90.41% 12.26 MiB p/s ETA 0s24.20 MiB / 24.20 MiB [---------------------------------------------------] 100.00% 15.66 MiB p/s 2sTotal: 179 (UNKNOWN: 0, LOW: 129, MEDIUM: 22, HIGH: 24, CRITICAL: 4)
+| libc-bin         | CVE-2021-33574   | CRITICAL | 2.28-10                   |               | glibc: mq_notify does                                        |
+| libc6            | CVE-2021-33574   | CRITICAL |                           |               | glibc: mq_notify does                                        |
+
+```
+
+```sh
+#check the nginx 1.16-alpine
+root@cks-master:~# docker run ghcr.io/aquasecurity/trivy:latest image nginx:1.16-alpine
+```
+
+###### Check the pod's image is safe or not
+
+```sh
+root@cks-master:~# k -n kube-system get pod kube-apiserver-cks-master -oyaml | grep image
+    image: k8s.gcr.io/kube-apiserver:v1.21.0
+    imagePullPolicy: IfNotPresent
+    image: k8s.gcr.io/kube-apiserver:v1.21.0
+    imageID: docker-pullable://k8s.gcr.io/kube-apiserver@sha256:828fefd9598ed865d45364d1be859c87aabfa445b03b350e3440d143bd21bca9
+
+#There is not error in the k8s.gcr.io/kube-apiserver:v1.21.0 (debian 10.8)
+root@cks-master:~# docker run ghcr.io/aquasecurity/trivy:latest image k8s.gcr.io/kube-apiserver:v1.21.0
+2021-10-07T11:54:50.795Z        INFO    Need to update DB
+2021-10-07T11:54:50.795Z        INFO    Downloading DB...
+2.37 MiB / 24.20 MiB [------>________________________________________________________] 9.78% ? p/s ?5.37 MiB / 24.20 MiB [------------->________________________________________________] 22.20% ? p/s ?8.37 MiB / 24.20 MiB [--------------------->________________________________________] 34.59% ? p/s ?11.21 MiB / 24.20 MiB [---------------------->_________________________] 46.33% 14.73 MiB p/s ETA 0s12.23 MiB / 24.20 MiB [------------------------>_______________________] 50.56% 14.73 MiB p/s ETA 0s15.21 MiB / 24.20 MiB [------------------------------>_________________] 62.88% 14.73 MiB p/s ETA 0s18.08 MiB / 24.20 MiB [----------------------------------->____________] 74.71% 14.52 MiB p/s ETA 0s21.29 MiB / 24.20 MiB [------------------------------------------>_____] 87.99% 14.52 MiB p/s ETA 0s24.20 MiB / 24.20 MiB [---------------------------------------------------] 100.00% 15.39 MiB p/s 2s2021-10-07T11:54:56.335Z   INFO    Detected OS: debian
+2021-10-07T11:54:56.335Z        INFO    Detecting Debian vulnerabilities...
+2021-10-07T11:54:56.335Z        INFO    Number of language-specific files: 0
+
+k8s.gcr.io/kube-apiserver:v1.21.0 (debian 10.8)
+===============================================
+Total: 0 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0)
+
+```
+
+
+
 ##### 122.Recap
+
+- Vulnerabilities
+- Dependencies
+- Databases
+- Clair
+- Trivy
 
 #### Section 23 Supply Chain Security - Secure Supply Chain
 ##### 123. Intro
@@ -5667,7 +5721,144 @@ Docs: "Rego - Policy Language"
 
 ##### 124. Practice - Image Digest
 
+> List all images registries used in the whole cluster
+>
+> Use Image digest for kube-apiserver
+
+```sh
+root@cks-master:~# k get pod -A -oyaml | grep "image:" | grep -v "f:"
+      image: bash
+      image: ubuntu
+      image: docker.io/library/bash:latest
+      image: docker.io/library/ubuntu:latest
+    - image: nginx
+      image: docker.io/library/nginx:latest
+    - image: nginx
+      image: docker.io/library/nginx:latest
+    - image: nginx
+      image: docker.io/library/nginx:latest
+      image: openpolicyagent/gatekeeper:469f747
+      image: docker.io/openpolicyagent/gatekeeper:469f747
+      image: openpolicyagent/gatekeeper:469f747
+      image: docker.io/openpolicyagent/gatekeeper:469f747
+      image: k8s.gcr.io/coredns/coredns:v1.8.0
+      image: k8s.gcr.io/coredns/coredns:v1.8.0
+      image: k8s.gcr.io/coredns/coredns:v1.8.0
+      image: k8s.gcr.io/coredns/coredns:v1.8.0
+      image: k8s.gcr.io/etcd:3.4.13-0
+      image: k8s.gcr.io/etcd:3.4.13-0
+      image: k8s.gcr.io/kube-apiserver:v1.21.0
+      image: k8s.gcr.io/kube-apiserver:v1.21.0
+      image: k8s.gcr.io/kube-controller-manager:v1.21.0
+      image: k8s.gcr.io/kube-controller-manager:v1.21.0
+      image: k8s.gcr.io/kube-proxy:v1.21.0
+      image: k8s.gcr.io/kube-proxy:v1.21.0
+      image: k8s.gcr.io/kube-proxy:v1.21.0
+      image: k8s.gcr.io/kube-proxy:v1.21.0
+      image: k8s.gcr.io/kube-scheduler:v1.21.0
+      image: k8s.gcr.io/kube-scheduler:v1.21.0
+      image: docker.io/weaveworks/weave-kube:2.8.1
+      image: docker.io/weaveworks/weave-npc:2.8.1
+      image: docker.io/weaveworks/weave-kube:2.8.1
+      image: docker.io/weaveworks/weave-kube:2.8.1
+      image: docker.io/weaveworks/weave-npc:2.8.1
+      image: docker.io/weaveworks/weave-kube:2.8.1
+      image: docker.io/weaveworks/weave-kube:2.8.1
+      image: docker.io/weaveworks/weave-npc:2.8.1
+      image: docker.io/weaveworks/weave-kube:2.8.1
+      image: weaveworks/weave-kube:2.8.1
+      image: weaveworks/weave-npc:2.8.1
+      image: weaveworks/weave-kube:2.8.1
+```
+
+```sh
+#why?
+root@cks-master:~# k -n kube-system get pod kube-apiserver-cks-master -oyaml | grep imageID
+    imageID: docker-pullable://k8s.gcr.io/kube-apiserver@sha256:828fefd9598ed865d45364d1be859c87aabfa445b03b350e3440d143bd21bca9
+
+vim /etc/kubernetes/manifests/kube-apiserver.yaml
+---modified---
+ image: k8s.gcr.io/kube-apiserver@sha256:828fefd9598ed865d45364d1be859c87aabfa445b03b350e3440d143bd21bca9
+---modified---
+
+root@cks-master:~# k -n kube-system get pod | grep kube-api
+kube-apiserver-cks-master            1/1     Running   0          26s
+
+root@cks-master:~# k -n kube-system edit pod kube-apiserver-cks-master
+------ image has changed------
+image: k8s.gcr.io/kube-apiserver@sha256:828fefd9598ed865d45364d1be859c87aabfa445b03b350e3440d143bd21bca9
+------ image has changed------
+```
+
+
+
 ##### 125. Practice - Whitelist Registries with OPA
+
+> Whitelist some registries using OPA
+>
+> Only images from docker.io and k8s.gcr.io can be used
+
+https://github.com/killer-sh/cks-course-environment/tree/master/course-content/supply-chain-security/secure-the-supply-chain/whitelist-registries/opa
+
+> constraint.yaml
+
+```sh
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sTrustedImages
+metadata:
+  name: pod-trusted-images
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+```
+
+> template.yaml 
+
+```sh
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8strustedimages
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sTrustedImages
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8strustedimages
+        violation[{"msg": msg}] {
+          image := input.review.object.spec.containers[_].image
+          not startswith(image, "docker.io/")
+          not startswith(image, "k8s.gcr.io/")
+          msg := "not trusted image!"
+        }
+```
+
+```sh
+root@cks-master:~# k -f template.yaml create
+constrainttemplate.templates.gatekeeper.sh/k8strustedimages created
+root@cks-master:~# k -f constraint.yaml create
+k8strustedimages.constraints.gatekeeper.sh/pod-trusted-images created
+
+
+root@cks-master:~# k get constrainttemplate
+NAME               AGE
+k8strustedimages   83s
+
+#can't create images if not in the k8strustedimages
+root@cks-master:~# k run nginx --image=nginx
+Error from server ([denied by pod-trusted-images] not trusted image!): admission webhook "validation.gatekeeper.sh" denied the request: [denied by pod-trusted-images] not trusted image!
+
+root@cks-master:~# k run nginx --image=docker.io/nginx
+pod/nginx created
+
+```
+
+
 
 ##### 126. ImagePolicyWebhook
 ![](./images/Section23/Screenshot_3.png)
@@ -5680,9 +5871,96 @@ Docs: "Rego - Policy Language"
 
 ##### 127. Practice - ImagePolicyWebhook
 
+- ImagePolicyWebhook
+
+  >  Investigate Image PolicyWebhook
+  >
+  > And use it up to the point where it calls an external service
+
+```sh
+#before
+- --enable-admission-plugins=NodeRestriction,
+#after
+- --enable-admission-plugins=NodeRestriction, ImagePolicyWebhook
+
+cd /var/log/pods
+
+tail -f kube-system_kube-apiserver-cks-master_5a71f28edaad27799171de0e1f97b292/kube-apiserver/4.log kube-system_
+==> kube-system_kube-apiserver-cks-master_5a71f28edaad27799171de0e1f97b292/kube-apiserver/4.log <==
+{"log":"Flag --insecure-port has been deprecated, This flag has no effect now and will be removed in v1.24.\n","stream":"stderr","time":"2021-10-07T16:06:39.051990032Z"}
+{"log":"I1007 16:06:39.052143       1 server.go:629] external host was not specified, using 10.146.0.2\n","stream":"stderr","time":"2021-10-07T16:06:39.052270647Z"}
+{"log":"Error: enable-admission-plugins plugin \" ImagePolicyWebhook\" is unknown\n","stream":"stderr","time":"2021-10-07T16:06:39.052647779Z"}
+tail: cannot open 'kube-system_' for reading: No such file or directory
+
+```
+
+```sh
+# get example
+git clone https://github.com/killer-sh/cks-course-environment.git
+
+root@cks-master:~# git clone https://github.com/killer-sh/cks-course-environment.git
+root@cks-master:~# ls
+cks-course-environment
+root@cks-master:~# cp -r cks-course-environment/course-content/supply-chain-security/secure-the-supply-chain/whitelist-registries/ImagePolicyWebhook/ /etc/kubernetes/admission
 
 
-##### Recap
+cd /etc/kubernetes/admission
+root@cks-master:/etc/kubernetes/admission# ll
+total 32
+drwxr-xr-x 2 root root 4096 Oct  7 16:12 ./
+drwxr-xr-x 5 root root 4096 Oct  7 16:12 ../
+-rw-r--r-- 1 root root  298 Oct  7 16:12 admission_config.yaml
+-rw-r--r-- 1 root root 1135 Oct  7 16:12 apiserver-client-cert.pem
+-rw-r--r-- 1 root root 1703 Oct  7 16:12 apiserver-client-key.pem
+-rw-r--r-- 1 root root 1132 Oct  7 16:12 external-cert.pem
+-rw-r--r-- 1 root root 1703 Oct  7 16:12 external-key.pem
+-rw-r--r-- 1 root root  815 Oct  7 16:12 kubeconf
+
+```
+
+```sh
+#modify file
+cd /etc/kubernetes/manifests/
+root@cks-master:/etc/kubernetes/manifests# vim kube-apiserver.yaml
+
+#add
+- --admission-control-config-file=/etc/kubernetes/admission/admission_config.yaml
+
+#modified
+   - --enable-admission-plugins=NodeRestriction,ImagePolicyWebhook
+#add
+  - hostPath:
+      path: /etc/kubernetes/admission
+      type: DirectoryOrCreate
+    name: k8s-admission
+
+#add
+  - mountPath: /etc/kubernetes/admission
+      name: k8s-admission
+      readOnly: true
+
+```
+
+
+
+
+
+
+
+
+> to debug the apiserver we check logs in:
+/var/log/pods/kube-system_kube-apiserver*
+
+
+> example of an external service which can be used
+https://github.com/flavio/kube-image-bouncer
+
+##### 128.Recap
+
+- How k8s works with registries
+- Image Tag and Digests
+- Whitelist registries with OPA
+- ImagePolicyWebhook
 
 #### Section 24 Runtime Security - Behavioral Analytics at host and container level
 ##### 129. Intro
@@ -5695,9 +5973,1082 @@ https://man7.org/linux/man-pages/man2/syscalls.2.html
 
 ![](./images/Section24/Screenshot_2.png)
 
+##### 130. Practice - Strace
+
+> Intercepts and logs system calls made by a process
+>
+> Log and display signals received by a process
+>
+> Diagnostic, Learning, Debugging
+
+![](./images/Section24/Screenshot_3.png)
+
+```sh
+root@cks-master:/etc/kubernetes/manifests# strace ls
+execve("/bin/ls", ["ls"], 0x7fff9cb5cc70 /* 21 vars */) = 0
+brk(NULL)                               = 0x5556521d5000
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+...
+write(1, "kube-apiserver.yaml  kube-contro"..., 50kube-apiserver.yaml  kube-cont                                                        roller-manager.yaml
+) = 50
+close(1)                                = 0
+close(2)                                = 0
+exit_group(0)                           = ?
++++ exited with 0 +++
+
+```
+
+```sh
+# trace command 
+strace $command
+```
+
+```sh
+root@cks-master:/etc/kubernetes/manifests# strace -cw ls /
+bin   dev  home        initrd.img.old  lib64       media  opt   root  sbin  srv  tmp  var      vmlinuz.old
+boot  etc  initrd.img  lib             lost+found  mnt    proc  run   snap  sys  usr  vmlinuz
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 18.54    0.000504          17        30           mmap
+ 14.72    0.000400          17        24           openat
+ 11.55    0.000314          12        26           close
+ 11.11    0.000302          12        25           fstat
+ 10.71    0.000291          24        12           mprotect
+  7.51    0.000204         204         1           execve
+  7.10    0.000193          21         9           read
+  4.67    0.000127          16         8         8 access
+  3.24    0.000088          44         2           write
+  2.06    0.000056          28         2           getdents
+  1.58    0.000043          14         3           brk
+  1.40    0.000038          19         2         2 statfs
+  0.92    0.000025          25         1           munmap
+  0.92    0.000025          13         2           ioctl
+  0.88    0.000024          12         2           rt_sigaction
+  0.55    0.000015          15         1           stat
+  0.48    0.000013          13         1           futex
+  0.44    0.000012          12         1           rt_sigprocmask
+  0.40    0.000011          11         1           arch_prctl
+  0.40    0.000011          11         1           set_tid_address
+  0.40    0.000011          11         1           set_robust_list
+  0.40    0.000011          11         1           prlimit64
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.002718                   156        10 total
+
+```
+
+##### 131. Practice - Strace and / proc on ETCD
+
+> /proc directory
+>
+> - Information and connection to processes and kernel
+> - Study it to learn how processes work
+> - Configuration and administrative tasks
+> - Contains file that don't exist, yet you can access these
+
+![](./images/Section24/Screenshot_4.png)
+
+```sh
+#check etcd's process
+root@cks-master:/etc/kubernetes/manifests# ps aux | grep etcd
+root      3496  1.5  1.5 10612724 63500 ?      Ssl  12:56   1:26 etcd --advertise-client-urls=https://10.146.0.2:2379 --cert-file=/etc/kubernetes/pki/etcd/server.crt --client-cert-auth=true --data-dir=/var/lib/etcd --initial-advertise-peer-urls=https://10.146.0.2:2380 --initial-cluster=cks-master=https://10.146.0.2:2380 --key-file=/etc/kubernetes/pki/etcd/server.key --listen-client-urls=https://127.0.0.1:2379,https://10.146.0.2:2379 --listen-metrics-urls=http://127.0.0.1:2381 --listen-peer-urls=https://10.146.0.2:2380 --name=cks-master --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt --peer-client-cert-auth=true --peer-key-file=/etc/kubernetes/pki/etcd/peer.key --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt --snapshot-count=10000 --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+root     15275  0.0  0.0  14860  1108 pts/0    S+   14:32   0:00 grep --color=auto etcd
+root     21048  5.8  7.8 1102092 318004 ?      Ssl  13:29   3:39 kube-apiserver --advertise-address=10.146.0.2 --admission-control-config-file=/etc/kubernetes/admission/admission_config.yaml --allow-privileged=true --authorization-mode=Node,RBAC --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction,ImagePolicyWebhook --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-issuer=https://kubernetes.default.svc.cluster.local --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-account-signing-key-file=/etc/kubernetes/pki/sa.key --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+
+root@cks-master:/etc/kubernetes/manifests# strace -p 3496
+strace: Process 3496 attached
+futex(0x1ac6be8, FUTEX_WAIT_PRIVATE, 0, NULL
+
+# follows forks
+root@cks-master:/etc/kubernetes/manifests# strace -p 3496 -f
+
+# follows forks
+# counts and summaries
+root@cks-master:/etc/kubernetes/manifests# strace -p 3496 -f -cw
+strace: Process 3496 attached with 12 threads
+^Cstrace: Process 3496 detached
+strace: Process 3523 detached
+strace: Process 3524 detached
+strace: Process 3525 detached
+strace: Process 3526 detached
+strace: Process 3527 detached
+strace: Process 3528 detached
+strace: Process 3531 detached
+strace: Process 3541 detached
+strace: Process 3542 detached
+strace: Process 3543 detached
+strace: Process 14186 detached
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 84.82   44.390464       17429      2547       378 futex
+ 14.38    7.524283       34047       221           epoll_pwait
+  0.40    0.208595       69532         3         2 restart_syscall
+  0.30    0.158271         180       877           nanosleep
+  0.04    0.022641         119       190           write
+  0.04    0.019044        1190        16           fdatasync
+  0.02    0.008728          58       150        75 read
+  0.00    0.001037          36        29           sched_yield
+  0.00    0.000651          31        21           pwrite64
+  0.00    0.000509          64         8           lseek
+------ ----------- ----------- --------- --------- ----------------
+100.00   52.334223                  4062       455 total
+
+```
+
+```sh
+root@cks-master:/etc/kubernetes/manifests# cd /proc/3496
+root@cks-master:/proc/3496# ls
+arch_status  auxv        cmdline          cpuset   exe     gid_map  loginuid   mem        mountstats  numa_maps  oom_score_adj  personality  sched      setgroups     stack  status   timers         wchan
+attr         cgroup      comm             cwd      fd      io       map_files  mountinfo  net         oom_adj    pagemap        projid_map   schedstat  smaps         stat   syscall  timerslack_ns
+autogroup    clear_refs  coredump_filter  environ  fdinfo  limits   maps       mounts     ns          oom_score  patch_state    root         sessionid  smaps_rollup  statm  task     uid_map
 
 
-##### Recap
+root@cks-master:/proc/3496# ls -lh exe
+lrwxrwxrwx 1 root root 0 Oct  8 12:56 exe -> /usr/local/bin/etcd
+
+root@cks-master:/proc/3496# cd fd
+root@cks-master:/proc/3496/fd# l
+0@  10@  12@  14@  16@  18@  2@   21@  23@  25@  27@  29@  30@  32@  34@  36@  38@  4@   41@  43@  45@  47@  49@  50@  52@  54@  56@  58@  6@   61@  63@  65@  67@  69@  70@  72@  74@  76@  78@  8@   81@  83@  85@  87@  89@  90@  92@  94@
+1@  11@  13@  15@  17@  19@  20@  22@  24@  26@  28@  3@   31@  33@  35@  37@  39@  40@  42@  44@  46@  48@  5@   51@  53@  55@  57@  59@  60@  62@  64@  66@  68@  7@   71@  73@  75@  77@  79@  80@  82@  84@  86@  88@  9@   91@  93@
+root@cks-master:/proc/3496/fd# ls -lh
+total 0
+lrwx------ 1 root root 64 Oct  8 12:56 0 -> /dev/null
+l-wx------ 1 root root 64 Oct  8 12:56 1 -> 'pipe:[31074]'
+l-wx------ 1 root root 64 Oct  8 12:56 10 -> /var/lib/etcd/member/wal/0.tmp
+lrwx------ 1 root root 64 Oct  8 12:56 11 -> 'socket:[31988]'
+lrwx------ 1 root root 64 Oct  8 12:56 12 -> 'socket:[32002]'
+lrwx------ 1 root root 64 Oct  8 12:56 13 -> 'socket:[32003]'
+lrwx------ 1 root root 64 Oct  8 12:56 14 -> 'socket:[32004]'
+lrwx------ 1 root root 64 Oct  8 12:56 15 -> 'socket:[32006]'
+lrwx------ 1 root root 64 Oct  8 12:56 16 -> 'socket:[92866]'
+lrwx------ 1 root root 64 Oct  8 12:56 17 -> 'socket:[92868]'
+lrwx------ 1 root root 64 Oct  8 12:56 18 -> 'socket:[92877]'
+lrwx------ 1 root root 64 Oct  8 12:56 19 -> 'socket:[92873]'
+l-wx------ 1 root root 64 Oct  8 12:56 2 -> 'pipe:[31075]'
+lrwx------ 1 root root 64 Oct  8 12:56 20 -> 'socket:[92879]'
+lrwx------ 1 root root 64 Oct  8 12:56 21 -> 'socket:[92881]'
+lrwx------ 1 root root 64 Oct  8 12:56 22 -> 'socket:[92883]'
+lrwx------ 1 root root 64 Oct  8 12:56 23 -> 'socket:[92885]'
+lrwx------ 1 root root 64 Oct  8 12:56 24 -> 'socket:[92887]'
+lrwx------ 1 root root 64 Oct  8 12:56 25 -> 'socket:[92890]'
+lrwx------ 1 root root 64 Oct  8 12:56 26 -> 'socket:[93695]'
+lrwx------ 1 root root 64 Oct  8 12:56 27 -> 'socket:[93697]'
+lrwx------ 1 root root 64 Oct  8 12:56 28 -> 'socket:[93699]'
+lrwx------ 1 root root 64 Oct  8 12:56 29 -> 'socket:[92894]'
+lrwx------ 1 root root 64 Oct  8 12:56 3 -> 'socket:[31980]'
+lrwx------ 1 root root 64 Oct  8 12:56 30 -> 'socket:[92896]'
+lrwx------ 1 root root 64 Oct  8 12:56 31 -> 'socket:[93703]'
+lrwx------ 1 root root 64 Oct  8 12:56 32 -> 'socket:[92900]'
+lrwx------ 1 root root 64 Oct  8 12:56 33 -> 'socket:[92902]'
+lrwx------ 1 root root 64 Oct  8 12:56 34 -> 'socket:[93706]'
+lrwx------ 1 root root 64 Oct  8 12:56 35 -> 'socket:[93709]'
+lrwx------ 1 root root 64 Oct  8 12:56 36 -> 'socket:[92905]'
+lrwx------ 1 root root 64 Oct  8 12:56 37 -> 'socket:[93712]'
+lrwx------ 1 root root 64 Oct  8 12:56 38 -> 'socket:[92910]'
+lrwx------ 1 root root 64 Oct  8 12:56 39 -> 'socket:[92912]'
+lrwx------ 1 root root 64 Oct  8 12:56 4 -> 'anon_inode:[eventpoll]'
+lrwx------ 1 root root 64 Oct  8 12:56 40 -> 'socket:[92914]'
+lrwx------ 1 root root 64 Oct  8 12:56 41 -> 'socket:[93716]'
+lrwx------ 1 root root 64 Oct  8 12:56 42 -> 'socket:[92918]'
+lrwx------ 1 root root 64 Oct  8 12:56 43 -> 'socket:[92921]'
+lrwx------ 1 root root 64 Oct  8 12:56 44 -> 'socket:[92924]'
+lrwx------ 1 root root 64 Oct  8 12:56 45 -> 'socket:[93719]'
+lrwx------ 1 root root 64 Oct  8 12:56 46 -> 'socket:[93721]'
+lrwx------ 1 root root 64 Oct  8 12:56 47 -> 'socket:[92929]'
+lrwx------ 1 root root 64 Oct  8 12:56 48 -> 'socket:[93723]'
+lrwx------ 1 root root 64 Oct  8 12:56 49 -> 'socket:[92932]'
+lrwx------ 1 root root 64 Oct  8 12:56 5 -> 'socket:[31985]'
+lrwx------ 1 root root 64 Oct  8 12:56 50 -> 'socket:[93727]'
+lrwx------ 1 root root 64 Oct  8 12:56 51 -> 'socket:[92934]'
+lrwx------ 1 root root 64 Oct  8 12:56 52 -> 'socket:[92936]'
+lrwx------ 1 root root 64 Oct  8 12:56 53 -> 'socket:[92939]'
+lrwx------ 1 root root 64 Oct  8 12:56 54 -> 'socket:[93731]'
+lrwx------ 1 root root 64 Oct  8 12:56 55 -> 'socket:[93733]'
+lrwx------ 1 root root 64 Oct  8 12:56 56 -> 'socket:[92946]'
+lrwx------ 1 root root 64 Oct  8 12:56 57 -> 'socket:[92948]'
+lrwx------ 1 root root 64 Oct  8 12:56 58 -> 'socket:[92950]'
+lrwx------ 1 root root 64 Oct  8 12:56 59 -> 'socket:[92952]'
+lrwx------ 1 root root 64 Oct  8 12:56 6 -> 'socket:[31986]'
+lrwx------ 1 root root 64 Oct  8 12:56 60 -> 'socket:[92955]'
+lrwx------ 1 root root 64 Oct  8 12:56 61 -> 'socket:[92957]'
+lrwx------ 1 root root 64 Oct  8 12:56 62 -> 'socket:[93740]'
+lrwx------ 1 root root 64 Oct  8 12:56 63 -> 'socket:[93743]'
+lrwx------ 1 root root 64 Oct  8 12:56 64 -> 'socket:[93745]'
+lrwx------ 1 root root 64 Oct  8 12:56 65 -> 'socket:[93748]'
+lrwx------ 1 root root 64 Oct  8 12:56 66 -> 'socket:[93751]'
+lrwx------ 1 root root 64 Oct  8 12:56 67 -> 'socket:[93753]'
+lrwx------ 1 root root 64 Oct  8 12:56 68 -> 'socket:[93756]'
+lrwx------ 1 root root 64 Oct  8 12:56 69 -> 'socket:[93758]'
+lrwx------ 1 root root 64 Oct  8 12:56 7 -> /var/lib/etcd/member/snap/db
+lrwx------ 1 root root 64 Oct  8 12:56 70 -> 'socket:[93760]'
+lrwx------ 1 root root 64 Oct  8 12:56 71 -> 'socket:[93763]'
+lrwx------ 1 root root 64 Oct  8 12:56 72 -> 'socket:[93765]'
+lrwx------ 1 root root 64 Oct  8 12:56 73 -> 'socket:[93767]'
+lrwx------ 1 root root 64 Oct  8 12:56 74 -> 'socket:[92967]'
+lrwx------ 1 root root 64 Oct  8 12:56 75 -> 'socket:[92969]'
+lrwx------ 1 root root 64 Oct  8 12:56 76 -> 'socket:[92971]'
+lrwx------ 1 root root 64 Oct  8 12:56 77 -> 'socket:[93772]'
+lrwx------ 1 root root 64 Oct  8 12:56 78 -> 'socket:[93774]'
+lrwx------ 1 root root 64 Oct  8 12:56 79 -> 'socket:[93777]'
+lrwx------ 1 root root 64 Oct  8 12:56 8 -> /var/lib/etcd/member/wal/0000000000000000-0000000000000000.wal
+lrwx------ 1 root root 64 Oct  8 12:56 80 -> 'socket:[92975]'
+lrwx------ 1 root root 64 Oct  8 12:56 81 -> 'socket:[92977]'
+lrwx------ 1 root root 64 Oct  8 12:56 82 -> 'socket:[93781]'
+lrwx------ 1 root root 64 Oct  8 12:56 83 -> 'socket:[92980]'
+lrwx------ 1 root root 64 Oct  8 12:56 84 -> 'socket:[93783]'
+lrwx------ 1 root root 64 Oct  8 12:56 85 -> 'socket:[93785]'
+lrwx------ 1 root root 64 Oct  8 12:56 86 -> 'socket:[93787]'
+lrwx------ 1 root root 64 Oct  8 12:56 87 -> 'socket:[93790]'
+lrwx------ 1 root root 64 Oct  8 12:56 88 -> 'socket:[92986]'
+lrwx------ 1 root root 64 Oct  8 12:56 89 -> 'socket:[92988]'
+lr-x------ 1 root root 64 Oct  8 12:56 9 -> /var/lib/etcd/member/wal
+lrwx------ 1 root root 64 Oct  8 12:56 90 -> 'socket:[93794]'
+lrwx------ 1 root root 64 Oct  8 12:56 91 -> 'socket:[93796]'
+lrwx------ 1 root root 64 Oct  8 12:56 92 -> 'socket:[92991]'
+lrwx------ 1 root root 64 Oct  8 12:56 93 -> 'socket:[92993]'
+lrwx------ 1 root root 64 Oct  8 12:56 94 -> 'socket:[92996]'
+
+root@cks-master:/proc/3496/fd# tail -f 7
+
+
+root@cks-master:/proc/3496/fd# k create secret generic credit-card --from-literal cc=1234 -oyaml --dry-run=client
+apiVersion: v1
+data:
+  cc: MTIzNA==
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: credit-card
+root@cks-master:/proc/3496/fd#
+
+root@cks-master:/proc/3496/fd# k create secret generic credit-card --from-literal cc=1234
+secret/credit-card created
+
+root@cks-master:/proc/3496/fd# cat 7 | grep 1234
+Binary file (standard input) matches
+
+root@cks-master:/proc/3496/fd# cat 7 | strings | grep 1234
+1234
+docker.io/library/nginx:latest:_docker.io/library/nginx@sha256:06e4235e95299b1d6d595c5ef4c41a9b12641f6683136c18394b858967cd1506BMcontainerd://3ff96df404a9f5a9410774eb835d577ab9e867f50123409392341961a7ca0f2dH
+docker.io/library/nginx:latest:_docker.io/library/nginx@sha256:06e4235e95299b1d6d595c5ef4c41a9b12641f6683136c18394b858967cd1506BMcontainerd://3ff96df404a9f5a9410774eb835d577ab9e867f50123409392341961a7ca0f2dH
+docker.io/library/nginx:latest:_docker.io/library/nginx@sha256:06e4235e95299b1d6d595c5ef4c41a9b12641f6683136c18394b858967cd1506BMcontainerd://3ff96df404a9f5a9410774eb835d577ab9e867f50123409392341961a7ca0f2dH
+docker.io/library/nginx:latest:_docker.io/library/nginx@sha256:06e4235e95299b1d6d595c5ef4c41a9b12641f6683136c18394b858967cd1506BMcontainerd://3ff96df404a9f5a9410774eb835d577ab9e867f50123409392341961a7ca0f2dH
+
+#show 
+root@cks-master:/proc/3496/fd# cat 7 | strings | grep 1234 -A20 -B20
+coordination.k8s.io/v1
+Lease
+kube-controller-manager
+kube-system"
+*$179216d9-f275-4598-9a9f-01fada59a7db2
+kube-controller-manager
+Update
+coordination.k8s.io/v1"
+FieldsV1:|
+z{"f:spec":{"f:acquireTime":{},"f:holderIdentity":{},"f:leaseDurationSeconds":{},"f:leaseTransitions":{},"f:renewTime":{}}}
+/cks-master_fd43b223-f8f4-46f9-8b2f-03c818d7babd
+%/registry/secrets/default/credit-card
+Secret
+credit-card
+default"
+*$e794e1a9-a45a-4bc7-8ff3-ec56d580c9f52
+kubectl-create
+Update
+FieldsV1:+
+){"f:data":{".":{},"f:cc":{}},"f:type":{}}
+1234
+Opaque
++/registry/leases/kube-node-lease/cks-worker
+coordination.k8s.io/v1
+Lease
+cks-worker
+kube-node-lease"
+*$5caa47e7-cb97-465b-be9f-3473e265aede2
+Node
+cks-worker"$3b44c135-40f9-463a-819d-e9cd5123bcd9*
+kubelet
+Update
+coordination.k8s.io/v1"
+FieldsV1:
+{"f:metadata":{"f:ownerReferences":{".":{},"k:{\"uid\":\"3b44c135-40f9-463a-819d-e9cd5123bcd9\"}":{".":{},"f:apiVersion":{},"f:kind":{},"f:name":{},"f:uid":{}}}},"f:spec":{"f:holderIdentity":{},"f:leaseDurationSeconds":{},"f:renewTime":{}}}
+cks-worker
++/registry/leases/kube-node-lease/cks-master
+coordination.k8s.io/v1
+Lease
+cks-master
+kube-node-lease"
+--
+cks-workerX
+default-scheduler
+node.kubernetes.io/not-ready
+Exists
+"       NoExecute(
+node.kubernetes.io/unreachable
+Exists
+"       NoExecute(
+PreemptLowerPriority
+Running
+Initialized
+True
+Ready
+True
+ContainersReady
+True
+PodScheduled
+True
+10.146.0.32     10.44.0.2:
+test
+docker.io/library/nginx:latest:_docker.io/library/nginx@sha256:06e4235e95299b1d6d595c5ef4c41a9b12641f6683136c18394b858967cd1506BMcontainerd://3ff96df404a9f5a9410774eb835d577ab9e867f50123409392341961a7ca0f2dH
+BestEffortZ
+        10.44.0.2
+/registry/pods/default/tests
+tests
+default"
+*$e7e5b4c6-eb88-49cf-bb34-6adff8caad1c2
+testsz
+kubectl-run
+Update
+FieldsV1:
+{"f:metadata":{"f:labels":{".":{},"f:run":{}}},"f:spec":{"f:containers":{"k:{\"name\":\"tests\"}":{".":{},"f:image":{},"f:imagePullPolicy":{},"f:name":{},"f:resources":{},"f:terminationMessagePath":{},"f:terminationMessagePolicy":{}}},"f:dnsPolicy":{},"f:enableServiceLinks":{},"f:restartPolicy":{},"f:schedulerName":{},"f:securityContext":{},"f:terminationGracePeriodSeconds":{}}}
+kubelet
+Update
+FieldsV1:
+{"f:status":{"f:conditions":{"k:{\"type\":\"ContainersReady\"}":{".":{},"f:lastProbeTime":{},"f:lastTransitionTime":{},"f:status":{},"f:type":{}},"k:{\"type\":\"Initialized\"}":{".":{},"f:lastProbeTime":{},"f:lastTransitionTime":{},"f:status":{},"f:type":{}},"k:{\"type\":\"Ready\"}":{".":{},"f:lastProbeTime":{},"f:lastTransitionTime":{},"f:status":{},"f:type":{}}},"f:containerStatuses":{},"f:hostIP":{},"f:phase":{},"f:podIP":{},"f:podIPs":{".":{},"k:{\"ip\":\"10.44.0.3\"}":{".":{},"f:ip":{}}},"f:startTime":{}}}
+kube-api-access-rzpd4
+token
+kube-root-ca.crt
+ca.crt
+ca.crt
+--
+cks-workerX
+default-scheduler
+node.kubernetes.io/not-ready
+Exists
+"       NoExecute(
+node.kubernetes.io/unreachable
+Exists
+"       NoExecute(
+PreemptLowerPriority
+Running
+Initialized
+True
+Ready
+True
+ContainersReady
+True
+PodScheduled
+True
+10.146.0.32     10.44.0.2:
+test
+docker.io/library/nginx:latest:_docker.io/library/nginx@sha256:06e4235e95299b1d6d595c5ef4c41a9b12641f6683136c18394b858967cd1506BMcontainerd://3ff96df404a9f5a9410774eb835d577ab9e867f50123409392341961a7ca0f2dH
+BestEffortZ
+        10.44.0.2
+/registry/pods/default/tests
+tests
+default"
+*$e7e5b4c6-eb88-49cf-bb34-6adff8caad1c2
+testsz
+kubectl-run
+Update
+FieldsV1:
+{"f:metadata":{"f:labels":{".":{},"f:run":{}}},"f:spec":{"f:containers":{"k:{\"name\":\"tests\"}":{".":{},"f:image":{},"f:imagePullPolicy":{},"f:name":{},"f:resources":{},"f:terminationMessagePath":{},"f:terminationMessagePolicy":{}}},"f:dnsPolicy":{},"f:enableServiceLinks":{},"f:restartPolicy":{},"f:schedulerName":{},"f:securityContext":{},"f:terminationGracePeriodSeconds":{}}}
+kubelet
+Update
+FieldsV1:
+{"f:status":{"f:conditions":{"k:{\"type\":\"ContainersReady\"}":{".":{},"f:lastProbeTime":{},"f:lastTransitionTime":{},"f:status":{},"f:type":{}},"k:{\"type\":\"Initialized\"}":{".":{},"f:lastProbeTime":{},"f:lastTransitionTime":{},"f:status":{},"f:type":{}},"k:{\"type\":\"Ready\"}":{".":{},"f:lastProbeTime":{},"f:lastTransitionTime":{},"f:status":{},"f:type":{}}},"f:containerStatuses":{},"f:hostIP":{},"f:phase":{},"f:podIP":{},"f:podIPs":{".":{},"k:{\"ip\":\"10.44.0.3\"}":{".":{},"f:ip":{}}},"f:startTime":{}}}
+kube-api-access-rzpd4
+token
+kube-root-ca.crt
+ca.crt
+ca.crt
+--
+cks-workerX
+default-scheduler
+node.kubernetes.io/not-ready
+Exists
+"       NoExecute(
+node.kubernetes.io/unreachable
+Exists
+"       NoExecute(
+PreemptLowerPriority
+Running
+Initialized
+True
+Ready
+True
+ContainersReady
+True
+PodScheduled
+True
+10.146.0.32     10.44.0.2:
+test
+docker.io/library/nginx:latest:_docker.io/library/nginx@sha256:06e4235e95299b1d6d595c5ef4c41a9b12641f6683136c18394b858967cd1506BMcontainerd://3ff96df404a9f5a9410774eb835d577ab9e867f50123409392341961a7ca0f2dH
+BestEffortZ
+        10.44.0.2
+//registry/events/default/tests.16ac11088ec94978
+Event
+tests.16ac11088ec94978
+default"
+*$1ba91c82-6575-4d79-8764-9c76ffb1504b2
+kube-scheduler
+Update
+events.k8s.io/v1"
+FieldsV1:
+{"f:action":{},"f:eventTime":{},"f:note":{},"f:reason":{},"f:regarding":{"f:apiVersion":{},"f:kind":{},"f:name":{},"f:namespace":{},"f:resourceVersion":{},"f:uid":{}},"f:reportingController":{},"f:reportingInstance":{},"f:type":{}}
+default
+tests"$e7e5b4c6-eb88-49cf-bb34-6adff8caad1c*
+3974:
+        Scheduled"1Successfully assigned default/tests to cks-worker*
+NormalR
+Bindingr
+default-schedulerz
+default-scheduler-cks-master
+--
+cks-workerX
+default-scheduler
+node.kubernetes.io/not-ready
+Exists
+"       NoExecute(
+node.kubernetes.io/unreachable
+Exists
+"       NoExecute(
+PreemptLowerPriority
+Running
+Initialized
+True
+Ready
+True
+ContainersReady
+True
+PodScheduled
+True
+10.146.0.32     10.44.0.2:
+test
+docker.io/library/nginx:latest:_docker.io/library/nginx@sha256:06e4235e95299b1d6d595c5ef4c41a9b12641f6683136c18394b858967cd1506BMcontainerd://3ff96df404a9f5a9410774eb835d577ab9e867f50123409392341961a7ca0f2dH
+BestEffortZ
+        10.44.0.2
++/registry/leases/kube-node-lease/cks-worker
+coordination.k8s.io/v1
+Lease
+cks-worker
+kube-node-lease"
+*$5caa47e7-cb97-465b-be9f-3473e265aede2
+Node
+cks-worker"$3b44c135-40f9-463a-819d-e9cd5123bcd9*
+kubelet
+Update
+coordination.k8s.io/v1"
+FieldsV1:
+{"f:metadata":{"f:ownerReferences":{".":{},"k:{\"uid\":\"3b44c135-40f9-463a-819d-e9cd5123bcd9\"}":{".":{},"f:apiVersion":{},"f:kind":{},"f:name":{},"f:uid":{}}}},"f:spec":{"f:holderIdentity":{},"f:leaseDurationSeconds":{},"f:renewTime":{}}}
+cks-worker
++/registry/leases/kube-node-lease/cks-master
+coordination.k8s.io/v1
+Lease
+cks-master
+```
+
+
+
+##### 132. Practice - /proc and env variables
+
+> /proc access env variables
+>
+> *Create Apache pod with a secret as environment variable*
+>
+> Read that secret from host filesystem
+>
+> Secrets as environment variables can be read from anyone who can access /proc on the host
+
+```sh
+ k run apache --image=httpd -oyaml --dry-run=client > pod.yaml
+ vim pod.yaml
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: apache
+  name: apache
+spec:
+  containers:
+  - image: httpd
+    name: apache
+    resources: {}
+    env:
+    - name: SECRET
+      value: "55667788"
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+--- 
+root@cks-master:~# k -f pod.yaml create
+pod/apache created
+
+root@cks-master:~# k exec apache -- env
+PATH=/usr/local/apache2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOSTNAME=apache
+HTTPD_PREFIX=/usr/local/apache2
+HTTPD_VERSION=2.4.51
+HTTPD_SHA256=20e01d81fecf077690a4439e3969a9b22a09a8d43c525356e863407741b838f4
+HTTPD_PATCHES=
+SECRET=55667788
+KUBERNETES_SERVICE_PORT_HTTPS=443
+KUBERNETES_PORT=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP_PROTO=tcp
+KUBERNETES_PORT_443_TCP_PORT=443
+KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1
+KUBERNETES_SERVICE_HOST=10.96.0.1
+KUBERNETES_SERVICE_PORT=443
+HOME=/root
+
+# check where apache is running
+root@cks-master:~# k get pod -owide | grep apache
+apache   1/1     Running   0          106s   10.44.0.2   cks-worker   <none>           <none>
+
+#login the server 
+#check the process
+root@cks-worker:~# ps aux | grep httpd
+root     14878  0.0  0.1   5952  4500 ?        Ss   00:24   0:00 httpd -DFOREGROUND
+daemon   14908  0.0  0.0 1210620 3480 ?        Sl   00:24   0:00 httpd -DFOREGROUND
+daemon   14909  0.0  0.0 1210620 3484 ?        Sl   00:24   0:00 httpd -DFOREGROUND
+daemon   14910  0.0  0.0 1210620 3480 ?        Sl   00:24   0:00 httpd -DFOREGROUND
+root     18435  0.0  0.0  14860  1036 pts/0    R+   00:38   0:00 grep --color=auto httpd
+
+root@cks-worker:~# pstree -p
+systemd(1)─┬─accounts-daemon(1324)─┬─{accounts-daemon}(1334)
+           │                       └─{accounts-daemon}(1345)
+           ├─agetty(1599)
+           ├─agetty(1690)
+           ├─atd(1144)
+           ├─chronyd(1139)
+           ├─containerd(1445)─┬─{containerd}(1471)
+           │                  ├─{containerd}(1473)
+           │                  ├─{containerd}(1474)
+           │                  ├─{containerd}(1475)
+           │                  ├─{containerd}(1476)
+           │                  ├─{containerd}(1489)
+           │                  ├─{containerd}(1494)
+           │                  ├─{containerd}(1495)
+           │                  ├─{containerd}(2634)
+           │                  ├─{containerd}(2635)
+           │                  ├─{containerd}(2636)
+           │                  ├─{containerd}(3870)
+           │                  └─{containerd}(14846)
+           ├─containerd-shim(2578)─┬─launch.sh(3134)─┬─kube-utils(3527)─┬─{kube-utils}(3528)
+           │                       │                 │                  ├─{kube-utils}(3529)
+           │                       │                 │                  ├─{kube-utils}(3530)
+           │                       │                 │                  ├─{kube-utils}(3531)
+           │                       │                 │                  ├─{kube-utils}(3532)
+           │                       │                 │                  ├─{kube-utils}(3533)
+           │                       │                 │                  └─{kube-utils}(4571)
+           │                       │                 └─weaver(3335)─┬─{weaver}(3337)
+           │                       │                                ├─{weaver}(3338)
+           │                       │                                ├─{weaver}(3339)
+           │                       │                                ├─{weaver}(3340)
+           │                       │                                ├─{weaver}(3344)
+           │                       │                                ├─{weaver}(3345)
+           │                       │                                ├─{weaver}(3470)
+           │                       │                                ├─{weaver}(3472)
+           │                       │                                ├─{weaver}(3473)
+           │                       │                                ├─{weaver}(3477)
+           │                       │                                ├─{weaver}(3478)
+           │                       │                                ├─{weaver}(3487)
+           │                       │                                └─{weaver}(4570)
+           │                       ├─pause(2611)
+           │                       ├─weave-npc(3203)─┬─ulogd(3258)
+           │                       │                 ├─{weave-npc}(3251)
+           │                       │                 ├─{weave-npc}(3252)
+           │                       │                 ├─{weave-npc}(3253)
+           │                       │                 ├─{weave-npc}(3257)
+           │                       │                 ├─{weave-npc}(3263)
+           │                       │                 ├─{weave-npc}(3323)
+           │                       │                 ├─{weave-npc}(3324)
+           │                       │                 └─{weave-npc}(3325)
+           │                       ├─{containerd-shim}(2579)
+           │                       ├─{containerd-shim}(2580)
+           │                       ├─{containerd-shim}(2581)
+           │                       ├─{containerd-shim}(2582)
+           │                       ├─{containerd-shim}(2583)
+           │                       ├─{containerd-shim}(2584)
+           │                       ├─{containerd-shim}(2585)
+           │                       ├─{containerd-shim}(2586)
+           │                       ├─{containerd-shim}(2587)
+           │                       ├─{containerd-shim}(2588)
+           │                       ├─{containerd-shim}(2624)
+           │                       ├─{containerd-shim}(2692)
+           │                       ├─{containerd-shim}(2693)
+           │                       └─{containerd-shim}(3035)
+           ├─containerd-shim(2754)─┬─kube-proxy(2872)─┬─{kube-proxy}(2928)
+           │                       │                  ├─{kube-proxy}(2929)
+           │                       │                  ├─{kube-proxy}(2930)
+           │                       │                  ├─{kube-proxy}(2931)
+           │                       │                  ├─{kube-proxy}(2970)
+           │                       │                  └─{kube-proxy}(2975)
+           │                       ├─pause(2808)
+           │                       ├─{containerd-shim}(2758)
+           │                       ├─{containerd-shim}(2759)
+           │                       ├─{containerd-shim}(2760)
+           │                       ├─{containerd-shim}(2761)
+           │                       ├─{containerd-shim}(2765)
+           │                       ├─{containerd-shim}(2766)
+           │                       ├─{containerd-shim}(2767)
+           │                       ├─{containerd-shim}(2768)
+           │                       ├─{containerd-shim}(2769)
+           │                       ├─{containerd-shim}(2771)
+           │                       ├─{containerd-shim}(2772)
+           │                       ├─{containerd-shim}(2834)
+           │                       └─{containerd-shim}(2835)
+           ├─containerd-shim(14776)─┬─httpd(14878)─┬─httpd(14908)─┬─{httpd}(14967)
+           │                        │              │              ├─{httpd}(14968)
+           │                        │              │              ├─{httpd}(14969)
+           │                        │              │              ├─{httpd}(14970)
+           │                        │              │              ├─{httpd}(14971)
+           │                        │              │              ├─{httpd}(14972)
+           │                        │              │              ├─{httpd}(14973)
+           │                        │              │              ├─{httpd}(14974)
+           │                        │              │              ├─{httpd}(14975)
+           │                        │              │              ├─{httpd}(14976)
+           │                        │              │              ├─{httpd}(14977)
+           │                        │              │              ├─{httpd}(14978)
+           │                        │              │              ├─{httpd}(14979)
+           │                        │              │              ├─{httpd}(14980)
+           │                        │              │              ├─{httpd}(14981)
+           │                        │              │              ├─{httpd}(14982)
+           │                        │              │              ├─{httpd}(14983)
+           │                        │              │              ├─{httpd}(14984)
+           │                        │              │              ├─{httpd}(14985)
+           │                        │              │              ├─{httpd}(14986)
+           │                        │              │              ├─{httpd}(14987)
+           │                        │              │              ├─{httpd}(14988)
+           │                        │              │              ├─{httpd}(14989)
+           │                        │              │              ├─{httpd}(14990)
+           │                        │              │              ├─{httpd}(14991)
+           │                        │              │              └─{httpd}(14992)
+           │                        │              ├─httpd(14909)─┬─{httpd}(14936)
+           │                        │              │              ├─{httpd}(14937)
+           │                        │              │              ├─{httpd}(14938)
+           │                        │              │              ├─{httpd}(14939)
+           │                        │              │              ├─{httpd}(14940)
+           │                        │              │              ├─{httpd}(14941)
+           │                        │              │              ├─{httpd}(14942)
+           │                        │              │              ├─{httpd}(14943)
+           │                        │              │              ├─{httpd}(14944)
+           │                        │              │              ├─{httpd}(14945)
+           │                        │              │              ├─{httpd}(14946)
+           │                        │              │              ├─{httpd}(14947)
+           │                        │              │              ├─{httpd}(14953)
+           │                        │              │              ├─{httpd}(14954)
+           │                        │              │              ├─{httpd}(14955)
+           │                        │              │              ├─{httpd}(14956)
+           │                        │              │              ├─{httpd}(14957)
+           │                        │              │              ├─{httpd}(14958)
+           │                        │              │              ├─{httpd}(14959)
+           │                        │              │              ├─{httpd}(14960)
+           │                        │              │              ├─{httpd}(14961)
+           │                        │              │              ├─{httpd}(14962)
+           │                        │              │              ├─{httpd}(14963)
+           │                        │              │              ├─{httpd}(14964)
+           │                        │              │              ├─{httpd}(14965)
+           │                        │              │              └─{httpd}(14966)
+           │                        │              └─httpd(14910)─┬─{httpd}(14915)
+           │                        │                             ├─{httpd}(14916)
+           │                        │                             ├─{httpd}(14917)
+           │                        │                             ├─{httpd}(14918)
+           │                        │                             ├─{httpd}(14919)
+           │                        │                             ├─{httpd}(14920)
+           │                        │                             ├─{httpd}(14921)
+           │                        │                             ├─{httpd}(14922)
+           │                        │                             ├─{httpd}(14923)
+           │                        │                             ├─{httpd}(14924)
+           │                        │                             ├─{httpd}(14925)
+           │                        │                             ├─{httpd}(14926)
+           │                        │                             ├─{httpd}(14927)
+           │                        │                             ├─{httpd}(14928)
+           │                        │                             ├─{httpd}(14929)
+           │                        │                             ├─{httpd}(14930)
+           │                        │                             ├─{httpd}(14931)
+           │                        │                             ├─{httpd}(14932)
+           │                        │                             ├─{httpd}(14933)
+           │                        │                             ├─{httpd}(14934)
+           │                        │                             ├─{httpd}(14935)
+           │                        │                             ├─{httpd}(14948)
+           │                        │                             ├─{httpd}(14949)
+           │                        │                             ├─{httpd}(14950)
+           │                        │                             ├─{httpd}(14951)
+           │                        │                             └─{httpd}(14952)
+           │                        ├─pause(14809)
+           │                        ├─{containerd-shim}(14777)
+           │                        ├─{containerd-shim}(14778)
+           │                        ├─{containerd-shim}(14779)
+           │                        ├─{containerd-shim}(14780)
+           │                        ├─{containerd-shim}(14781)
+           │                        ├─{containerd-shim}(14782)
+           │                        ├─{containerd-shim}(14783)
+           │                        ├─{containerd-shim}(14784)
+           │                        ├─{containerd-shim}(14785)
+           │                        ├─{containerd-shim}(14786)
+           │                        ├─{containerd-shim}(14820)
+           │                        ├─{containerd-shim}(14821)
+           │                        └─{containerd-shim}(16296)
+           ├─cron(1878)
+           ├─dbus-daemon(1330)
+           ├─dockerd(1557)─┬─{dockerd}(1574)
+           │               ├─{dockerd}(1575)
+           │               ├─{dockerd}(1576)
+           │               ├─{dockerd}(1577)
+           │               ├─{dockerd}(1578)
+           │               ├─{dockerd}(1616)
+           │               ├─{dockerd}(1627)
+           │               ├─{dockerd}(1655)
+           │               └─{dockerd}(1656)
+           ├─google_guest_ag(1584)─┬─{google_guest_ag}(1600)
+           │                       ├─{google_guest_ag}(1601)
+           │                       ├─{google_guest_ag}(1602)
+           │                       ├─{google_guest_ag}(1603)
+           │                       ├─{google_guest_ag}(1617)
+           │                       ├─{google_guest_ag}(1618)
+           │                       ├─{google_guest_ag}(1619)
+           │                       ├─{google_guest_ag}(1621)
+           │                       ├─{google_guest_ag}(1626)
+           │                       └─{google_guest_ag}(1629)
+           ├─google_osconfig(1326)─┬─{google_osconfig}(1346)
+           │                       ├─{google_osconfig}(1347)
+           │                       ├─{google_osconfig}(1348)
+           │                       ├─{google_osconfig}(1349)
+           │                       ├─{google_osconfig}(1355)
+           │                       ├─{google_osconfig}(1360)
+           │                       ├─{google_osconfig}(1361)
+           │                       ├─{google_osconfig}(1362)
+           │                       ├─{google_osconfig}(1364)
+           │                       └─{google_osconfig}(1366)
+           ├─kubelet(1325)─┬─{kubelet}(1350)
+           │               ├─{kubelet}(1351)
+           │               ├─{kubelet}(1352)
+           │               ├─{kubelet}(1353)
+           │               ├─{kubelet}(1363)
+           │               ├─{kubelet}(1543)
+           │               ├─{kubelet}(1544)
+           │               ├─{kubelet}(1978)
+           │               ├─{kubelet}(1979)
+           │               ├─{kubelet}(1983)
+           │               ├─{kubelet}(2012)
+           │               ├─{kubelet}(2013)
+           │               ├─{kubelet}(2014)
+           │               └─{kubelet}(2567)
+           ├─lvmetad(473)
+           ├─lxcfs(1063)─┬─{lxcfs}(1066)
+           │             └─{lxcfs}(1067)
+           ├─networkd-dispat(1328)───{networkd-dispat}(1373)
+           ├─polkitd(1504)─┬─{polkitd}(1520)
+           │               └─{polkitd}(1522)
+           ├─rsyslogd(1029)─┬─{rsyslogd}(1056)
+           │                ├─{rsyslogd}(1058)
+           │                └─{rsyslogd}(1059)
+           ├─snapd(1288)─┬─{snapd}(1354)
+           │             ├─{snapd}(1356)
+           │             ├─{snapd}(1357)
+           │             ├─{snapd}(1358)
+           │             ├─{snapd}(1359)
+           │             ├─{snapd}(1406)
+           │             ├─{snapd}(1408)
+           │             ├─{snapd}(1440)
+           │             ├─{snapd}(1441)
+           │             ├─{snapd}(2668)
+           │             └─{snapd}(2669)
+           ├─sshd(15656)───sshd(15733)───bash(15734)───sudo(17484)───bash(17485)───pstree(18895)
+           ├─sshd(18314)
+           ├─sshguard-journa(1444)─┬─journalctl(1446)
+           │                       └─sshguard(1447)─┬─sshg-fw(1451)
+           │                                        └─{sshguard}(1539)
+           ├─systemd(15658)───(sd-pam)(15659)
+           ├─systemd-journal(464)
+           ├─systemd-logind(1863)
+           ├─systemd-network(855)
+           ├─systemd-resolve(882)
+           ├─systemd-udevd(482)
+           └─unattended-upgr(1367)───{unattended-upgr}(1393)
+# find the password in the /proc
+root@cks-worker:~# cd /proc/14878
+root@cks-worker:/proc/14878# ls
+arch_status  coredump_filter  io         mountstats     patch_state  smaps         timers
+attr         cpuset           limits     net            personality  smaps_rollup  timerslack_ns
+autogroup    cwd              loginuid   ns             projid_map   stack         uid_map
+auxv         environ          map_files  numa_maps      root         stat          wchan
+cgroup       exe              maps       oom_adj        sched        statm
+clear_refs   fd               mem        oom_score      schedstat    status
+cmdline      fdinfo           mountinfo  oom_score_adj  sessionid    syscall
+comm         gid_map          mounts     pagemap        setgroups    task
+root@cks-worker:/proc/14878# ls -lh exe
+lrwxrwxrwx 1 root root 0 Oct  9 00:24 exe -> /usr/local/apache2/bin/httpd
+root@cks-worker:/proc/14878# cd fd
+root@cks-worker:/proc/14878/fd# l
+0@  1@  2@  3@  4@  5@  6@  7@
+root@cks-worker:/proc/14878/fd# ls -lha
+total 0
+dr-x------ 2 root root  0 Oct  9 00:24 .
+dr-xr-xr-x 9 root root  0 Oct  9 00:24 ..
+lrwx------ 1 root root 64 Oct  9 00:24 0 -> /dev/null
+l-wx------ 1 root root 64 Oct  9 00:24 1 -> 'pipe:[62297]'
+l-wx------ 1 root root 64 Oct  9 00:24 2 -> 'pipe:[62298]'
+lrwx------ 1 root root 64 Oct  9 00:24 3 -> 'socket:[62391]'
+lrwx------ 1 root root 64 Oct  9 00:24 4 -> 'socket:[62392]'
+lr-x------ 1 root root 64 Oct  9 00:24 5 -> 'pipe:[62405]'
+l-wx------ 1 root root 64 Oct  9 00:24 6 -> 'pipe:[62405]'
+l-wx------ 1 root root 64 Oct  9 00:24 7 -> 'pipe:[62297]'
+root@cks-worker:/proc/14878/fd# man ls
+root@cks-worker:/proc/14878/fd# cd ..
+root@cks-worker:/proc/14878# cat environ
+HTTPD_VERSION=2.4.51KUBERNETES_PORT=tcp://10.96.0.1:443KUBERNETES_SERVICE_PORT=443HOSTNAME=apacheHOME=/rootHTTPD_PATCHES=KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1PATH=/usr/local/apache2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/binKUBERNETES_PORT_443_TCP_PORT=443HTTPD_SHA256=20e01d81fecf077690a4439e3969a9b22a09a8d43c525356e863407741b838f4KUBERNETES_PORT_443_TCP_PROTO=tcpSECRET=55667788HTTPD_PREFIX=/usr/local/apache2KUBERNETES_SERVICE_PORT_HTTPS=443KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443KUBERNETES_SERVICE_HOST=10.96.0.1PWD=/usr/local/apache2root@cks-worker:/proc/14878#
+```
+
+
+
+##### 133.Practice - Falco and Installation
+
+![](./images/Section24/Screenshot_5.png)
+
+> Install falo in the worker node
+
+```sh
+curl -s https://falco.org/repo/falcosecurity-3672BA8F.asc | apt-key add -
+echo "deb https://download.falco.org/packages/deb stable main" | tee -a /etc/apt/sources.list.d/falcosecurity.list
+apt-get update -y
+apt-get -y install linux-headers-$(uname -r)
+apt-get install -y falco
+
+root@cks-worker:~# service falco status
+● falco.service - LSB: Falco syscall activity monitoring agent
+   Loaded: loaded (/etc/init.d/falco; generated)
+   Active: inactive (dead)
+     Docs: man:systemd-sysv-generator(8)
+#start falco     
+root@cks-worker:~# service falco start
+root@cks-worker:~# service falco status
+● falco.service - LSB: Falco syscall activity monitoring agent
+   Loaded: loaded (/etc/init.d/falco; generated)
+   Active: active (running) since Sat 2021-10-09 01:05:32 UTC; 1s ago
+     Docs: man:systemd-sysv-generator(8)
+  Process: 27126 ExecStart=/etc/init.d/falco start (code=exited, status=0/SUCCESS)
+    Tasks: 7 (limit: 4666)
+   CGroup: /system.slice/falco.service
+           └─27159 /usr/bin/falco --daemon --pidfile=/var/run/falco.pid
+
+Oct 09 01:05:32 cks-worker falco[27126]: Sat Oct  9 01:05:32 2021: Falco initialized with configuration
+Oct 09 01:05:32 cks-worker falco[27126]: Sat Oct  9 01:05:32 2021: Loading rules from file /etc/falco/f
+Oct 09 01:05:32 cks-worker falco[27142]: Falco initialized with configuration file /etc/falco/falco.yam
+Oct 09 01:05:32 cks-worker falco[27142]: Loading rules from file /etc/falco/falco_rules.yaml:
+Oct 09 01:05:32 cks-worker falco[27142]: Loading rules from file /etc/falco/falco_rules.local.yaml:
+Oct 09 01:05:32 cks-worker falco[27126]: Sat Oct  9 01:05:32 2021: Loading rules from file /etc/falco/f
+Oct 09 01:05:32 cks-worker falco[27142]: Loading rules from file /etc/falco/k8s_audit_rules.yaml:
+Oct 09 01:05:32 cks-worker falco[27126]: Sat Oct  9 01:05:32 2021: Loading rules from file /etc/falco/k
+Oct 09 01:05:32 cks-worker systemd[1]: Started LSB: Falco syscall activity monitoring agent.
+Oct 09 01:05:32 cks-worker falco[27159]: Starting internal webserver, listening on port 8765
+     
+```
+
+https://v1-17.docs.kubernetes.io/docs/tasks/debug-application-cluster/falco/
+
+```sh
+root@cks-worker:~# vim /etc/falco/falco.yaml
+
+---
+root@cks-worker:~# tail -f /var/log/syslog | grep falco
+Oct  9 01:05:32 cks-worker kernel: [ 4660.830531] falco: initializing ring buffer for CPU 0
+Oct  9 01:05:32 cks-worker kernel: [ 4660.842261] falco: CPU buffer initialized, size=8388608
+Oct  9 01:05:32 cks-worker kernel: [ 4660.842263] falco: initializing ring buffer for CPU 1
+Oct  9 01:05:32 cks-worker kernel: [ 4660.853898] falco: CPU buffer initialized, size=8388608
+Oct  9 01:05:32 cks-worker kernel: [ 4660.853926] falco: starting capture
+Oct  9 01:05:32 cks-worker falco: Starting internal webserver, listening on port 8765
+Oct  9 01:07:10 cks-worker falco: 01:07:10.657746998: Error File below /etc opened for writing (user=root user_loginuid=1001 command=vim /etc/falco/falco.yaml parent=bash pcmdline=bash file=/etc/falco/.falco.yaml.swp program=vim gparent=sudo ggparent=bash gggparent=sshd container_id=host image=<NA>)
+Oct  9 01:07:10 cks-worker falco: 01:07:10.657759909: Error File below /etc opened for writing (user=root user_loginuid=1001 command=vim /etc/falco/falco.yaml parent=bash pcmdline=bash file=/etc/falco/.falco.yaml.swx program=vim gparent=sudo ggparent=bash gggparent=sshd container_id=host image=<NA>)
+Oct  9 01:07:10 cks-worker falco: 01:07:10.657803498: Error File below /etc opened for writing (user=root user_loginuid=1001 command=vim /etc/falco/falco.yaml parent=bash pcmdline=bash file=/etc/falco/.falco.yaml.swp program=vim gparent=sudo ggparent=bash gggparent=sshd container_id=host image=<NA>)
+
+```
+
+##### 134. Practice - Use Falco to find malious processes
+
+> Use Falco to find malicious processes inside containers
+
+```sh
+#try to edit the sensitive file 
+root@cks-master:~# k exec -it apache -- bash
+root@apache:/usr/local/apache2# ls
+bin  build  cgi-bin  conf  error  htdocs  icons  include  logs  modules
+root@apache:/usr/local/apache2# echo user >> /etc/passwd
+root@apache:/usr/local/apache2#
+
+#falco will logs the 'edit' action
+root@cks-worker:~# tail -f /var/log/syslog | grep falco
+Oct  9 01:21:30 cks-worker falco: 01:21:30.022862110: Error File below /etc opened for writing (user=root user_loginuid=-1 command=bash parent=<NA> pcmdline=<NA> file=/etc/passwd program=bash gparent=<NA> ggparent=<NA> gggparent=<NA> container_id=host image=<NA>)
+
+```
+
+```sh
+# change the pod to live probe
+vim pod.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: apache
+  name: apache
+spec:
+  containers:
+  - image: httpd
+    name: apache
+    resources: {}
+    env:
+    - name: SECRET
+      value: "55667788"
+    readinessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/healthy
+      initialDelaySeconds: 5
+      periodSeconds: 3
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:~# k -f pod.yaml delete --force --grace-period=0
+warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "apache" force deleted
+
+
+# why I can't show the log in the falco
+root@cks-master:~# k -f pod.yaml create
+pod/apache created
+
+vim k8s_audit_rules.yaml
+
+```
+
+
+
+
+
+https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+
+##### 135. Practice - Investigate Falco Rules
+
+```sh
+
+root@cks-worker:~# cd /etc/falco/
+root@cks-worker:/etc/falco# l
+falco.yaml  falco_rules.local.yaml  falco_rules.yaml  k8s_audit_rules.yaml  rules.available/  rules.d/
+#serache the key word
+/was spawned
+
+```
+
+
+
+##### 136. Practice - Change Falco Rule
+
+
+
+
+
+![](./images/Section24/Screenshot_6.png)
+
+```sh
+root@cks-worker:/etc/falco# service falco stop
+root@cks-worker:/etc/falco# falco
+Sat Oct  9 01:55:25 2021: Falco version 0.26.1 (driver version 2aa88dcf6243982697811df4c1b484bcbe9488a2)
+Sat Oct  9 01:55:25 2021: Falco initialized with configuration file /etc/falco/falco.yaml
+Sat Oct  9 01:55:25 2021: Loading rules from file /etc/falco/falco_rules.yaml:
+Sat Oct  9 01:55:25 2021: Loading rules from file /etc/falco/falco_rules.local.yaml:
+Sat Oct  9 01:55:25 2021: Loading rules from file /etc/falco/k8s_audit_rules.yaml:
+Sat Oct  9 01:55:25 2021: Starting internal webserver, listening on port 8765
+
+
+```
+
+
+
+```sh
+#copy the rule from falco_rules.yaml
+vim /etc/falco/falco_rules.yaml
+
+#Paste the rule to falco_rules.local.yaml
+vim /etc/falco/falco_rules.local.yaml
+---
+- rule: Terminal shell in container
+  desc: A shell was used as the entrypoint/exec point into a container with an attached terminal.
+  condition: >
+    spawned_process and container
+    and shell_procs and proc.tty != 0
+    and container_entrypoint
+    and not user_expected_terminal_shell_in_container_conditions
+  output: >
+    A shell was spawned in a container with an attached terminal (user=%user.name user_loginuid=%user.loginuid %container.info
+    shell=%proc.name parent=%proc.pname cmdline=%proc.cmdline terminal=%proc.tty container_id=%container.id image=%container.image.repository)
+  priority: WARNING
+  tags: [container, shell, mitre_execution]
+---
+#falco load the local rules
+root@cks-worker:~# falco
+Sat Oct  9 06:35:39 2021: Falco version 0.30.0 (driver version 3aa7a83bf7b9e6229a3824e3fd1f4452d1e95cb4)
+Sat Oct  9 06:35:39 2021: Falco initialized with configuration file /etc/falco/falco.yaml
+Sat Oct  9 06:35:39 2021: Loading rules from file /etc/falco/falco_rules.yaml:
+Sat Oct  9 06:35:39 2021: Loading rules from file /etc/falco/falco_rules.local.yaml:
+Sat Oct  9 06:35:39 2021: Loading rules from file /etc/falco/k8s_audit_rules.yaml:
+Sat Oct  9 06:35:40 2021: Starting internal webserver, listening on port 8765
+06:35:40.823125414: Notice Privileged container started (user=root user_loginuid=0 command=container:a31d2fd68539 weave (id=a31d2fd68539) image=docker.io/weaveworks/weave-kube:2.8.1)
+06:35:40.823125414: Notice Privileged container started (user=root user_loginuid=0 command=container:85aea949b95d weave-npc (id=85aea949b95d) image=docker.io/weaveworks/weave-npc:2.8.1)
+
+# login the container from cks-master node
+root@cks-master:~# k exec -it apache -- sh
+#
+
+# It shows logs in the worker logs
+root@cks-worker:~# falco
+06:36:28.089477192: Warning A shell was spawned in a container with an attached terminal (user=root user_loginuid=-1 apache (id=661ff0e4c71f) shell=sh parent=runc cmdline=sh terminal=34816 container_id=661ff0e4c71f image=docker.io/library/httpd)
+```
+
+```sh
+modified the output
+
+---
+  output: >
+    %evt.time,%user.name,%container.name,%container.id
+---     
+#reload falco setting
+root@cks-worker:~# falco
+
+#logint to the container
+root@cks-master:~# k exec -it apache -- sh
+#
+#show the modified setting
+root@cks-worker:~# falco
+06:45:28.072506333: Warning 06:45:28.072506333,root,apache,661ff0e4c71f
+```
+
+https://falco.org/docs/rules/supported-fields/
+
+##### 137. Recap 
+
+
+
+>Syscall talk by Liz Rice
+>https://www.youtube.com/watch?v=8g-NUUmCeGI
+
+
+
+> Intro: Falco - Loris Degioanni, Sysdig
+>
+> https://www.youtube.com/watch?v=zgRFN3o7nJE&ab_channel=CNCF%5BCloudNativeComputingFoundation%5D
+
+- System Calls(syscalls)
+- Pods / Containers / Processes
+- strace /proc
+- Falco
+
 #### Section 25 Runtime Security - Immutability of containers at runtime
 ##### 138. Intro
 
@@ -5726,7 +7077,210 @@ https://man7.org/linux/man-pages/man2/syscalls.2.html
 
 ![](./images/Section25/Screenshot_6.png)
 
-##### Recap
+##### 140. Practice -StartupRobe changes container
+
+> StartupProbe for Immutability
+>
+> Use StartupProbe to remove *touch* and *bash* from container
+
+```sh
+root@cks-master:~# k run immutable --image=httpd -oyaml --dry-run=client > pod.yaml
+root@cks-master:~# k -f pod.yaml create
+pod/immutable created
+root@cks-master:~# k exec -it immutable -- bash
+root@immutable:/usr/local/apache2# touch test
+root@immutable:/usr/local/apache2# ls test
+test
+root@immutable:/usr/local/apache2# exit
+exit
+
+vim pod.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: immutable
+  name: immutable
+spec:
+  containers:
+  - image: httpd
+    name: immutable
+    resources: {}
+    startupProbe:
+      exec:
+        command:
+        - rm
+        - /bin/touch
+      initialDelaySeconds: 1
+      periodSeconds: 5
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:~# k -f pod.yaml delete --force --grace-period=0
+warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "immutable" force deleted
+root@cks-master:~# k -f pod.yaml create
+pod/immutable created
+#the command touch has been removed
+root@cks-master:~# k exec -it immutable -- bash
+root@immutable:/usr/local/apache2# touch test
+bash: touch: command not found
+
+```
+
+
+
+```sh
+# delete the bash command
+vim pod.yaml 
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: immutable
+  name: immutable
+spec:
+  containers:
+  - image: httpd
+    name: immutable
+    resources: {}
+    startupProbe:
+      exec:
+        command:
+        - rm
+        - /bin/bash
+      initialDelaySeconds: 1
+      periodSeconds: 5
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+----
+root@cks-master:~# k -f pod.yaml delete --force --grace-period=0
+warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "immutable" force deleted
+root@cks-master:~# k -f pod.yaml create
+pod/immutable created
+root@cks-master:~# k exec -it immutable -- bash
+root@immutable:/usr/local/apache2# exit
+exit
+root@cks-master:~# k exec -it immutable -- bash
+error: Internal error occurred: error executing command in container: failed to exec in container: failed to start exec "e9322348268c2eababaf752b727c99abe03192360160c4aae32859fe10a99f58": OCI runtime exec failed: exec failed: container_linux.go:380: starting container process caused: exec: "bash": executable file not found in $PATH: unknown
+
+```
+
+##### 141. Practice - SecurityContext renders container immutable
+
+> Enforce RO-filesystem
+>
+> Create Pod SecurityContext to make filesystem Read-Only
+>
+> Ensure some directories are still writeable using emptyDir volume
+
+```sh
+root@cks-master:~# cat pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: immutable
+  name: immutable
+spec:
+  containers:
+  - image: httpd
+    name: immutable
+    resources: {}
+    securityContext:
+      readOnlyRootFilesystem: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:~# k -f pod.yaml create
+pod/immutable created
+
+
+root@cks-master:~# k exec -it immutable -- bash
+error: unable to upgrade connection: container not found ("immutable")
+
+#can't create the pod because the following reason
+root@cks-master:~# k logs immutable
+AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 10.44.0.3. Set the 'ServerName' directive globally to suppress this message
+AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 10.44.0.3. Set the 'ServerName' directive globally to suppress this message
+[Sat Oct 09 07:21:47.003527 2021] [core:error] [pid 1:tid 140292100805760] (30)Read-only file system: AH00099: could not create /usr/local/apache2/logs/httpd.pid.TlHmu5
+[Sat Oct 09 07:21:47.003695 2021] [core:error] [pid 1:tid 140292100805760] AH00100: httpd: could not log pid to file /usr/local/apache2/logs/httpd.pid
+
+root@cks-master:~# k get pod
+NAME        READY   STATUS             RESTARTS   AGE
+apache      1/1     Running            1          5h33m
+immutable   0/1     CrashLoopBackOff   6          9m38s
+#add empty dir
+vim pod.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: immutable
+  name: immutable
+spec:
+  containers:
+  - image: httpd
+    name: immutable
+    resources: {}
+    securityContext:
+      readOnlyRootFilesystem: true
+    volumeMounts:
+    - mountPath: /usr/local/apache2/logs
+      name: cache-volume
+  volumes:
+  - name: cache-volume
+    emptyDir: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:~# k -f pod.yaml delete --force --grace-period=0
+warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "immutable" force deleted
+root@cks-master:~# k -f pod.yaml create
+pod/immutable created
+
+root@cks-master:~# k get pod
+NAME        READY   STATUS    RESTARTS   AGE
+apache      1/1     Running   1          5h36m
+immutable   1/1     Running   0          20s
+
+# can't create files
+root@immutable:/usr/local/apache2# touch test
+touch: cannot touch 'test': Read-only file system
+
+```
+
+> Container
+
+```sh
+docker run --read-only --tmpfs /run my-container
+```
+
+##### 142.Recap
+
+- RBAC
+  - With RBAC it should be ensured that only certain people can even edit pod specs
+
+> Immutability
+>
+> Container Image Level
+>
+> Pod Level via Security Context
+>
+> RBAC
 
 #### Section 26 Runtime Security - Auditing
 ##### 143.Intro
@@ -5737,14 +7291,1056 @@ https://man7.org/linux/man-pages/man2/syscalls.2.html
 
 ![](./images/Section26/Screenshot_3.png)
 
-##### Recap
+![](./images/Section26/Screenshot_4.png)
+
+![](./images/Section26/Screenshot_5.png)
+
+![](./images/Section26/Screenshot_6.png)
+
+
+
+![](./images/Section26/Screenshot_7.png)
+
+![](./images/Section26/Screenshot_8.png)
+
+![](./images/Section26/Screenshot_9.png)
+
+##### 144. Practice - Enable Audit Logging in Apiserver
+
+> Steup Audit Logs
+>
+> **Configure apiserver to store Audit Logs in JSON format
+
+https://github.com/killer-sh/cks-course-environment/tree/master/course-content/runtime-security/auditing
+
+```sh
+root@cks-master:/etc/kubernetes/audit# vim policy.yaml
+---
+apiVersion: audit.k8s.io/v1
+kind: Policy
+rules:
+- level: Metadata
+---
+# added only
+root@cks-master:/etc/kubernetes/audit# vim /etc/kubernetes/manifests/kube-apiserver.yaml
+---
+https://github.com/killer-sh/cks-course-environment/blob/master/course-content/runtime-security/auditing/kube-apiserver_enable_auditing.yaml
+---
+#check the logs
+root@cks-master:/etc/kubernetes/audit/logs# cd logs/
+root@cks-master:/etc/kubernetes/audit/logs# tail -100f audit.log
+
+```
+
+##### 145. Practice - Create Secret and check Audit Logs
+
+> Setup Audit Logs
+>
+> Create a secret and investigate the JSON audit log
+
+```sh
+# create secret
+root@cks-master:/etc/kubernetes/audit/logs# k create secret generic very-secure --from-literal=user=admin
+secret/very-secure created
+#check the audit
+root@cks-master:/etc/kubernetes/audit/logs# cat audit.log | grep very-secure
+{"kind":"Event","apiVersion":"audit.k8s.io/v1","level":"Metadata","auditID":"c01e3785-1209-4fb5-8358-0c0ea437af2c","stage":"ResponseComplete","requestURI":"/api/v1/namespaces/default/secrets?fieldManager=kubectl-create","verb":"create","user":{"username":"kubernetes-admin","groups":["system:masters","system:authenticated"]},"sourceIPs":["10.146.0.2"],"userAgent":"kubectl/v1.21.0 (linux/amd64) kubernetes/cb303e6","objectRef":{"resource":"secrets","namespace":"default","name":"very-secure","apiVersion":"v1"},"responseStatus":{"metadata":{},"code":201},"requestReceivedTimestamp":"2021-10-10T08:41:23.779397Z","stageTimestamp":"2021-10-10T08:41:23.788688Z","annotations":{"authorization.k8s.io/decision":"allow","authorization.k8s.io/reason":""}}
+
+
+# add password to secret
+root@cks-master:/etc/kubernetes/audit/logs# k edit secret very-secure
+secret/very-secure edited
+
+#check the audit.log
+#it changed
+root@cks-master:/etc/kubernetes/audit/logs# cat audit.log | grep very-secure
+...
+,"requestReceivedTimestamp":"2021-10-10T08:47:12.723215Z","stageTimestamp":"2021-10-10T08:47:12.723215Z"}
+{"kind":"Event","apiVersion":"audit.k8s.io/v1","level":"Metadata","auditID":"b0877684-ec88-46c5-bb58-88ca1b7a73fe","stage":"ResponseComplete","requestURI":"/api/v1/namespaces/default/secrets/very-secure?fieldManager=kubectl-edit","verb":"patch","user":{"username":"kubernetes-admin","groups":["system:masters","system:authenticated"]},"sourceIPs":["10.146.0.2"],"userAgent":"kubectl/v1.21.0 (linux/amd64) kubernetes/cb303e6","objectRef":{"resource":"secrets","namespace":"default","name":"very-secure","apiVersion":"v1"},"responseStatus":{"metadata":{},"code":200},"requestReceivedTimestamp":"2021-10-10T08:47:12.723215Z","stageTimestamp":"2021-10-10T08:47:12.727916Z","annotations":{"authorization.k8s.io/decision":"allow","authorization.k8s.io/reason":""}}
+
+
+```
+
+##### 146. Practice - Create Secret and check Audit Logs
+
+> Restrict amount of Audit Logs to collect
+>
+> **restrict logged data with an Audit Policy**
+>
+> - Nothing from stage RequestReceived
+> - Nothing from "get","watch","list"
+> - From Secrets only metadata level
+> - Everything else RequestResponse level
+
+1. Change policy file
+2. Disable audit logging in apiserver,wait till restart
+3. Enable audit logging in apiserver, wait will restart
+   1. if apiserver doesn't start,then check:
+      1. /var/log/pods/kube-system_kube-apiserver*
+4. Test your changes
+
+https://kubernetes.io/docs/tasks/debug-application-cluster/audit/
+
+```sh
+root@cks-master:/etc/kubernetes/audit# vim policy.yaml
+---
+apiVersion: audit.k8s.io/v1
+kind: Policy
+omitStages:
+  - "RequestReceived"
+rules:
+- level: None
+  verbs: ["get","watch","list"]
+
+- level: Metadata
+    resources:
+    - group: "" # core API group
+      resources: ["secrets"]
+
+- level: RequestResponse
+---
+```
+
+##### 147. Practice - Investigate API access history
+
+> Use Audit Logs to investigate access history of a secret
+>
+> 1. Change policy file to include Request+Response from secrets
+> 2. Create a new ServiceAccount(+ Secret),confirm Request + Response are available
+> 3. Create a Pod that uses the Service Account
+
+```sh
+root@cks-master:/etc/kubernetes/audit# k create sa very-crazy-sa
+
+vim /etc/kubernetes/audit/policy.yaml
+---
+apiVersion: audit.k8s.io/v1
+kind: Policy
+omitStages:
+  - "RequestReceived"
+rules:
+- level: None
+  verbs: ["get","watch","list"]
+
+- level: RequestResponse
+    resources:
+    - group: "" # core API group
+      resources: ["secrets"]
+
+- level: RequestResponse
+---
+serviceaccount/very-crazy-sa created
+root@cks-master:/etc/kubernetes/audit# k create sa very-crazy-sa
+serviceaccount/very-crazy-sa created
+root@cks-master:/etc/kubernetes/audit# cat logs/audit.log | grep very-crazy
+...
+:{"name":"very-crazy-sa","namespace":"default","uid":"acb33f06-508b-4f8c-8028-5724828421e8","resourceVersion":"44801","creationTimestamp":"2021-10-10T10:44:47Z"},"secrets":[{"name":"very-crazy-sa-token-gsrp2"}]},"requestReceivedTimestamp":"2021-10-10T10:44:47.554272Z","stageTimestamp":"2021-10-10T10:44:47.556611Z","annotations":{"authorization.k8s.io/decision":"allow","authorization.k8s.io/reason":"RBAC: allowed by ClusterRoleBinding \"system:kube-controller-manager\" of ClusterRole \"system:kube-controller-manager\" to User \"system:kube-controller-manager\""}}
+
+# create the pod
+root@cks-master:/etc/kubernetes/audit# k run accessor --image=nginx --dry-run=client -oyaml > pod.yaml
+root@cks-master:/etc/kubernetes/audit# vim pod.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: accessor
+  name: accessor
+spec:
+  serviceAccountName: very-crazy-sa
+  containers:
+  - image: nginx
+    name: accessor
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:/etc/kubernetes/audit# k -f pod.yaml create
+pod/accessor created
+
+```
+
+Auditing in Kubernetes 101 - Nikhita Raghunath, Loodse
+
+https://www.youtube.com/watch?v=HXtLTxo30SY&ab_channel=CNCF%5BCloudNativeComputingFoundation%5D
+
+##### 148.Recap
+
+> What are Audit Logs
+>
+> How to enable them(Apiserver)
+>
+> How to filter these(Audit Policy)
+>
+> How to investigate logs
+
+```sh
+sudo -i
+apt-get install apparmor-utils
+
+```
+
+
 
 #### Section 27 System Hardening - Kernel Hardening Tools
-##### Intro
-##### Recap
+##### 150.Intro
+
+![](./images/Section27/Screenshot_1.png)
+
+![](./images/Section27/Screenshot_2.png)
+
+
+
+![](./images/Section27/Screenshot_3.png)
+
+##### 151. AppArmor
+
+![](./images/Section27/Screenshot_4.png)
+
+![](./images/Section27/Screenshot_5.png)
+
+![](./images/Section27/Screenshot_6.png)
+
+##### 152 Practice -AppArmor for curl
+
+> AppArmor
+>
+> Setup simple AppArmor profile for curl
+
+
+
+```sh
+root@cks-worker:~# curl killer.sh -v
+* Rebuilt URL to: killer.sh/
+*   Trying 35.227.196.29...
+* TCP_NODELAY set
+* Connected to killer.sh (35.227.196.29) port 80 (#0)
+> GET / HTTP/1.1
+> Host: killer.sh
+> User-Agent: curl/7.58.0
+> Accept: */*
+>
+< HTTP/1.1 301 Moved Permanently
+< Cache-Control: private
+< Content-Type: text/html; charset=UTF-8
+< Referrer-Policy: no-referrer
+< Location: https://killer.sh/
+< Content-Length: 215
+< Date: Mon, 11 Oct 2021 13:37:19 GMT
+<
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="https://killer.sh/">here</A>.
+</BODY></HTML>
+* Connection #0 to host killer.sh left intact
+
+
+root@cks-worker:~# aa-status
+apparmor module is loaded.
+30 profiles are loaded.
+24 profiles are in enforce mode.
+   /sbin/dhclient
+   /snap/snapd/12883/usr/lib/snapd/snap-confine
+   /snap/snapd/12883/usr/lib/snapd/snap-confine//mount-namespace-capture-helper
+   /snap/snapd/13170/usr/lib/snapd/snap-confine
+   /snap/snapd/13170/usr/lib/snapd/snap-confine//mount-namespace-capture-helper
+   /usr/bin/curl
+   /usr/bin/lxc-start
+   /usr/bin/man
+   /usr/lib/NetworkManager/nm-dhcp-client.action
+   /usr/lib/NetworkManager/nm-dhcp-helper
+   /usr/lib/connman/scripts/dhclient-script
+   /usr/lib/snapd/snap-confine
+   /usr/lib/snapd/snap-confine//mount-namespace-capture-helper
+   /usr/sbin/chronyd
+   /usr/sbin/tcpdump
+   cri-containerd.apparmor.d
+   docker-default
+   lxc-container-default
+   lxc-container-default-cgns
+   lxc-container-default-with-mounting
+   lxc-container-default-with-nesting
+   man_filter
+   man_groff
+   snap-update-ns.google-cloud-sdk
+6 profiles are in complain mode.
+   snap.google-cloud-sdk.anthoscli
+   snap.google-cloud-sdk.bq
+   snap.google-cloud-sdk.docker-credential-gcloud
+   snap.google-cloud-sdk.gcloud
+   snap.google-cloud-sdk.gsutil
+   snap.google-cloud-sdk.kubectl
+12 processes have profiles defined.
+12 processes are in enforce mode.
+   /usr/sbin/chronyd (1061)
+   cri-containerd.apparmor.d (5237)
+   cri-containerd.apparmor.d (5284)
+   cri-containerd.apparmor.d (5285)
+   cri-containerd.apparmor.d (5491)
+   cri-containerd.apparmor.d (5530)
+   cri-containerd.apparmor.d (5531)
+   cri-containerd.apparmor.d (5534)
+   cri-containerd.apparmor.d (5831)
+   cri-containerd.apparmor.d (5858)
+   cri-containerd.apparmor.d (5859)
+   cri-containerd.apparmor.d (5860)
+0 processes are in complain mode.
+0 processes are unconfined but have a profile defined.
+
+root@cks-worker:~# apt-get install apparmor-utils
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+apparmor-utils is already the newest version (2.12-4ubuntu5.1).
+0 upgraded, 0 newly installed, 0 to remove and 29 not upgraded.
+
+
+
+root@cks-worker:~# aa-
+aa-audit           aa-decode          aa-exec            aa-remove-unknown
+aa-autodep         aa-disable         aa-genprof         aa-status
+aa-cleanprof       aa-enabled         aa-logprof         aa-unconfined
+aa-complain        aa-enforce         aa-mergeprof       aa-update-browser
+```
+
+```sh
+# select the F key
+root@cks-worker:~# aa-genprof curl
+
+Before you begin, you may wish to check if a
+profile already exists for the application you
+wish to confine. See the following wiki page for
+more information:
+http://wiki.apparmor.net/index.php/Profiles
+
+Profiling: /usr/bin/curl
+
+Please start the application to be profiled in
+another window and exercise its functionality now.
+
+Once completed, select the "Scan" option below in
+order to scan the system logs for AppArmor events.
+
+For each AppArmor event, you will be given the
+opportunity to choose whether the access should be
+allowed or denied.
+
+[(S)can system log for AppArmor events] / (F)inish
+
+Profiling: /usr/bin/curl
+
+Please start the application to be profiled in
+another window and exercise its functionality now.
+
+Once completed, select the "Scan" option below in
+order to scan the system logs for AppArmor events.
+
+For each AppArmor event, you will be given the
+opportunity to choose whether the access should be
+allowed or denied.
+
+[(S)can system log for AppArmor events] / (F)inish
+
+Profiling: /usr/bin/curl
+
+Please start the application to be profiled in
+another window and exercise its functionality now.
+
+Once completed, select the "Scan" option below in
+order to scan the system logs for AppArmor events.
+
+For each AppArmor event, you will be given the
+opportunity to choose whether the access should be
+allowed or denied.
+
+[(S)can system log for AppArmor events] / (F)inish
+
+Reloaded AppArmor profiles in enforce mode.
+
+Please consider contributing your new profile!
+See the following wiki page for more information:
+http://wiki.apparmor.net/index.php/Profiles
+
+Finished generating profile for /usr/bin/curl.
+
+root@cks-worker:~# curl killer.sh -v
+* Rebuilt URL to: killer.sh/
+*   Trying 35.227.196.29...
+* TCP_NODELAY set
+* Connected to killer.sh (35.227.196.29) port 80 (#0)
+> GET / HTTP/1.1
+> Host: killer.sh
+> User-Agent: curl/7.58.0
+> Accept: */*
+>
+< HTTP/1.1 301 Moved Permanently
+< Cache-Control: private
+< Content-Type: text/html; charset=UTF-8
+< Referrer-Policy: no-referrer
+< Location: https://killer.sh/
+< Content-Length: 215
+< Date: Mon, 11 Oct 2021 13:42:35 GMT
+<
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="https://killer.sh/">here</A>.
+</BODY></HTML>
+* Connection #0 to host killer.sh left intact
+
+
+#check the profile
+root@cks-worker:~# aa-status
+apparmor module is loaded.
+30 profiles are loaded.
+24 profiles are in enforce mode.
+   /sbin/dhclient
+   /snap/snapd/12883/usr/lib/snapd/snap-confine
+   /snap/snapd/12883/usr/lib/snapd/snap-confine//mount-namespace-capture-helper
+   /snap/snapd/13170/usr/lib/snapd/snap-confine
+   /snap/snapd/13170/usr/lib/snapd/snap-confine//mount-namespace-capture-helper
+   /usr/bin/curl
+   /usr/bin/lxc-start
+   /usr/bin/man
+   /usr/lib/NetworkManager/nm-dhcp-client.action
+   /usr/lib/NetworkManager/nm-dhcp-helper
+   /usr/lib/connman/scripts/dhclient-script
+   /usr/lib/snapd/snap-confine
+   /usr/lib/snapd/snap-confine//mount-namespace-capture-helper
+   /usr/sbin/chronyd
+   /usr/sbin/tcpdump
+   cri-containerd.apparmor.d
+   docker-default
+   lxc-container-default
+   lxc-container-default-cgns
+   lxc-container-default-with-mounting
+   lxc-container-default-with-nesting
+   man_filter
+   man_groff
+   snap-update-ns.google-cloud-sdk
+6 profiles are in complain mode.
+   snap.google-cloud-sdk.anthoscli
+   snap.google-cloud-sdk.bq
+   snap.google-cloud-sdk.docker-credential-gcloud
+   snap.google-cloud-sdk.gcloud
+   snap.google-cloud-sdk.gsutil
+   snap.google-cloud-sdk.kubectl
+12 processes have profiles defined.
+12 processes are in enforce mode.
+   /usr/sbin/chronyd (1061)
+   cri-containerd.apparmor.d (5237)
+   cri-containerd.apparmor.d (5284)
+   cri-containerd.apparmor.d (5285)
+   cri-containerd.apparmor.d (5491)
+   cri-containerd.apparmor.d (5530)
+   cri-containerd.apparmor.d (5531)
+   cri-containerd.apparmor.d (5534)
+   cri-containerd.apparmor.d (5831)
+   cri-containerd.apparmor.d (5858)
+   cri-containerd.apparmor.d (5859)
+   cri-containerd.apparmor.d (5860)
+0 processes are in complain mode.
+0 processes are unconfined but have a profile defined.
+```
+
+```sh
+
+root@cks-worker:~# cd /etc/apparmor.d
+root@cks-worker:/etc/apparmor.d# l
+abstractions/    lxc-containers     usr.lib.snapd.snap-confine.real
+cache/           sbin.dhclient      usr.sbin.chronyd
+disable/         tunables/          usr.sbin.rsyslogd
+force-complain/  usr.bin.curl       usr.sbin.tcpdump
+local/           usr.bin.lxc-start
+lxc/             usr.bin.man
+root@cks-worker:/etc/apparmor.d# vim usr.bin.curl
+
+#change the usr.bin.curl
+
+```
+
+
+
+##### 153. Practice - AppArmor for Docker Nginx
+
+> AppArmor & Docker 
+>
+> **Nginx Docker container users AppArmor profile**
+
+
+
+apparmor profile
+https://github.com/killer-sh/cks-course-environment/blob/master/course-content/system-hardening/kernel-hardening-tools/apparmor/profile-docker-nginx
+
+```sh
+copy the above url to docker-nginx
+root@cks-worker:/etc/apparmor.d# vim docker-nginx
+
+```
+
+k8s docs apparmor
+https://kubernetes.io/docs/tutorials/clusters/apparmor/#example
+
+```sh
+root@cks-worker:/etc/apparmor.d# apparmor_parser /etc/apparmor.d/docker-nginx
+root@cks-worker:/etc/apparmor.d# aa-status
+apparmor module is loaded.
+31 profiles are loaded.
+25 profiles are in enforce mode.
+   /sbin/dhclient
+   /snap/snapd/12883/usr/lib/snapd/snap-confine
+   /snap/snapd/12883/usr/lib/snapd/snap-confine//mount-namespace-capture-helper
+   /snap/snapd/13170/usr/lib/snapd/snap-confine
+   /snap/snapd/13170/usr/lib/snapd/snap-confine//mount-namespace-capture-helper
+   /usr/bin/curl
+   /usr/bin/lxc-start
+   /usr/bin/man
+   /usr/lib/NetworkManager/nm-dhcp-client.action
+   /usr/lib/NetworkManager/nm-dhcp-helper
+   /usr/lib/connman/scripts/dhclient-script
+   /usr/lib/snapd/snap-confine
+   /usr/lib/snapd/snap-confine//mount-namespace-capture-helper
+   /usr/sbin/chronyd
+   /usr/sbin/tcpdump
+   cri-containerd.apparmor.d
+   docker-default
+   docker-nginx
+   lxc-container-default
+   lxc-container-default-cgns
+   lxc-container-default-with-mounting
+   lxc-container-default-with-nesting
+   man_filter
+   man_groff
+   snap-update-ns.google-cloud-sdk
+6 profiles are in complain mode.
+   snap.google-cloud-sdk.anthoscli
+   snap.google-cloud-sdk.bq
+   snap.google-cloud-sdk.docker-credential-gcloud
+   snap.google-cloud-sdk.gcloud
+   snap.google-cloud-sdk.gsutil
+   snap.google-cloud-sdk.kubectl
+12 processes have profiles defined.
+12 processes are in enforce mode.
+   /usr/sbin/chronyd (1102)
+   cri-containerd.apparmor.d (4963)
+   cri-containerd.apparmor.d (5009)
+   cri-containerd.apparmor.d (5010)
+   cri-containerd.apparmor.d (5107)
+   cri-containerd.apparmor.d (5132)
+   cri-containerd.apparmor.d (5133)
+   cri-containerd.apparmor.d (5134)
+   cri-containerd.apparmor.d (5271)
+   cri-containerd.apparmor.d (5297)
+   cri-containerd.apparmor.d (5298)
+   cri-containerd.apparmor.d (5299)
+0 processes are in complain mode.
+0 processes are unconfined but have a profile defined.
+
+```
+
+```sh
+root@cks-worker:/etc/apparmor.d# docker run nginx
+root@cks-worker:/etc/apparmor.d# docker run --security-opt apparmor=docker-default nginx
+root@cks-worker:/etc/apparmor.d# docker run --security-opt apparmor=docker-nginx nginx
+/docker-entrypoint.sh: 13: /docker-entrypoint.sh: cannot create /dev/null: Permission denied
+
+#Because the docker-nginx profile,it can't create the file in docker-nginx
+root@cks-worker:/etc/apparmor.d# docker run --security-opt apparmor=docker-nginx -d nginx
+0b430f493661cfd4b79a73b500c16a0a86bd7e37614076169b74912c1154cff9
+
+root@cks-worker:/etc/apparmor.d# docker exec -it 0b430f493661cfd4b79a73b500c16a0a86bd7e37614076169b74912c1154cff9 sh
+# ls
+bin   dev                  docker-entrypoint.sh  home  lib64  mnt  proc  run   srv  tmp  var
+boot  docker-entrypoint.d  etc                   lib   media  opt  root  sbin  sys  usr
+# touch /root/test
+touch: cannot touch '/root/test': Permission denied
+# touch /test
+# sh
+sh: 7: sh: Permission denied
+```
+
+```sh
+root@cks-worker:/etc/apparmor.d# docker exec -it 57862b0c4a259368fa7b52154fedf1a25621d9b2a9f837c098a929d0c30bebf6 sh
+# touch /root/test
+# ls /root/test
+/root/test
+```
+
+
+
+##### 154. Practice -AppArmor for Kubernetes Nginx
+
+> - Container runtime needs to support AppArmor
+> - AppArmor needs to be installed on every node
+> - AppArmor profiles need to be available on every node
+> - AppArmor profiles are **specified per container** 
+>   - done using annotations
+
+![](./images/Section27/Screenshot_7.png)
+
+```sh
+
+root@cks-master:~# k run secure --image=nginx -oyaml --dry-run=client > pod.yamlroot@cks-master:~# vim pod.yaml
+root@cks-master:~# vim pod.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: secure
+  name: secure
+  annotations:
+    container.apparmor.security.beta.kubernetes.io/secure: localhost/hello
+spec:
+  containers:
+  - image: nginx
+    name: secure
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+
+root@cks-master:~# k -f pod.yaml create
+pod/secure created
+---
+
+#recrate pod
+root@cks-master:~# k get pod secure
+NAME     READY   STATUS    RESTARTS   AGE
+secure   0/1     Blocked   0          31s
+root@cks-master:~# k describe pod secure | grep Reason
+Reason:       AppArmor
+      Reason:       Blocked
+  Type    Reason     Age   From               Message
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: secure
+  name: secure
+  annotations:
+    container.apparmor.security.beta.kubernetes.io/secure: localhost/docker-ngin
+x
+spec:
+  containers:
+  - image: nginx
+    name: secure
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:~# k get pod secure
+NAME     READY   STATUS    RESTARTS   AGE
+secure   1/1     Running   0          13s
+
+root@cks-master:~# k exec -it secure -- bash
+root@secure:/# sh
+bash: /bin/sh: Permission denied
+root@secure:/# touch test
+root@secure:/# ls
+bin   docker-entrypoint.d   home   media  proc  sbin  test  var
+boot  docker-entrypoint.sh  lib    mnt    root  srv   tmp
+dev   etc                   lib64  opt    run   sys   usr
+root@secure:/# touch /root/test
+touch: cannot touch '/root/test': Permission denied
+root@secure:/# ls
+bin   docker-entrypoint.d   home   media  proc  sbin  test  var
+boot  docker-entrypoint.sh  lib    mnt    root  srv   tmp
+dev   etc                   lib64  opt    run   sys   usr
+
+```
+
+##### 155. Seccomp
+
+> "secure computing mode" 
+>
+> Security facility in the Linux Kernel
+>
+> Restricts execution of syscalls
+
+![](./images/Section27/Screenshot_8.png)
+
+##### 
+
+![](./images/Section27/Screenshot_9.png)
+
+
+
+![](./images/Section27/Screenshot_10.png)
+
+
+
+
+
+![](./images/Section27/Screenshot_11.png)
+
+
+
+
+
+##### 156 Practice - Seccomp for Docker Nginx
+
+```sh
+#copy the below
+#https://github.com/killer-sh/cks-course-environment/blob/master/course-content/system-hardening/kernel-hardening-tools/seccomp/profile-docker-nginx.json
+# remove "write"
+# vim default.json
+
+root@cks-worker:~# docker run --security-opt seccomp=default.json nginx
+docker: Error response from daemon: OCI runtime start failed: cannot start an already running container: unknown.
+ERRO[0000] error waiting for container: context canceled
+
+```
+
+##### 157.Practice seccomp for Kubernetes Nginx
+
+> **Create a Nginx Pod in Kubernetes and assign a seccomp profile to it**
+
+https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/#:~:text=--seccomp-profile-root%20string%C2%A0%C2%A0%C2%A0%C2%A0%C2%A0Default%3A%20/var/lib/kubelet/seccomp
+
+```sh
+root@cks-worker:~# mkdir /var/lib/kubelet/seccomp
+root@cks-worker:~# mv default.json /var/lib/kubelet/seccomp/
+
+root@cks-master:~# vim pod.yaml
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: secure
+  name: secure
+spec:
+  securityContext:
+    seccompProfile:
+      type: Localhost
+      localhostProfile: profiles/audit.json
+  containers:
+  - image: nginx
+    name: secure
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+admission_127_ImagePolicyWebhook  pod.yaml  policy.yaml
+root@cks-master:~# vim pod.yaml
+root@cks-master:~# k -f pod.yaml delete --force --grace-period=0
+warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "secure" force deleted
+root@cks-master:~# k -f pod.yaml create
+pod/secure created
+root@cks-master:~# k get pod
+NAME     READY   STATUS                 RESTARTS   AGE
+secure   0/1     CreateContainerError   0          82s
+
+root@cks-master:~# k describe pod secure
+Warning  Failed     14s (x7 over 93s)  kubelet            Error: failed to create containerd container: cannot load seccomp profile "/var/lib/kubelet/seccomp/profiles/audit.json": open /var/lib/kubelet/seccomp/profiles/audit.json: no such file or directory
+
+vim pod.yaml 
+---
+
+root@cks-master:~# cat pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: secure
+  name: secure
+spec:
+  securityContext:
+    seccompProfile:
+      type: Localhost
+      localhostProfile: default.json
+  containers:
+  - image: nginx
+    name: secure
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+---
+root@cks-master:~# k get pod
+NAME     READY   STATUS              RESTARTS   AGE
+secure   0/1     RunContainerError   0          4s
+root@cks-master:~# k describe pod secure
+  Warning  Failed     5s (x3 over 26s)  kubelet            Error: failed to start containerd task "secure": OCI runtime start failed: cannot start an already running container: unknown
+
+```
+
+https://kubernetes.io/docs/tutorials/clusters/seccomp/#create-a-pod-with-a-seccomp-profile-for-syscall-auditing
+
+
+
+```sh
+# add write
+root@cks-worker:~# vim  /var/lib/kubelet/seccomp/default.json
+---
+        "write",
+---
+# create pod again
+root@cks-master:~# k -f pod.yaml delete --force --grace-period=0
+warning: Immediate deletion does not wait for confirmation that the running resource has been terminated. The resource may continue to run on the cluster indefinitely.
+pod "secure" force deleted
+root@cks-master:~# k -f pod.yaml create
+pod/secure created
+root@cks-master:~# k get pod
+NAME     READY   STATUS              RESTARTS   AGE
+secure   0/1     ContainerCreating   0          3s
+root@cks-master:~# k get pod
+NAME     READY   STATUS    RESTARTS   AGE
+secure   1/1     Running   0          6s
+
+```
+
+
+
+##### 158Recap
+
+ syscalls
+https://www.youtube.com/watch?v=8g-NUUmCeGI
+
+ AppArmor, SELinux Introduction 
+https://www.youtube.com/watch?v=JFjXvIwAeVI
+
+
+
+> - Syscalls
+> - AppArmor
+> - Seccomp
+> - Docker & K8s
+
+
+
 #### Section 28 System Hardening - Reduce Attack Surface
-##### Intro
-##### Recap
+##### 158.Intro
+
+![](./images/Section28/Screenshot_1.png)
+
+
+
+![](./images/Section28/Screenshot_2.png)
+
+![](./images/Section28/Screenshot_3.png)
+
+![](./images/Section28/Screenshot_4.png)
+
+##### 159. Practice - Systemctl and Services
+
+> Disable Service Snap
+>
+> **Disable Service Snapd via systemctl**
+
+```sh
+root@cks-master:~# systemctl stop snapd
+Warning: Stopping snapd.service, but it can still be activated by:
+  snapd.socket
+root@cks-master:~# systemctl list-units --type=service --state=running | grep snapd
+
+root@cks-master:~# systemctl list-units --type=service --state=running | grep snapd
+snapd.service                 loaded active running Snap Daemon
+
+```
+
+##### 161. Practice - Install and investigate Services
+
+```sh
+
+root@cks-master:~# apt-get update
+root@cks-master:~# apt-get install vsftpd samba
+
+root@cks-master:~# systemctl status vsftpd
+● vsftpd.service - vsftpd FTP server
+   Loaded: loaded (/lib/systemd/system/vsftpd.service; enabled; vendor preset: enabled)
+   Active: active (running) since Thu 2021-10-14 02:46:52 UTC; 1min 8s ago
+ Main PID: 26788 (vsftpd)
+    Tasks: 1 (limit: 4666)
+   CGroup: /system.slice/vsftpd.service
+           └─26788 /usr/sbin/vsftpd /etc/vsftpd.conf
+
+Oct 14 02:46:52 cks-master systemd[1]: Starting vsftpd FTP server...
+Oct 14 02:46:52 cks-master systemd[1]: Started vsftpd FTP server.
+
+root@cks-master:~# systemctl status smbd
+● smbd.service - Samba SMB Daemon
+   Loaded: loaded (/lib/systemd/system/smbd.service; enabled; vendor preset: enabled)
+   Active: active (running) since Thu 2021-10-14 02:46:57 UTC; 1min 31s ago
+     Docs: man:smbd(8)
+           man:samba(7)
+           man:smb.conf(5)
+ Main PID: 27112 (smbd)
+   Status: "smbd: ready to serve connections..."
+    Tasks: 4 (limit: 4666)
+   CGroup: /system.slice/smbd.service
+           ├─27112 /usr/sbin/smbd --foreground --no-process-group
+           ├─27131 /usr/sbin/smbd --foreground --no-process-group
+           ├─27132 /usr/sbin/smbd --foreground --no-process-group
+           └─27141 /usr/sbin/smbd --foreground --no-process-group
+
+Oct 14 02:46:57 cks-master systemd[1]: Starting Samba SMB Daemon...
+Oct 14 02:46:57 cks-master systemd[1]: Started Samba SMB Daemon.
+
+root@cks-master:~# ps aux | grep vsftpd
+root     26788  0.0  0.0  29152  2984 ?        Ss   02:46   0:00 /usr/sbin/vsftpd /etc/vsftpd.conf
+root     28887  0.0  0.0  14860  1016 pts/0    S+   02:49   0:00 grep --color=auto vsftpd
+root@cks-master:~# ps aux | grep smbd
+root     27112  0.0  0.5 357576 20860 ?        Ss   02:46   0:00 /usr/sbin/smbd --foreground --no-process-group
+root     27131  0.0  0.1 345524  6080 ?        S    02:46   0:00 /usr/sbin/smbd --foreground --no-process-group
+root     27132  0.0  0.1 345516  4736 ?        S    02:46   0:00 /usr/sbin/smbd --foreground --no-process-group
+root     27141  0.0  0.1 357576  5664 ?        S    02:46   0:00 /usr/sbin/smbd --foreground --no-process-group
+root     29082  0.0  0.0  14860  1044 pts/0    S+   02:49   0:00 grep --color=auto smbd
+
+```
+
+```sh
+root@cks-master:~# ps aux | grep vsftpd
+root     26788  0.0  0.0  29152  2984 ?        Ss   02:46   0:00 /usr/sbin/vsftpd /etc/vsftpd.conf
+root     28887  0.0  0.0  14860  1016 pts/0    S+   02:49   0:00 grep --color=auto vsftpd
+root@cks-master:~# ps aux | grep smbd
+root     27112  0.0  0.5 357576 20860 ?        Ss   02:46   0:00 /usr/sbin/smbd --foreground --no-process-group
+root     27131  0.0  0.1 345524  6080 ?        S    02:46   0:00 /usr/sbin/smbd --foreground --no-process-group
+root     27132  0.0  0.1 345516  4736 ?        S    02:46   0:00 /usr/sbin/smbd --foreground --no-process-group
+root     27141  0.0  0.1 357576  5664 ?        S    02:46   0:00 /usr/sbin/smbd --foreground --no-process-group
+root     29082  0.0  0.0  14860  1044 pts/0    S+   02:49   0:00 grep --color=auto smbd
+#find smbd and vsftpd
+root@cks-master:~# netstat -plnt
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 127.0.0.1:10257         0.0.0.0:*               LISTEN      3417/kube-controlle
+tcp        0      0 127.0.0.1:10259         0.0.0.0:*               LISTEN      3638/kube-scheduler
+tcp        0      0 127.0.0.1:32917         0.0.0.0:*               LISTEN      1030/kubelet
+tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      842/systemd-resolve
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1718/sshd
+tcp        0      0 0.0.0.0:445             0.0.0.0:*               LISTEN      27112/smbd
+tcp        0      0 127.0.0.1:6784          0.0.0.0:*               LISTEN      5303/weaver
+tcp        0      0 127.0.0.1:45063         0.0.0.0:*               LISTEN      1156/containerd
+tcp        0      0 127.0.0.1:10248         0.0.0.0:*               LISTEN      1030/kubelet
+tcp        0      0 127.0.0.1:10249         0.0.0.0:*               LISTEN      4570/kube-proxy
+tcp        0      0 0.0.0.0:139             0.0.0.0:*               LISTEN      27112/smbd
+tcp        0      0 127.0.0.1:2379          0.0.0.0:*               LISTEN      3949/etcd
+tcp        0      0 10.146.0.2:2379         0.0.0.0:*               LISTEN      3949/etcd
+tcp        0      0 10.146.0.2:2380         0.0.0.0:*               LISTEN      3949/etcd
+tcp        0      0 127.0.0.1:2381          0.0.0.0:*               LISTEN      3949/etcd
+tcp6       0      0 :::10256                :::*                    LISTEN      4570/kube-proxy
+tcp6       0      0 :::21                   :::*                    LISTEN      26788/vsftpd
+tcp6       0      0 :::22                   :::*                    LISTEN      1718/sshd
+tcp6       0      0 :::6781                 :::*                    LISTEN      5214/weave-npc
+tcp6       0      0 :::445                  :::*                    LISTEN      27112/smbd
+tcp6       0      0 :::6782                 :::*                    LISTEN      5303/weaver
+tcp6       0      0 :::6783                 :::*                    LISTEN      5303/weaver
+tcp6       0      0 :::10250                :::*                    LISTEN      1030/kubelet
+tcp6       0      0 :::6443                 :::*                    LISTEN      4181/kube-apiserver
+tcp6       0      0 :::139                  :::*                    LISTEN      27112/smbd
+
+# add interfaces
+
+root@cks-master:~# vim /etc/samba/smb.conf
+
+---
+interfaces = 127.0.0.0/8 eth0
+bind interfaces only = yes
+---
+root@cks-master:~# netstat -plnt | grep smbd
+tcp        0      0 127.0.0.1:445           0.0.0.0:*               LISTEN      32673/smbd
+tcp        0      0 127.0.0.1:139           0.0.0.0:*               LISTEN      32673/smbd
+
+```
+
+
+
+##### 162. Practice - Disable application listening on port
+
+Remove FTP server
+
+> Find and disable the application that is listening on port 21
+
+```sh
+root@cks-master:~# netstat -plnt | grep 21
+tcp6       0      0 :::21                   :::*                    LISTEN      1532/vsftpd
+tcp6       0      0 :::6781                 :::*                    LISTEN      5021/weave-npc
+
+root@cks-master:~# lsof -i :21
+COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+vsftpd  1532 root    3u  IPv6  22327      0t0  TCP *:ftp (LISTEN)
+
+root@cks-master:~# systemctl list-units --type service | grep ftp
+  vsftpd.service                                 loaded active running vsftpd FTP server                 
+root@cks-master:~# systemctl status vsftpd
+● vsftpd.service - vsftpd FTP server
+   Loaded: loaded (/lib/systemd/system/vsftpd.service; enabled; vendor preset: enabled)
+   Active: active (running) since Thu 2021-10-14 04:06:08 UTC; 3min 6s ago
+  Process: 1261 ExecStartPre=/bin/mkdir -p /var/run/vsftpd/empty (code=exited, status=0/SUCCESS)
+ Main PID: 1532 (vsftpd)
+    Tasks: 1 (limit: 4666)
+   CGroup: /system.slice/vsftpd.service
+           └─1532 /usr/sbin/vsftpd /etc/vsftpd.conf
+
+Oct 14 04:06:04 cks-master systemd[1]: Starting vsftpd FTP server...
+Oct 14 04:06:08 cks-master systemd[1]: Started vsftpd FTP server.
+root@cks-master:~# systemctl stop vsftpd
+root@cks-master:~# netstat -plnt | grep 21
+tcp6       0      0 :::6781                 :::*                    LISTEN      5021/weave-npc
+
+```
+
+
+
+##### 163. Practice -Investigate Linux Users
+
+> Investigate Linux Users
+
+```sh
+root@cks-master:~# su ubuntu
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+ubuntu@cks-master:/root$ whoami
+ubuntu
+
+# find login users
+root@cks-master:~# ps aux | grep bash
+marsfor+  2741  0.0  0.1  23172  5176 pts/0    Ss   04:06   0:00 -bash
+root      3660  0.0  0.3  30988 12904 pts/0    S    04:07   0:00 -bash
+ubuntu    8399  0.0  0.1  23104  5012 pts/0    S    04:13   0:00 bash
+root      8604  1.0  0.3  30988 12828 pts/0    S    04:13   0:00 -bash
+root      8757  0.0  0.0  14860  1040 pts/0    S+   04:14   0:00 grep --color=auto bash
+root@cks-master:~# exit
+logout
+ubuntu@cks-master:/root$ ps aux | grep bash
+marsfor+  2741  0.0  0.1  23172  5176 pts/0    Ss   04:06   0:00 -bash
+root      3660  0.0  0.3  30988 12904 pts/0    S    04:07   0:00 -bash
+ubuntu    8399  0.0  0.1  23104  5012 pts/0    S    04:13   0:00 bash
+ubuntu    9142  0.0  0.0  14860  1012 pts/0    R+   04:15   0:00 grep --color=auto bash
+
+exit
+root@cks-master:~# ps aux | grep bash
+marsfor+  2741  0.0  0.1  23172  5176 pts/0    Ss   04:06   0:00 -bash
+root      3660  0.0  0.3  30988 12904 pts/0    S    04:07   0:00 -bash
+root      9359  0.0  0.0  14860  1056 pts/0    S+   04:15   0:00 grep --color=auto bash
+
+
+```
+
+##### 164.Recap
+
+> - Attack Surface
+> - Applications / Services
+> - Network / Ports
+> - Users / IAM
+
 #### Section 29 CKS Exam Series
 
 ##### 

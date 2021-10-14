@@ -4,3 +4,10 @@
 2. Ctrl-v で矩形選択モードにし、j を数回押して、対象範囲の行の行頭がすべて選択された状態にする。
 3. Shift-i で行頭への挿入モードに入り、任意の文字を入力。
 4. Esc で挿入モードを抜ける。
+
+
+
+# vim操作一覧表
+
+https://www.ne.jp/asahi/hishidama/home/tech/unix/vi.html
+
