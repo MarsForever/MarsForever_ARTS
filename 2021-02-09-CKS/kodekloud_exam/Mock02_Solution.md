@@ -177,14 +177,13 @@ metadata:
     name: dev-user-access
     namespace: dev-z
 rules:
-    -
-        apiGroups:
-            - ""
-        resources:
-            - pods
-        verbs:
-            - get
-            - list
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
 ```
 
 #### No.6

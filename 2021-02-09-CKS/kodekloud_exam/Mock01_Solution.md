@@ -78,6 +78,11 @@ Next, Delete the unused service accounts in the 'omni' namespace.
 controlplane$ kubectl -n omni delete sa frontend
 controlplane$ kubectl -n omni delete sa fe
 ```
+- correct service account used?
+- obsolete service accounts deleted?
+- internal-site restricted?
+- pod running?
+
 #### No.02
 
 A pod has been created in the `orion` namespace. It uses secrets as environment variables. Extract the decoded secret for the `CONNECTOR_PASSWORD` and place it under `/root/CKS/secrets/CONNECTOR_PASSWORD`.
@@ -220,8 +225,15 @@ Weight: 12
 ```
 
 - apiserver working?
-
 - Issues fixed?
+
+
+
+#### Solution
+
+The fixes are mentioned in the same report. Update the `kube-apiserver` static pod definition file as per the recommendations.
+
+1. Make sure that `--authorization-mode=Node,RBAC`.
 
 #### No.06
 
