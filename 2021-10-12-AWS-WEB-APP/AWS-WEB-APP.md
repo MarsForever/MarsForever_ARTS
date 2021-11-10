@@ -1077,6 +1077,12 @@ Host i-* mi-*
     ProxyCommand C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe "aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters portNumber=%p"
 ```
 
+#### 仮想マシンへファイル転送(SCP on SSM)
 
+![](./images/Screenshot_223.png)
+
+![](./images/Screenshot_224.png)
+
+![](./images/Screenshot_225.png)
 
 ## Section 18 おわりに
