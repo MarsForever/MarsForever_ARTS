@@ -1180,31 +1180,641 @@ VPC=>セキュリティグループの画面からinboudとoutboundにある内�
 
 
 
+
+
+
+
+![](./images/Screenshot_108.png)
+
+![](./images/Screenshot_109.png)
+
+rds.tf
+
+```
+# -----------------------------------
+# RDS parameter group
+# -----------------------------------
+resource "aws_db_parameter_group" "mysql_standalone_parametergroup" {
+  name   = "${var.project}-${var.environment}-mysql-standalone-parametergroup"
+  family = "mysql8.0"
+
+  parameter {
+    name  = "character_set_database"
+    value = "utf8mb4"
+  }
+
+  parameter {
+    name  = "character_set_server"
+    value = "utf8mb4"
+  }
+}
+```
+
+
+
+実行コマンド
+
+```
+terraform fmt
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+確認
+
+RDS=>パラメータグループ(選択されたリージョンを注意する)
+
+character_set_databaseとcharacter_set_serverが正しく設定されていることを確認する
+
 #### オプショングループの作成
+
+![](./images/Screenshot_110.png)
+
+
+
+![](./images/Screenshot_111.png)
+
+rds.tfに追加する
+
+```
+# -----------------------------------
+# RDS option group
+# -----------------------------------
+resource "aws_db_option_group" "mysql_standalone_optiongroup" {
+  name   = "${var.project}-${var.environment}-mysql-standalone-optiongroup"
+  engine_name = "mysql"
+  major_engine_version = "8.0"
+}
+```
+
+実行コマンド
+
+```
+terraform fmt
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+RDS => オプショングループ画面を確認する
+
+
 
 #### サブネットグループの作成
 
+![](./images/Screenshot_112.png)
+
+
+
+![](./images/Screenshot_113.png)
+
+
+
+![](./images/Screenshot_114.png)
+
+
+
+rds.ftに追加する
+
+```
+# -----------------------------------
+# RDS subnet group
+# -----------------------------------
+resource "aws_db_subnet_group" "mysql_standalone_subnetgroup" {
+  name = "${var.project}-${var.environment}-mysql-standalone-subnetgroup"
+  subnet_ids = [
+    aws_subnet.private_subnet_1a.id,
+    aws_subnet.private_subnet_1c.id
+  ]
+  tags = {
+    Name    = "${var.project}-${var.environment}-mysql-standalone-subnetgroup"
+    Project = var.project
+    Env     = var.environment
+  }
+}
+```
+
+実行コマンド
+
+```
+terraform fmt
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+RDS => サブネットグループ画面を確認する
+
+サブネットが入っていることを確認する
+
 #### ランダム文字列の作成
+
+パスワードを作成するためにランダム文字列を作成する
+
+![](./images/Screenshot_115.png)
+
+
+
+![](./images/Screenshot_116.png)
+
+![](./images/Screenshot_117.png)
+
+
+
+rds.tfに追加する
+
+```
+
+# -----------------------------------
+# RDS instance
+# -----------------------------------
+resource "random_string" "db_password" {
+  length = 16
+  special = false
+}
+```
+
+実行コマンド
+
+```sh
+terraform fmt
+#hashicorp/randomを生成するため
+terraform init
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+terraform.tfstateを確認する
+
+db_password
+
+
 
 #### RDSの作成
 
+![](./images/Screenshot_118.png)
+
+![](./images/Screenshot_119.png)
+
+![](./images/Screenshot_120.png)
+
+
+
+
+
+![](./images/Screenshot_121.png)
+
+![](./images/Screenshot_122.png)
+
+![](./images/Screenshot_123.png)
+
+
+
+![](./images/Screenshot_124.png)
+
+![](./images/Screenshot_125.png)
+
+![](./images/Screenshot_126.png)
+
+
+
+rds.tfに追加する
+
+```
+# -----------------------------------
+# RDS instance
+# -----------------------------------
+resource "random_string" "db_password" {
+  length = 16
+  special = false
+}
+```
+
+
+
+実行コマンド
+
+```sh
+terraform fmt
+#hashicorp/randomを生成するため
+terraform init
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+RDS => オプショングループ画面を確認する
+
+
+
+#### RDSの作成(演習)
+
+
+
+
+
+![](./images/Screenshot_127.png)
+
+
+
+![](./images/Screenshot_118.png)
+
+rds.tfに追加する
+
+```sh
+
+resource "aws_db_instance" "mysql_standalone" {
+  #基本設定
+  engine         = "mysql"
+  engine_version = "8.0.20"
+  identifier    = "${var.project}-${var.environment}-mysql-standalone"
+  instance_class = "db.t2.micro"
+  username       = "admin"
+  password       = random_string.db_password.result
+
+  #ストレージ
+  #基本20GB
+  allocated_storage = 20
+  #最大50GB
+  max_allocated_storage = 50
+  storage_type          = "gp2"
+  storage_encrypted     = false
+
+  #ネットワーク
+  multi_az               = false
+  availability_zone      = "ap-northeast-1a"
+  db_subnet_group_name   = aws_db_subnet_group.mysql_standalone_subnetgroup.name
+  vpc_security_group_ids = [aws_security_group.db_sg.id]
+  publicly_accessible    = false
+  port                   = 3306
+
+  #DB設定
+  name                 = "tasylog"
+  parameter_group_name = aws_db_parameter_group.mysql_standalone_parametergroup.name
+  option_group_name    = aws_db_option_group.mysql_standalone_optiongroup.name
+
+  #バックアップ
+  #backupの時間
+  backup_window = "04:00-05:00"
+  #backupの日数
+  backup_retention_period    = 7
+  maintenance_window         = "Mon:05:00-Mon:08:00"
+  auto_minor_version_upgrade = false
+
+  #削除防止
+  deletion_protection = true
+  skip_final_snapshot = false
+  apply_immediately   = true
+
+  tags = {
+    Name    = "${var.project}-${var.environment}-mysql-standalone"
+    Project = var.project
+    Env     = var.environment
+  }
+}
+```
+
+実行コマンド
+
+```sh
+terraform fmt
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+RDS => データベース画面を確認する
+
 #### RDSのパスワード
 
-#### RDSの削除
+![](./images/Screenshot_128.png)
+
+
+
+![](./images/Screenshot_129.png)
+
+![](./images/Screenshot_130.png)
+
+
+
+![](./images/Screenshot_131.png)
+
+
+
+![](./images/Screenshot_132.png)
+
+
+
+#### RDSの削除防止
+
+
+
+![](./images/Screenshot_133.png)
+
+![](./images/Screenshot_134.png)
+
+![](./images/Screenshot_135.png)
+
+rds.tf変更点
+
+```sh
+#削除時
+  deletion_protection = false
+  skip_final_snapshot = true
+```
+
+
+
+実行コマンド
+
+```sh
+terraform fmt
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+下記の内容をコメントアウトする
+
+```
+# resource "aws_db_instance" "mysql_standalone" {
+}
+```
+
+データベースを削除する
+
+```
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+RDS => データベース画面（削除されていること）を確認する
+
+
+
+データベースを元に戻すには、コメントアウトを外す
+```
+resource "aws_db_instance" "mysql_standalone" {
+}
+```
+
+データベースを作成する
+
+```
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+RDS => データベース画面を確認する
 
 #### RDS接続用踏み台サーバー作成(手動)
 
+#####　鍵作成
+
+EC2 => キーペア画面=>作成する
+
+名前:tmp-tastylog-dev-keypair
+
+鍵ファイルをダウンロードする
+
+##### EC2を作成する
+
+VPCはtastylog-dev-vpcを選択する
+
+サブネットはtastylog-dev-public-subnet-1aを選択する
+
+パブリックIPの自動割り当てを有効に設定する
+
+セキュリティグループを追加する
+
+　tastylog-dev-opmng
+
+​    tastylog-dev-app-sg
+
+キーペアは作成した　tmp-tastylog-dev-keypair　を選択する
+
+インスタンス起動する
+
+##### EC2にアクセスする
+
+C:\Users\＄usernameの配下にキーペアを置く(他の箇所だと権限が広すぎることでアクセスできない)
+
+```sh
+ ssh -i .\tmp-tastylog-dev-keypair.pem ec2-user@$publicIP
+ #mysqlをインストールする
+ sudo yum localinstall -y https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
+ #GPG鍵をインストールする
+ sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
+ #clientをインストールする
+ sudo yum install -y mysql-community-client
+```
+
+terraform.tfstateからaddress、username、passwordを取得する
+
+```sh
+mysql -h"${address}" -P"${MYSQL_PORT}" -u"${MYSQL_USERNAME}" -p"${MYSQL_PASSWORD}"
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| tasylog            |
++--------------------+
+```
+
+
+
 #### RDSへデータ投入(手動)
+
+![](./images/Screenshot_136.png)
+
+
+
+![](./images/Screenshot_136.png)
+
+ファイルを転送する
+
+```sh
+scp -i .\tmp-tastylog-dev-keypair.pem ..\data.tar.gz ec2-user$publicIP:/home/ec2-user/
+#ログインして転送ファイルを確認する
+ls -l
+#ファイルを解凍する
+ tar -zxvf ./data.tar.gz
+#bdaccess.cnfを編集する
+# terraform.tfstateを参照する
+#password、host（address）
+
+#userを更新する
+cd 10_alter_user/
+#パスワードを変更する
+vi  alter_user.sql
+sh alter_user.sh
+
+#テーブルを作成する
+cd ../20_create_table/
+sh create_table.sh
+
+#データをinsertする
+cd ../30_insert_data/
+sh insert_sampledata.sh
+```
+
+```sh
+#データベースにログインする
+mysql -h"${address}" -P"${MYSQL_PORT}" -u"${MYSQL_USERNAME}" -p"${MYSQL_PASSWORD}"
+
+#データを確認する
+use tastylog;
+show tables;
+mysql> select * from t_user limit 10;
+```
+
+EC2を終了する
+
+EC2のキーペアを削除する
 
 ### Section 10: EC2 APサーバー作成(1)
 
 #### AMIの検索
 
+![](./images/Screenshot_138.png)
+
+
+
+![](./images/Screenshot_139.png)
+
+
+
+
+
+
+
+![](./images/Screenshot_140.png)
+
+
+
+![](./images/Screenshot_141.png)
+
+
+
+![](./images/Screenshot_142.png)
+
+![](./images/Screenshot_143.png)
+
+```sh
+aws ec2 describe-images --image-ids ami-0bcc04d20228d0cf6
+
+#下記の内容が表示される
+ "ImageOwnerAlias": "amazon",
+            "Name": "amzn2-ami-kernel-5.10-hvm-2.0.20220419.0-x86_64-gp2",
+            "RootDeviceName": "/dev/xvda",
+            "RootDeviceType": "ebs",
+            "SriovNetSupport": "simple",
+            "VirtualizationType": "hvm",
+```
+
+data.tfに追加する
+
+```tf
+data "aws_ami" "app" {
+  most_recent = true
+  owners = [ "slef", "amazon" ]
+
+  filter{
+    name = "name"
+    values = ["amzn2-ami-kernel-5.10-hvm-2.0.*-x86_64-gp2"]
+  }
+  filter {
+    name = "root-device-type"
+    values = ["ebs"]
+  }
+  filter{
+    name = "virtualzation-type"
+    values = ["hvm"]
+  }
+}
+```
+
+
+
+実行コマンド
+
+```sh
+terraform fmt
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+取り込まれているのかを確認する
+
+terraform.tfstateファイルに「aws_ami」を検索する
+
+idはawsのマネジメントコンソールと一致するのかを確認する
+
 #### キーペアの作成
+
+![](./images/Screenshot_144.png)
+
+![](./images/Screenshot_145.png)
+
+
+
+
+
+![](./images/Screenshot_146.png)
+
+![](./images/Screenshot_147.png)
+
+![](./images/Screenshot_148.png)
+
+```
+ssh-keygen -t rsa -b 2048 -f tastylog-dev-keypair
+```
+
+vscodeからsrcフォルダを作成し、作成した暗号鍵と公開鍵をsrcフォルダに移動する
+
+tastylog-dev-keypairを「tastylog-dev-keypair.pem」に変更する
+
+appserver.tf
+
+```
+resource "aws_key_pair" "keypair" {
+  key_name = "${var.project}-${var.environment}-keypair"
+  public_key = file("./src/tastylog-dev-keypair.pub")
+  tags ={
+    Name    = "${var.project}-${var.environment}-keypair"
+    Project = var.project
+    Env     = var.environment
+  }
+}
+```
+
+実行コマンド
+
+```sh
+terraform fmt
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+EC2 => キーペア画面を確認する
 
 #### EC2の作成
 
+
+
 #### EC2の作成(演習)
+
+
 
 ### Terraform(ステートファイル)
 
