@@ -524,7 +524,7 @@ terraform.tfvars
 
 ![](./images/Screenshot_13.png)
 
-### 
+
 
 ![](./images/Screenshot_13.png)
 
@@ -1810,11 +1810,82 @@ EC2 => キーペア画面を確認する
 
 #### EC2の作成
 
+![](./images/Screenshot_149.png)
+
+
+
+
+
+![](./images/Screenshot_150.png)
+
+
+
+![](./images/Screenshot_151.png)
+
+![](./images/Screenshot_152.png)
+
+![](./images/Screenshot_153.png)
+
+![](./images/Screenshot_154.png)
+
+
+
 
 
 #### EC2の作成(演習)
 
+![](./images/Screenshot_155.png)
 
+![](./images/Screenshot_156.png)
+
+
+
+appserver.tf　に追加する
+
+```
+# -----------------------------------
+# EC2 Instance
+# -----------------------------------
+resource "aws_instance" "app_server" {
+  # basice setting
+  ami           = data.aws_ami.app.id
+  instance_type = "t2.micro"
+
+  # network
+  subnet_id                   = aws_subnet.public_subnet_1a.id
+  associate_public_ip_address = true
+  vpc_security_group_ids = [
+    aws_security_group.app_sg.id,
+    aws_security_group.opmng_sg.id
+  ]
+
+  # others
+  key_name = aws_key_pair.keypair.key_name
+  tags = {
+    Name    = "${var.project}-${var.environment}-app-ec2"
+    Project = var.project
+    Env     = var.environment
+    Type    = "app"
+  }
+}
+```
+
+実行コマンド
+
+```sh
+terraform fmt
+terraform plan
+#yesを入力せずに実行する
+terraform apply -auto-approve
+```
+
+EC2画面を確認する
+
+>EC2 instance
+>
+>Security group
+>
+>key pair
 
 ### Terraform(ステートファイル)
 
