@@ -224,8 +224,6 @@ terraform plan
 
 ![](./images/Screenshot_12.png)
 
-#### 
-
 ### Section 5: Terraform基本構文
 
 #### HCL2とは
@@ -284,6 +282,8 @@ terraform plan
 
 ![](./images/Screenshot_25.png)
 
+
+
 ![](./images/Screenshot_26.png)
 
 
@@ -320,9 +320,13 @@ terraform plan
 
 ![](./images/Screenshot_34.png)
 
+
+
 ##### 変数ファイルを使った上書き
 
 ![](./images/Screenshot_35.png)
+
+
 
 ##### コマンドを使った上書き
 
@@ -1137,7 +1141,7 @@ resource "aws_security_group_rule" "app_out_http" {
   protocol          = "tcp"
   from_port         = 80
   to_port           = 80
-  prefix_list_ids = data.aws_prefix_list.s3_pl.id
+  prefix_list_ids = [data.aws_prefix_list.s3_pl.id]
 }
 
 resource "aws_security_group_rule" "app_out_https" {
@@ -1654,6 +1658,7 @@ ls -l
 #userを更新する
 cd 10_alter_user/
 #パスワードを変更する
+#パスワードはterraform.tfstateにある
 vi  alter_user.sql
 sh alter_user.sh
 
@@ -1668,7 +1673,7 @@ sh insert_sampledata.sh
 
 ```sh
 #データベースにログインする
-mysql -h"${address}" -P"${MYSQL_PORT}" -u"${MYSQL_USERNAME}" -p"${MYSQL_PASSWORD}"
+mysql -h${address} -P${MYSQL_PORT} -u${MYSQL_USERNAME} -p${MYSQL_PASSWORD}
 
 #データを確認する
 use tastylog;
@@ -1887,27 +1892,967 @@ EC2画面を確認する
 >
 >key pair
 
-### Terraform(ステートファイル)
+### Section 11: Terraform(ステートファイル)
 
 #### tfstateをS3へ保管
 
+![](./images/Screenshot_157.png)
+
+![](./images/Screenshot_158.png)
+
+![](./images/Screenshot_159.png)
+
+
+
+![](./images/Screenshot_160.png)
+
+
+
+![](./images/Screenshot_161.png)
+
+![](./images/Screenshot_162.png)
+
+
+
+![](./images/Screenshot_163.png)
+
+![](./images/Screenshot_164.png)
+
+
+
+
+
+S3 にてパケットを作成する（デフォルトで作成する）
+
+パブリックアクセスのブロックを無効にする(チェックを外す)
+
+![](./images/Screenshot_165.png)
+
+パケットポリシーを編集する
+
+ポリシージェネレータボタンを押下する
+
+>IAM => ユーザ=>Terraform のARNをコピーする
+>
+>S3 => パケット=>プロパティ = ARNをコピーする
+
+![](./images/Screenshot_166.png)
+
+Add Statementボタン => Generate Policy ボタンを押下してポリシーが生成される
+
+パケットポリシーに貼り付け、idの部分を削除する(なぜ)
+
+変更して保存する
+
+ブロックパブリックアクセスにチェック入れてすべてブロックして変更保存する
+
+main.tfに追加する
+
+```
+# -----------------------------------
+# Terraform configuration
+# -----------------------------------
+terraform {
+  required_version = ">=0.13"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~>3.0"
+    }
+  }
+  backend "s3" {
+  	# backet name
+    bucket  = "tasty-tfstate-bucket-mars"
+    # bakcet 配下のフォルダ名
+    key     = "tastylog-dev.tfstate"
+    region  = "ap-northeast-1"
+    profile = "terraform"
+  }
+}
+```
+
+
+
+実行コマンド
+
+```sh
+terraform fmt
+terraform init
+```
+
+EC2画面を確認する
+
 #### リソース一覧の確認
+
+![](./images/Screenshot_167.png)
+
+
+
+![](./images/Screenshot_168.png)
+
+作成したリソースの一覧を表示する
+
+実行コマンド
+
+```sh
+terraform state list
+terraform init
+```
 
 #### リソース詳細の確認
 
+![](./images/Screenshot_169.png)
+
+![](./images/Screenshot_170.png)
+
+
+
+![](./images/Screenshot_171.png)
+
+```sh
+#リソース一覧が表示される
+terraform state list
+#リソースの詳細情報が表示される
+terraform state show aws_instance.app_server
+```
+
 #### リソース名の変更
+
+![](./images/Screenshot_172.png)
+
+
+
+![](./images/Screenshot_173.png)
+
+
+
+![](./images/Screenshot_174.png)
+
+
+
+![](./images/Screenshot_175.png)
+
+```sh
+terraform state list
+#リソース名を変更する
+terraform state mv aws_instance.app_server aws_instance.app_server2
+#app_serverサーバが削除、app_server2サーバが生成される
+terraform plan
+#appserver.tfのapp_serverをapp_server2に変更すると
+#下記のコマンドを実施しても変更がなし
+terraform plan
+#リソース名を戻す
+terraform state mv aws_instance.app_server2 aws_instance.app_server
+#差分がないことを確認する
+terraform plan
+```
+
+
 
 #### リソースの取り込み
 
+
+
+![](./images/Screenshot_176.png)
+
+
+
+![](./images/Screenshot_177.png)
+
+
+
+![](./images/Screenshot_178.png)
+
+
+
+
+
+![](./images/Screenshot_179.png)
+
+
+
+
+
+![](./images/Screenshot_180.png)
+
+
+
+![](./images/Screenshot_181.png)
+
+![](./images/Screenshot_182.png)
+
+1. EC2の作成
+
+   1. VPCはtastyを選択する
+   2. サブネットはpublic-subnet-1aを選択する
+   3. 自動割り当てパブリックIPは有効にする
+   4. セキュリティグループを選択する
+      1. tastylog-dev-db-sg
+      2. tastylog-dev-opmng-sg
+   5. keypairは作成したものを選択する
+
+2. 起動したEC2に相当するコードを作成する
+
+   1. appserver.tfに追加する
+
+   ```
+   resource "aws_instance" "test" {
+     
+   }
+   ```
+
+  3.terraform importでtfstateへ取り込む
+
+   ```sh
+   #instance idは作成したec2からコピーする
+   terraform import aws_instance.test i-0d794977ad237173c
+   #取り込みの確認
+   terraform state show aws_instance.test
+   #表示した内容をappserver.tfに反映する
+   resource "aws_instance" "test" {
+     ami = "ami-0bcc04d20228d0cf6"
+     instance_type                        = "t2.micro"
+   }
+   #変更確認
+   #変更なし
+   terraform plan
+   ```
+
+   
+
 #### リソースの削除
+
+![](./images/Screenshot_183.png)
+
+
+
+![](./images/Screenshot_184.png)
+
+
+
+![](./images/Screenshot_185.png)
+
+![](./images/Screenshot_186.png)
+
+
+
+
+
+![](./images/Screenshot_187.png)
+
+![](./images/Screenshot_188.png)
+
+appserver.tfから下記のソースを削除する
+
+```
+resource "aws_instance" "test" {
+  ami = "ami-0bcc04d20228d0cf6"
+  instance_type                        = "t2.micro"
+}
+```
+
+
+
+```sh
+#resource delete
+terraform state rm aws_instance.test
+#no changes
+terraform plan
+```
+
+不要となったec2を削除する
+
+> インスタンスを終了する
 
 #### 現状の反映
 
+![](./images/Screenshot_189.png)
+
+![](./images/Screenshot_190.png)
+
+
+
+![](./images/Screenshot_191.png)
+
+
+
+
+
+![](./images/Screenshot_192.png)
+
+![](./images/Screenshot_193.png)
+
+
+
+EC2=>タグ画面から Message:HelloWorldタグを追加する
+
+
+
+```sh
+#aws上の最新情報をtfstateファイルに反映する
+terraform refresh
+#Message タグが追加されていることが確認できた
+terraform plan
+#現状を反映する
+terraform apply -auto-approve
+```
+
+EC2=>タグ画面から Message:HelloWorldタグが削除されていることを確認する
+
+### Section 12 [IAM]ロールの作成
+
+#### IAMロールのデータ構造
+
+![](./images/Screenshot_194.png)
+
+
+
+
+
+![](./images/Screenshot_195.png)
+
+
+
+![](./images/Screenshot_196.png)
+
+![](./images/Screenshot_196.png)
+
+
+
+![](./images/Screenshot_197.png)
+
+
+
+#### 
+
+#### 信頼ポリシーの作成
+
+![](./images/Screenshot_198.png)
+
+
+
+![](./images/Screenshot_199.png)
+
+
+
+![](./images/Screenshot_200.png)
+
+policyをiam.tfに記述する
+
+```sh
+# -----------------------------------
+# IAM Role
+# -----------------------------------
+data "aws_iam_policy_document" "ec2_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+```
+
+
+
+
+
+```sh
+terraform fmt
+terraform plan
+#現状を反映する
+terraform apply -auto-approve
+#記述したものが反映されているのかを確認する
+terraform state show data.aws_iam_policy_document.ec2_assume_role
+```
+
+
+
+#### IAMロールの作成
+
+![](./images/Screenshot_201.png)
+
+iam.tfに追記する
+
+```sh
+# -----------------------------------
+# IAM Role
+# -----------------------------------
+resource "aws_iam_role" "app_iam_role" {
+  name               = "${var.project}-${var.environment}-app-iam-role"
+  assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
+}
+```
+
+
+
+
+
+```sh
+terraform fmt
+terraform plan
+#現状を反映する
+terraform apply -auto-approve
+#記述したものが反映されているのかを確認する
+terraform state show aws_iam_role.app_iam_role
+```
+
+IAM=>role画面から確認する
+
+#### 
+
+#### ポリシーのアタッチ
+
+![](./images/Screenshot_202.png)
+
+
+
+![](./images/Screenshot_203.png)
+
+![](./images/Screenshot_204.png)
+
+![](./images/Screenshot_205.png)
+
+![](./images/Screenshot_206.png)
+
+![](./images/Screenshot_207.png)
+
+iam.tfに追記する
+
+```sh
+# IAM => ポリシー画面から取得する
+resource "aws_iam_role_policy_attachment" "app_iam_role_ec2_readonly" {
+  role             = aws_iam_role.app_iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "app_iam_role_ssm_managed" {
+  role             = aws_iam_role.app_iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "app_iam_role_ssm_readonly" {
+  role             = aws_iam_role.app_iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "app_iam_role_s3_readonly" {
+  role             = aws_iam_role.app_iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+}
+```
+
+```sh
+terraform fmt
+terraform plan
+terraform apply -auto-approve
+```
+
+IAM=>role=>tastylog-dev-app-iam-role画面から下記のポリシーが追加されていることを確認する
+
+- AmazonEC2ReadOnlyAccess
+- AmazonSSMManagedInstanceCore
+- AmazonS3ReadOnlyAccess
+- AmazonSSMReadOnlyAccess
+
+#### インスタンスプロフィールの作成
+
+![](./images/Screenshot_208.png)
+
+
+
+![](./images/Screenshot_209.png)
+
+![](./images/Screenshot_210.png)
+
+iam.tfに追加する
+
+```
+resource "aws_iam_instance_profile" "app_ec2_profile" {
+  name = aws_iam_role.app_iam_role.name
+  role = aws_iam_role.app_iam_role.name
+}
+```
+
+
+
+```sh
+terraform fmt
+terraform plan
+terraform apply -auto-approve
+#インスタンスを確認する
+terraform state show aws_iam_instance_profile.app_ec2_profile
+```
+
+#### EC2へIAMロールを適用
+
+![](./images/Screenshot_211.png)
+
+appserver.tfに[iam_instance_profile]追加する
+
+```sh
+resource "aws_instance" "app_server" {
+  # basice setting
+  ami           = data.aws_ami.app.id
+  instance_type = "t2.micro"
+
+  # network
+  subnet_id                   = aws_subnet.public_subnet_1a.id
+  associate_public_ip_address = true
+  vpc_security_group_ids = [
+    aws_security_group.app_sg.id,
+    aws_security_group.opmng_sg.id
+  ]
+
+  # others
+  key_name = aws_key_pair.keypair.key_name
+  tags = {
+    Name    = "${var.project}-${var.environment}-app-ec2"
+    Project = var.project
+    Env     = var.environment
+    Type    = "app"
+  }
+  #追加された部分
+  #role 
+  iam_instance_profile = aws_iam_instance_profile.app_ec2_profile.name
+}
+```
+
+
+
+```sh
+terraform fmt
+terraform plan
+terraform apply -auto-approve
+```
+
+EC2 => インスタンスを選択し => IAMロールを確認する( tastylog-dev-app-iam-role )
+
+### Section 13　[パラメータストア]　環境変数設定
+
+#### DB接続情報の作成
+
+![](./images/Screenshot_212.png)
+
+
+
+![](./images/Screenshot_213.png)
+
+![](./images/Screenshot_214.png)
+
+
+
+![](./images/Screenshot_215.png)
+
+valueを確認する
+
+```
+terraform state show aws_db_instance.mysql_standalone
+```
+
+
+
+appserver.tfに追加する
+
+```
+# -----------------------------------
+# SSM Parameter Store
+# -----------------------------------
+resource "aws_ssm_parameter" "host" {
+  name  = "/${var.project}-/${var.environment}/app/MYSAL_HOST"
+  type  = "String"
+  value = aws_db_instance.mysql_standalone.address
+}
+
+resource "aws_ssm_parameter" "port" {
+  name  = "/${var.project}-/${var.environment}/app/MYSAL_Port"
+  type  = "String"
+  value = aws_db_instance.mysql_standalone.port
+}
+
+resource "aws_ssm_parameter" "database" {
+  name  = "/${var.project}-/${var.environment}/app/MYSAL_DATABASE"
+  type  = "String"
+  value = aws_db_instance.mysql_standalone.name
+}
+
+resource "aws_ssm_parameter" "username" {
+  name  = "/${var.project}-/${var.environment}/app/MYSAL_USERNAME"
+  type  = "SecureString"
+  value = aws_db_instance.mysql_standalone.username
+}
+
+resource "aws_ssm_parameter" "password" {
+  name  = "/${var.project}-/${var.environment}/app/MYSAL_PASSWORD"
+  type  = "SecureString"
+  value = aws_db_instance.mysql_standalone.password
+}
+```
+
+```
+terraform fmt
+terraform plan
+terraform apply -auto-approve
+```
+
+System Manager => パラメータストアを確認する
+
+"amzn2-ami-kernel-5.10-hvm-2.0.*-x86_64-gp2"が変わっているようなのでec2が再作成される
+
+ec2に入れたアプリを再度入れる必要がある
+
+```
+  + create
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # aws_instance.app_server must be replaced
+-/+ resource "aws_instance" "app_server" {
+      ~ ami                                  = "ami-0bcc04d20228d0cf6" -> "ami-02c3627b04781eada" # forces replacement
+      ~ arn                                  = "arn:aws:ec2:ap-northeast-1:265882374955:instance/i-03e1c0b8afdc94c03" -> (known after apply)
+      ~ availability_zone                    = "ap-northeast-1a" -> (known after apply)
+      ~ cpu_core_count                       = 1 -> (known after apply)
+      ~ cpu_threads_per_core                 = 1 -> (known after apply)
+      ~ disable_api_termination              = false -> (known after apply)
+      ~ ebs_optimized                        = false -> (known after apply)
+      - hibernation                          = false -> null
+      + host_id                              = (known after apply)
+      ~ id                                   = "i-03e1c0b8afdc94c03" -> (known after apply)
+      ~ instance_initiated_shutdown_behavior = "stop" -> (known after apply)
+      ~ instance_state                       = "running" -> (known after apply)
+      ~ ipv6_address_count                   = 0 -> (known after apply)
+      ~ ipv6_addresses                       = [] -> (known after apply)
+      ~ monitoring                           = false -> (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      ~ primary_network_interface_id         = "eni-0b7bf7075a6d761c7" -> (known after apply)
+      ~ private_dns                          = "ip-192-168-1-4.ap-northeast-1.compute.internal" -> (known after apply)
+      ~ private_ip                           = "192.168.1.4" -> (known after apply)
+      ~ public_dns                           = "ec2-18-183-255-96.ap-northeast-1.compute.amazonaws.com" -> (known after apply)
+      ~ public_ip                            = "18.183.255.96" -> (known after apply)
+      ~ secondary_private_ips                = [] -> (known after apply)
+      ~ security_groups                      = [] -> (known after apply)
+        tags                                 = {
+            "Env"     = "dev"
+            "Name"    = "tastylog-dev-app-ec2"
+            "Project" = "tastylog"
+            "Type"    = "app"
+        }
+      ~ tenancy                              = "default" -> (known after apply)
+      + user_data                            = (known after apply)
+      + user_data_base64                     = (known after apply)
+        # (9 unchanged attributes hidden)
+
+      ~ capacity_reservation_specification {
+          ~ capacity_reservation_preference = "open" -> (known after apply)
+
+          + capacity_reservation_target {
+              + capacity_reservation_id = (known after apply)
+            }
+        }
+
+      - credit_specification {
+          - cpu_credits = "standard" -> null
+        }
+
+      + ebs_block_device {
+          + delete_on_termination = (known after apply)
+          + device_name           = (known after apply)
+          + encrypted             = (known after apply)
+          + iops                  = (known after apply)
+          + kms_key_id            = (known after apply)
+          + snapshot_id           = (known after apply)
+          + tags                  = (known after apply)
+          + throughput            = (known after apply)
+          + volume_id             = (known after apply)
+          + volume_size           = (known after apply)
+          + volume_type           = (known after apply)
+        }
+
+      ~ enclave_options {
+          ~ enabled = false -> (known after apply)
+        }
+
+      + ephemeral_block_device {
+          + device_name  = (known after apply)
+          + no_device    = (known after apply)
+          + virtual_name = (known after apply)
+        }
+
+      ~ metadata_options {
+          ~ http_endpoint               = "enabled" -> (known after apply)
+          ~ http_put_response_hop_limit = 1 -> (known after apply)
+          ~ http_tokens                 = "optional" -> (known after apply)
+          ~ instance_metadata_tags      = "disabled" -> (known after apply)
+        }
+
+      + network_interface {
+          + delete_on_termination = (known after apply)
+          + device_index          = (known after apply)
+          + network_interface_id  = (known after apply)
+        }
+
+      ~ root_block_device {
+          ~ delete_on_termination = true -> (known after apply)
+          ~ device_name           = "/dev/xvda" -> (known after apply)
+          ~ encrypted             = false -> (known after apply)
+          ~ iops                  = 100 -> (known after apply)
+          + kms_key_id            = (known after apply)
+          ~ tags                  = {} -> (known after apply)
+          ~ throughput            = 0 -> (known after apply)
+          ~ volume_id             = "vol-0ca8b9a5dc3337eed" -> (known after apply)
+          ~ volume_size           = 8 -> (known after apply)
+          ~ volume_type           = "gp2" -> (known after apply)
+        }
+    }
+```
+
+
+
+### Section 14 [AMI] APサーバーイメージ作成
+
+#### APサーバ構築(1)(手動)
+
+![](./images/Screenshot_216.png)
+
+![](./images/Screenshot_217.png)
+
+
+
+![](./images/Screenshot_218.png)
+
+![](./images/Screenshot_219.png)
+
+2022-04-19-AWSAndTerraformIaC\files\Section14_APサーバー構築\tastylog-mw-all-1.0.0.tar.gz
+
+をterraform\srcフォルダ配下に入れる
+
+terraform\srcフォルダからpowershellを実行する
+
+```
+scp -i .\tastylog-dev-keypair .\tastylog-mw-all-1.0.0.tar.gz ec2-user@18.183.142.20:/home/ec2-user/
+
+ssh -i .\tastylog-dev-keypair ec2-user@18.183.142.20 
+```
+
+```sh
+[ec2-user@ip-192-168-1-173 ~]$ ls -l
+total 4
+-rw-rw-r-- 1 ec2-user ec2-user 1527 May  7 00:22 tastylog-mw-all-1.0.0.tar.gz
+[ec2-user@ip-192-168-1-173 ~]$ mkdir middleware
+[ec2-user@ip-192-168-1-173 ~]$ tar -zxvf tastylog-mw-all-1.0.0.tar.gz -C middleware/
+install.sh
+load-params.service
+load-params.sh
+tastylog.service
+
+#middlewareをインストールする
+[ec2-user@ip-192-168-1-173 ~]$ cd middleware/
+[ec2-user@ip-192-168-1-173 middleware]$ sudo sh install.sh
+
+#不要のファイルを削除する
+[ec2-user@ip-192-168-1-173 middleware]$ cd ../
+[ec2-user@ip-192-168-1-173 ~]$ ls -l
+total 4
+drwxrwxr-x 2 ec2-user ec2-user   97 May  7 00:25 middleware
+-rw-rw-r-- 1 ec2-user ec2-user 1527 May  7 00:22 tastylog-mw-all-1.0.0.tar.gz
+[ec2-user@ip-192-168-1-173 ~]$ rm -rf middleware/
+[ec2-user@ip-192-168-1-173 ~]$ rm tastylog-mw-all-1.0.0.tar.gz
+```
+
+
+
+EC2=>インスタンスの状態=>インスタンスを停止
+
+
+
+EC2=>アクション=>イメージとテンプレート=>イメージを作成
+
+イメージ名：tastylog-ami-ami
+
+イメージを作成
+
+
+
+イメージ＝＞amiを確認する
+
+
+
+インスタンスを開始して完了とする
+
+### Section 15 [EC2] APサーバー作成(2)
+
+#### APサーバー構築(2)(手動)
+
+
+
+![](./images/Screenshot_220.png)
+
+![](./images/Screenshot_221.png)
+
+
+
+terraform\srcフォルダ配下にtastylog-app-1.8.1.tar.gzファイルを置く
+
+```sh
+terraform\src> scp -i .\tastylog-dev-keypair .\tastylog-app-1.8.1.tar.gz ec2-user@18.176.52.41:/home/ec2-user/
+ssh -i .\tastylog-dev-keypair  ec2-user@18.176.52.41
+
+#ファイルを解凍する
+[ec2-user@ip-192-168-1-173 ~]$ ls
+tastylog-app-1.8.1.tar.gz
+[ec2-user@ip-192-168-1-173 ~]$ mkdir tastylog
+[ec2-user@ip-192-168-1-173 ~]$ tar -zxvf tastylog-app-1.8.1.tar.gz -C tastylog
+[ec2-user@ip-192-168-1-173 ~]$ sudo mv ./tastylog /opt/
+
+#移動されているのを確認する
+[ec2-user@ip-192-168-1-173 ~]$ ls -l /opt/
+total 0
+drwxr-xr-x 4 root     root      33 Apr 28 19:54 aws
+drwxr-xr-x 2 root     root       6 Aug 16  2018 rh
+drwxrwxr-x 9 ec2-user ec2-user 163 May  7 01:04 tastylog
+
+#アプリを起動する
+[ec2-user@ip-192-168-1-173 ~]$ sudo systemctl enable tastylog
+Created symlink from /etc/systemd/system/multi-user.target.wants/tastylog.service to /etc/systemd/system/tastylog.service.
+Created symlink from /etc/systemd/system/network.target.requires/tastylog.service to /etc/systemd/system/tastylog.service.
+[ec2-user@ip-192-168-1-173 ~]$ sudo systemctl start tastylog
+[ec2-user@ip-192-168-1-173 ~]$ systemctl status tastylog
+● tastylog.service - tastylog web application
+   Loaded: loaded (/etc/systemd/system/tastylog.service; enabled; vendor preset: disabled)
+   Active: active (running) since Sat 2022-05-07 01:07:18 UTC; 7s ago
+ Main PID: 3482 (node)
+   CGroup: /system.slice/tastylog.service
+           ├─3482 npm
+           └─3493 node ./app.js
+
+May 07 01:07:18 ip-192-168-1-173.ap-northeast-1.compute.internal systemd[1]: Started tastylog web application.
+May 07 01:07:19 ip-192-168-1-173.ap-northeast-1.compute.internal npm[3482]: > tastylog@1.8.1 start /opt/tastylog
+May 07 01:07:19 ip-192-168-1-173.ap-northeast-1.compute.internal npm[3482]: > node ./app.js
+```
+
+$パブリックIP:3000にアクセスし、画面が表示される(検索できない)
+
+### Section 16:Terraform(メタ引数)
+
+#### メタ引数とは
+
+![](./images/Screenshot_222.png)
+
+
+
+![](./images/Screenshot_223.png)
+
+
+
+#### リソース依存定義(depends_on)
+
+![](./images/Screenshot_224.png)
+
+![](./images/Screenshot_225.png)
+
+#### 複数リソース生成(count)
+
+![](./images/Screenshot_226.png)
+
+
+
+![](./images/Screenshot_227.png)
+
+![](./images/Screenshot_228.png)
+
+![](./images/Screenshot_229.png)
+
+![](./images/Screenshot_230.png)
+
+Documentの配下にtmpフォルダを作成する
+
+main.tfファイルを作成する
+
+```sh
+terraform {
+  required_version = ">=0.13"
+  required_providers {
+      aws ={
+          source = "hashicorp/aws"
+          version = ">3.0"
+      }
+  }
+}
+
+provider "aws" {
+  profile =  "terraform"
+  region = "ap-northeast-1"
+}
+
+resource "aws_iam_user" "user" {
+  count = 2
+  name = "testuser-${count.index}"
+}
+```
+
+```
+terraform init
+terraform fmt
+terraform plan
+terraform apply -auto-approve
+```
+
+IAM=>ユーザー画面からtestuser-0、testuser-1が作成されたことを確認する
+
+```sh
+#作成されたソースを削除する
+terraform destroy -auto-approve
+```
+
+IAM=>ユーザー画面からtestuser-0、testuser-1が削除されたことを確認する
+
+#### 複数リソース生成(for_each)
+
+
+
+#### ライフサイクル(lifecycle)
+
+
+
+### Section 17: Terraform (リソース依存関係)
+
+#### リソース依存関係の可視化(概要)
+
+#### VSCodeプラグインインストール(Graphviz)
+
+#### リソース依存関係の可視化(演習)
+
+### Section 18: Terraform(ループと分岐)
+
+#### 
+
+#### 
+
+#### 
+
+### Section 19: [ELB]　負荷分散設定
+
+#### 
+
+### Section 20: [Route53] ドメイン設定
+
+#### 
+
+### Section 21：[ACM] 証明書の発行/設定
+
+#### 
+
 ### 
 
 #### 
 
-#### 
+### 
 
 #### 
 
@@ -1915,7 +2860,7 @@ EC2画面を確認する
 
 #### 
 
-#### 
+### 
 
 #### 
 
@@ -1923,7 +2868,7 @@ EC2画面を確認する
 
 #### 
 
-#### 
+### 
 
 #### 
 
@@ -1931,27 +2876,9 @@ EC2画面を確認する
 
 #### 
 
-#### 
-
-#### 
-
 ### 
 
 #### 
-
-#### 
-
-#### 
-
-### 
-
-#### 
-
-#### 
-
-#### 
-
-
 
 ### 
 
