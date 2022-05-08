@@ -1542,6 +1542,8 @@ terraform apply -auto-approve
 
 下記の内容をコメントアウトする
 
+ resource "aws_db_instance"全体をコメントアウトし、terraform applyを実行する
+
 ```
 # resource "aws_db_instance" "mysql_standalone" {
 }
@@ -1932,9 +1934,9 @@ S3 にてパケットを作成する（デフォルトで作成する）
 
 ポリシージェネレータボタンを押下する
 
->IAM => ユーザ=>Terraform のARNをコピーする
+>IAM => ユーザ=>Terraform のARNをコピーする (Principal)
 >
->S3 => パケット=>プロパティ = ARNをコピーする
+>S3 => パケット=>プロパティ = ARNをコピーする(Aamzon Resource Nanme)
 
 ![](./images/Screenshot_166.png)
 
@@ -1945,6 +1947,10 @@ Add Statementボタン => Generate Policy ボタンを押下してポリシー�
 変更して保存する
 
 ブロックパブリックアクセスにチェック入れてすべてブロックして変更保存する
+
+backendは terraform snapshots are stored
+
+https://www.terraform.io/language/settings/backends
 
 main.tfに追加する
 
@@ -1964,6 +1970,7 @@ terraform {
   	# backet name
     bucket  = "tasty-tfstate-bucket-mars"
     # bakcet 配下のフォルダ名
+    #変数にするとうまく行かないので、手で定義する
     key     = "tastylog-dev.tfstate"
     region  = "ap-northeast-1"
     profile = "terraform"
@@ -1980,7 +1987,7 @@ terraform fmt
 terraform init
 ```
 
-EC2画面を確認する
+S3画面を確認する
 
 #### リソース一覧の確認
 
@@ -2207,7 +2214,7 @@ EC2=>タグ画面から Message:HelloWorldタグが削除されていること�
 
 
 
-
+インスタンスプロフィールとIAMロールと同じ名前にするのは、マネジメントコンソール上分かりやすいため
 
 ![](./images/Screenshot_195.png)
 
@@ -2215,15 +2222,13 @@ EC2=>タグ画面から Message:HelloWorldタグが削除されていること�
 
 ![](./images/Screenshot_196.png)
 
-![](./images/Screenshot_196.png)
+
 
 
 
 ![](./images/Screenshot_197.png)
 
 
-
-#### 
 
 #### 信頼ポリシーの作成
 
@@ -2300,8 +2305,6 @@ terraform state show aws_iam_role.app_iam_role
 ```
 
 IAM=>role画面から確認する
-
-#### 
 
 #### ポリシーのアタッチ
 
@@ -2770,6 +2773,8 @@ $パブリックIP:3000にアクセスし、画面が表示される(検索で�
 
 ![](./images/Screenshot_230.png)
 
+![](./images/Screenshot_231.png)
+
 Documentの配下にtmpフォルダを作成する
 
 main.tfファイルを作成する
@@ -2814,9 +2819,91 @@ IAM=>ユーザー画面からtestuser-0、testuser-1が削除されたことを�
 
 #### 複数リソース生成(for_each)
 
+![](./images/Screenshot_232.png)
 
+![](./images/Screenshot_233.png)
+
+
+
+![](./images/Screenshot_234.png)
+
+
+
+![](./images/Screenshot_235.png)
+
+
+
+![](./images/Screenshot_236.png)
+
+![](./images/Screenshot_237.png)
+
+![](./images/Screenshot_238.png)
+
+```
+terraform {
+  required_version = ">=0.13"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">3.0"
+    }
+  }
+}
+
+provider "aws" {
+  profile = "terraform"
+  region  = "us-east-1"
+}
+
+resource "aws_vpc" "vpc" {
+  cidr_block = "192.168.0.0/20"
+}
+
+resource "aws_subnet" "subnet" {
+  for_each = {
+    "192.168.1.0/24" = "us-east-1a"
+    "192.168.2.0/24" = "us-east-1c"
+    "192.168.3.0/24" = "us-east-1d"
+  }
+
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = each.key
+  availability_zone = each.value
+}
+```
+
+
+
+```
+terraform fmt
+terraform plan
+terraform apply -auto-approve
+terraform destroy -auto-approve
+```
+
+マネジメントコンソール上にて作成・削除を確認する
 
 #### ライフサイクル(lifecycle)
+
+![](./images/Screenshot_239.png)
+
+
+
+![](./images/Screenshot_240.png)
+
+
+
+![](./images/Screenshot_241.png)
+
+
+
+![](./images/Screenshot_242.png)
+
+
+
+![](./images/Screenshot_243.png)
+
+
 
 
 
@@ -2824,9 +2911,33 @@ IAM=>ユーザー画面からtestuser-0、testuser-1が削除されたことを�
 
 #### リソース依存関係の可視化(概要)
 
-#### VSCodeプラグインインストール(Graphviz)
+![](./images/Screenshot_244.png)
+
+![](./images/Screenshot_245.png)
+
+![](./images/Screenshot_246.png)
+
+![](./images/Screenshot_247.png)
+
+#### VSCodeプラグインインストール(Graphviz) 
+
+![](./images/Screenshot_248.png)
+
+![](./images/Screenshot_249.png)
+
+
 
 #### リソース依存関係の可視化(演習)
+
+![](./images/Screenshot_250.png)
+
+```
+terraform graph > sample.dot
+```
+
+Visual Studio Code > sample.dotファイルを開き
+
+Visual Studio Code > View > Command Plalette > Graphviz
 
 ### Section 18: Terraform(ループと分岐)
 
