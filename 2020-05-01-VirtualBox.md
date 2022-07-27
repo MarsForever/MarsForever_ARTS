@@ -8,6 +8,8 @@ system: Pointing Device:USB Tablet(solve the mouse can't click problem)
 
 add japanese keyboard layout
 
+#####  method 1
+
 NETWORK & HOST NAME => turn on
 
 Network => Adapter 1 => Attached to NAT
@@ -17,6 +19,30 @@ Network => Adapter 1 => Attached to NAT
 ​                                        =>VirtualBox Host-Only Ethernet Adapter #2
 
 File => Host Network Manager => VirtualBox Host-Only  Ethernet Adapter #2 
+
+##### method2(設定はこれのみ、02以降設定不要？)
+
+- 該当するvirtual osを選択し、設定をクリックする
+
+- ネットワーク=>アダブター１=>ネットワーク有効化=＞割り当て「NAT」
+
+- 高度=>ポートファオワーディング=>新規ルール追加
+  - ssh
+    - 名前：ssh(例)
+    - プロトコル：TCP
+    - ホストIP：127.0.0.1(例)
+    - ホストポート：2222(例)
+    - ゲストIP：空欄
+    - ゲストポート：22(sshの場合、)
+  - http
+    - 名前：http(例)
+    - プロトコル：TCP
+    - ホストIP：127.0.0.2(例)
+    - ホストポート：2223(例)
+    - ゲストIP：空欄
+    - ゲストポート：80(httpの場合)
+
+
 
 ```
 #Important
