@@ -43,6 +43,12 @@ spec:
     storage: 1Gi
 ```
 
+*check*
+
+k get pv
+
+
+
 kubectl create -f 01-pvc.yaml
 
 ```sh
@@ -60,6 +66,12 @@ spec:
   storageClassName: "manual"
 ```
 
+*check*
+
+k get pvc
+
+
+
 kubectl apply -f 01-pod.yaml 
 
 ```sh
@@ -74,7 +86,7 @@ spec:
   - name: pv-recycler
     image: "nginx:alpine"
     volumeMounts:
-      - mountPath: "/var/ww/nginx"
+      - mountPath: "/var/www/nginx"
         name: app-storage
   volumes:
     - name: app-storage
@@ -82,7 +94,9 @@ spec:
         claimName: log-claim
 ```
 
+*check*
 
+k get pod
 
 #### No.2
 
@@ -102,7 +116,6 @@ spec:
 ##### check pod and service
 
  ```sh
-alias kubectl=k
 k get pod,svc 
  NAME                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
 service/kubernetes       ClusterIP   10.96.0.1        <none>        443/TCP   23m
@@ -124,6 +137,8 @@ k exec -it webapp-color -- sh
 /opt # nc -z -v -w 1 secure-service 80
 nc: secure-service (10.104.199.138:80): Operation timed out
 ```
+
+# Q&A 1 nc
 
 Check networkpolicy
 
@@ -215,20 +230,8 @@ opt # nc -z -v -w 1 secure-service 80
 secure-service (10.104.199.138:80) open
 ```
 
+
 #### No.3
-
-> We have deployed a new pod called *secure-pod* and a service called *secure-service*. Incoming or Outgoing connections to this pod are not working.
-
-> Troubleshoot why this is happening.
-
-> Make sure that incoming connection from the pod *webapp-color* are successful.
-
-> Important:Don't delete any current objects deployed.
-
-- Important:Don't Alter Existing Objects!
-- Connectivity working?
-
-#### No.4
 
 > Create a pod called *time-check* in the *dvl1987* namespace.This pod should run a container called *timer-check* that users the *busybox* image.
 
@@ -247,6 +250,67 @@ while true; do date; sleep
 - Pod 'time-check' configured correctly?
 
 *Weight: 20*
+
+#### No.3 Answer
+
+create namespace *dvl1987* 
+
+```sh
+k create ns dvl1987
+```
+
+create configmap
+
+```sh
+k create -n dvl1987 configmap time-config --from-literal=TIME_FREQ=10
+```
+
+check config map
+
+```sh
+k get configmap -n dvl1987
+```
+
+create a pod named time-check in namespace dvl1987
+
+```sh
+k run --generator=run-pod/v1 time-check --image=busybox --dry-run=client -o yaml > 03-pod.yaml
+```
+
+vim 03-pod.yaml
+
+```sh
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: time-check
+  name: time-check
+  namespace: dvl1987
+spec:
+  containers:
+  - image: busybox
+    name: time-check
+    env:
+    - name: TIME_FREQ
+      valueFrom:
+        configMapKeyRef:
+          name: time-config
+          key: TIME_FREQ
+    command: ["/bin/sh", "-c", "while true; do date; sleep $TIME_FREQ; done > /opt/time/time-check.log"]
+    volumeMounts:
+    - mountPath: /opt/time
+      name: pod3-volume
+  volumes:
+  - name: pod3-volume
+    emptyDir: {}
+```
+
+k create  -f 03-pod.yaml
+
+
+
 
 #### No.5
 
