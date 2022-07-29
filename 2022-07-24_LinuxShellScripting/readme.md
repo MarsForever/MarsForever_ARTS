@@ -140,5 +140,98 @@ help test | less
 [[ is a shell keyword
 ```
 
+### 4. Script
+
+#### luser-demo01.sh
+
+```bash
+#!/bin/bash
+
+# Hello from the main OS.
+echo "Hello"
+
+WORD='script'
+
+echo "$WORD"
+
+echo '$WORD'
+
+echo "This is a shell $WORD"
+
+echo "This is a shell ${WORD}"
+
+echo "${WORD}ing is fun!"
+
+echo "$WORDing is fun!"
+
+ENDING='ed'
+
+echo "This is ${WORD}${ENDING}."
+
+ENDING='ing'
+
+echo "${WORD}${ENDING} is fun!"
+
+ENDING='s'
+echo "You ar going to write many ${WORD}${ENDING} in this class!"
+
+```
+
+output
+
+```text
+Hello
+script
+$WORD
+This is a shell script
+This is a shell script
+scripting is fun!
+ is fun!
+This is scripted.
+scripting is fun!
+You ar going to write many scripts in this class!
+```
+
+#### luser-demo02.sh
+
+```bash
+#!/bin/bash
+
+#Display the UID and username of the user executing this script.
+#Display if the user is the root user or not.
+
+
+#Display the UID
+echo "Your UID is ${UID}"
+
+#Display the username
+
+#new write
+#USER_NAME=$(id -un)
+
+#old write
+USER_NAME=`id -un`
+
+echo "Your username is ${USER_NAME}"
+
+#Display if the user is the root user or not.
+#new write [[ ]]
+#old write [ ]
+if [[ "${UID}" -eq 0 ]]
+then
+  echo 'You are root.'
+else
+  echo 'You are not root.'
+fi
+```
+
+output
+
+```
+Your UID is 1000
+Your username is vagrant
+You are not root.
+```
+
 
 
