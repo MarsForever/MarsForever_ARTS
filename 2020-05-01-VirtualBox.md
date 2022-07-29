@@ -56,6 +56,46 @@ check Adapter
 
 
 
+##### method 3
+
+- virtual box => preference => add host-only network => name: host-only networkabc
+  - adapter
+    - Ipv4 address:192.168.56.1
+    - ipv4 network mask: 255.255.255.0
+    - ipv6 address: empty
+    - ipv6 network mask length:
+  - dhcp server
+    - enalbe server => check
+    - server address:192.168.56.100
+    - server mask:255.255.255.0
+    - lower address bound:192.168.56.101
+    - upper address bound:192.168.56.254
+- vm1
+  - setting => network => adapter => attached to => host-only adapter
+    - name:host-only networkabc
+- vm2
+  - setting => network => adapter => attached to => host-only adapter
+    - name:host-only networkabc
+
+check on vm1, vm2
+
+```bash
+#show ip address from 192.168.56.101 to 192.168.56.254
+ifconfig
+```
+
+| **Mode**   | **VM→Host** | **VM←Host**                                                  | **VM1↔VM2** | **VM→Net/LAN** | **VM←Net/LAN**                                               |
+| ---------- | ----------- | ------------------------------------------------------------ | ----------- | -------------- | ------------------------------------------------------------ |
+| Host-only  | **+**       | **+**                                                        | **+**       | –              | –                                                            |
+| Internal   | –           | –                                                            | **+**       | –              | –                                                            |
+| Bridged    | **+**       | **+**                                                        | **+**       | **+**          | **+**                                                        |
+| NAT        | **+**       | [Port forward](https://www.virtualbox.org/manual/ch06.html#natforward) | –           | **+**          | [Port forward](https://www.virtualbox.org/manual/ch06.html#natforward) |
+| NATservice | **+**       | [Port forward](https://www.virtualbox.org/manual/ch06.html#network_nat_service) | **+**       | **+**          | [Port forward](https://www.virtualbox.org/manual/ch06.html#network_nat_service) |
+
+参考：https://www.virtualbox.org/manual/ch06.html　host guest relationship
+
+参考：https://www.youtube.com/watch?v=DwG36vk_7uE&ab_channel=AmbarHasbiyatmoko setting host-only adapter video
+
 #### 02 upgrade yum
 
 yum update -y
