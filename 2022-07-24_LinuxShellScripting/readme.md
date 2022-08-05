@@ -86,7 +86,7 @@ vagrant halt
 
 
 
-Vagrantfile
+/vagrant/Vagrantfile
 
 ```Vagrantfile
 Vagrant.configure("2") do |config|
@@ -142,7 +142,12 @@ help test | less
 
 ### 4. Script
 
-#### luser-demo01.sh
+src/luser-demo01.sh
+
+- naming
+- permissions
+- variables
+- builtins
 
 ```bash
 #!/bin/bash
@@ -192,7 +197,12 @@ scripting is fun!
 You ar going to write many scripts in this class!
 ```
 
-#### luser-demo02.sh
+luser-demo02.sh
+- special variables
+- pseudocode
+- command substitution
+- if statement
+- conditionals
 
 ```bash
 #!/bin/bash
@@ -233,5 +243,46 @@ Your username is vagrant
 You are not root.
 ```
 
+```
+[vagrant@localhost vagrant]$ type -a exit
+exit is a shell builtin
+[vagrant@localhost vagrant]$ help exit
+exit: exit [n]
+    Exit the shell.
 
+    Exits the shell with a status of N.  If N is omitted, the exit status
+    is that of the last command executed.
+[vagrant@localhost vagrant]$ help test
+```
+
+src/luser-demo03.sh
+
+- exit statuses
+- return codes
+- string test conditionals
+- more special variables
+
+src/luser-demo04.sh
+
+```bash
+[vagrant@localhost vagrant]$ man useradd
+[vagrant@localhost vagrant]$ sudo useradd dougstamper
+[vagrant@localhost vagrant]$ sudo su - dougstamper
+[dougstamper@localhost ~]$ ps -ef
+dougsta+  2262  2261  0 04:15 pts/0    00:00:00 -bash
+dougsta+  2285  2262  0 04:16 pts/0    00:00:00 ps -ef
+exit
+# adduser default config
+cat /etc/login.defs
+# change password
+passwd
+```
+
+src/add-local-user.sh
+
+```bash
+cat /etc/passwd
+# check last 3 lines.
+tail -3 /etc/passwd
+```
 
