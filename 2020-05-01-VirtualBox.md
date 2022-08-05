@@ -96,6 +96,8 @@ ifconfig
 
 参考：https://www.youtube.com/watch?v=DwG36vk_7uE&ab_channel=AmbarHasbiyatmoko setting host-only adapter video
 
+参考：https://www.nakivo.com/blog/virtualbox-network-setting-guide/ VirtualBox Network Settings: Complete Guide　図あり
+
 #### 02 upgrade yum
 
 yum update -y
