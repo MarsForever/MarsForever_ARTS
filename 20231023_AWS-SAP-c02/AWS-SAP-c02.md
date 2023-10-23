@@ -12,8 +12,11 @@ Gateway Cached Volumes:
  supports volumes of up to 1,024 TB in size, and the frequently accessed data is stored on the onpremises server while the entire data is backed up over AWS
 Gateway Stored Volumes
 512 TB worth of data
+
+S3 is not ideal for POSIX compliant data
+
 該当分野
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTQ4NTcyNzU5NywtMjYwNjM5Mjk2XX0=
+eyJoaXN0b3J5IjpbLTEyMTQwMTcwNDQsLTI2MDYzOTI5Nl19
 -->
