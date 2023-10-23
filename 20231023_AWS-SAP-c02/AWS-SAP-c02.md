@@ -4,9 +4,13 @@ https://tutorialsdojo.com/amazon-workspaces/
 #### AWS Well-Architected
 [AWS Well-Architected](https://aws.amazon.com/jp/architecture/well-architected/?wa-lens-whitepapers.sort-by=item.additionalFields.sortDate&wa-lens-whitepapers.sort-order=desc&wa-guidance-whitepapers.sort-by=item.additionalFields.sortDate&wa-guidance-whitepapers.sort-order=desc "AWS Well-Architected")
 
+ AWS サービス別資料
+https://aws.amazon.com/jp/events/aws-event-resource/archive/?cards.sort-by=item.additionalFields.SortDate&cards.sort-order=desc&awsf.tech-category=*all
+
 キーワード
 
-がい
+該当分野
+
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNTk5MDA2Nzg2LC0yNjA2MzkyOTZdfQ==
+eyJoaXN0b3J5IjpbNzAwMDk3OTAsLTI2MDYzOTI5Nl19
 -->
