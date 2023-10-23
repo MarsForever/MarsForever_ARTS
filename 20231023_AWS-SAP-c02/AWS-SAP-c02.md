@@ -8,9 +8,9 @@ https://tutorialsdojo.com/amazon-workspaces/
 https://aws.amazon.com/jp/events/aws-event-resource/archive/?cards.sort-by=item.additionalFields.SortDate&cards.sort-order=desc&awsf.tech-category=*all
 
 キーワード
-
+ AWS Storage Gateway：
 該当分野
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNzAwMDk3OTAsLTI2MDYzOTI5Nl19
+eyJoaXN0b3J5IjpbLTE0MzM2MDQ4MDIsLTI2MDYzOTI5Nl19
 -->
